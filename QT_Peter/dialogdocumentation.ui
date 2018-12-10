@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DialogDocumentation</class>
+ <widget class="QDialog" name="DialogDocumentation">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>832</width>
+    <height>642</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <widget class="QDialogButtonBox" name="buttonBox">
+   <property name="geometry">
+    <rect>
+     <x>450</x>
+     <y>580</y>
+     <width>341</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <property name="standardButtons">
+    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+   </property>
+  </widget>
+  <widget class="QTabWidget" name="tabWidget">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>10</y>
+     <width>781</width>
+     <height>571</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
+   <widget class="QWidget" name="tab">
+    <attribute name="title">
+     <string>Basic</string>
+    </attribute>
+    <widget class="QTextBrowser" name="textBrowser">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>731</width>
+       <height>481</height>
+      </rect>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:8pt; font-weight:600; color:#222222; background-color:#ffffff;&quot;&gt;Cách đặt thang cự ly cho các chế độ tín hiệu khác nhau ở ô đặt lệnh:&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:8pt; color:#222222; background-color:#ffffff;&quot;&gt;sử dụng dấu &amp;quot;;&amp;quot; để ngăn cách các lệnh.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:8pt; color:#222222; background-color:#ffffff;&quot;&gt;sử dụng dấu &amp;quot;*&amp;quot; để ngăn cách các chế độ&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:8pt; color:#222222; background-color:#ffffff;&quot;&gt;ví dụ: &lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:8pt; color:#222222; background-color:#ffffff;&quot;&gt;nếu đặt lệnh thang cự ly 8 hải lý là aaab1111;aaab1111*aaab2222;08ab2222*08ab3333&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:8pt; color:#222222; background-color:#ffffff;&quot;&gt;thì khi người dùng nhấn nút 8NM, &lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:8pt; color:#222222; background-color:#ffffff;&quot;&gt;nếu đang ở chế độ xung đơn lệnh gửi sẽ là  aaab1111;aaab1111  &lt;/span&gt;&lt;span style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:8pt; color:#222222;&quot;&gt;&lt;br /&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:8pt; color:#222222;&quot;&gt;nếu đang ở chế độ xung phức tạp lệnh gửi sẽ là   aaab2222;08ab2222 &lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:8pt; color:#222222;&quot;&gt;nếu đang ở chế độ giả liên tục lệnh gửi sẽ là   08ab3333 &lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial,Helvetica,sans-serif'; font-size:8pt; color:#222222;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_2">
+    <attribute name="title">
+     <string>Advanced</string>
+    </attribute>
+    <widget class="QTextBrowser" name="textBrowser_2">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>761</width>
+       <height>521</height>
+      </rect>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;table border=&quot;1&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;&quot; width=&quot;688&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot;&gt;
+&lt;tr&gt;
+&lt;td width=&quot;36&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td width=&quot;57&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0x0F&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td width=&quot;57&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0xAB&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td colspan=&quot;4&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;x&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td width=&quot;53&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td width=&quot;53&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td width=&quot;187&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;Tần số DDS phát&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0x10&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0xAB&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td colspan=&quot;4&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;x&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;Tần số DDS thu&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0x11&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0xAB&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td colspan=&quot;2&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;x&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td colspan=&quot;2&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;x&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;Biên độ DDS phat/thu&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0x12&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0xAB&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td width=&quot;61.75&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;1/0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td width=&quot;61.75&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td width=&quot;61.75&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td width=&quot;61.75&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;Sel rx_xung&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0x13&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0xAB&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td colspan=&quot;2&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;x&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt; font-weight:600;&quot;&gt;Cong_value&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0x14&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0xAB&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td colspan=&quot;2&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;x&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt; font-weight:600;&quot;&gt;Sô xung trống TR_RX&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;21&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0xAB&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;1/0&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt; font-weight:600;&quot;&gt;chon_ma_M_ng_nhiên&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;22&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0xAB&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td colspan=&quot;2&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;x&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt; font-weight:600;&quot;&gt;Index test&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;23&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0xAB&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td colspan=&quot;2&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;x&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;gia_tri_han_bien&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;24&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0xAB&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;x&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;x&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;Tắt_phát_sof_nhanh/chọn xung phát&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;25&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0xAB&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;x&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td colspan=&quot;2&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;x&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;Ena_phat_ko_đxứng/data_ko_đxứng&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;26&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0xAB&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;x&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;x&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;gia_tri_ch_hoa/ena_cân_băng_tạp&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;27&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0xAB&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;Chọn baker suy biến&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;28&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;Chọn th kiểm tra chipcore&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;29&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;x&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;x&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;x&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;Dk kdtt&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0xAA&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt;0xAB&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td colspan=&quot;4&quot; style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;
+&lt;td style=&quot; padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; line-height:125%;&quot;&gt;&lt;span style=&quot; font-family:'Times New Roman,serif'; font-size:12pt; font-weight:600;&quot;&gt;ĐK, tham số Module&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>DialogDocumentation</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>DialogDocumentation</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
