@@ -473,7 +473,7 @@ C_radar_data::C_radar_data()
     rotation_per_min = 0;
     bo_bang_0 = false;
     data_export = false;
-    xl_dopler = true;
+    xl_dopler = false;
     noise_nornalize = false;
     filter2of3 = false;
     is_do_bup_song = false;
@@ -609,7 +609,7 @@ void C_radar_data::drawSgn(short azi_draw, short r_pos)
     short py = data_mem.ykm[azi_draw][r_pos];
     if(px<=0||py<=0)return;
     short pSize = 1;
-    if(r_pos<200)pSize=0;
+    if(r_pos<150)pSize=0;
     else if(r_pos>800)pSize=2;
     if((px<pSize)||(py<pSize)||(px>=img_ppi->width()-pSize)||(py>=img_ppi->height()-pSize))return;
     for(short x = -pSize;x <= pSize;x++)
@@ -626,7 +626,6 @@ void C_radar_data::drawSgn(short azi_draw, short r_pos)
             }
         }
     }
-
 }
 
 void C_radar_data::drawBlackAzi(short azi_draw)

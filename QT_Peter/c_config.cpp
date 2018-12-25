@@ -1,7 +1,9 @@
 
 #include "c_config.h"
 //CConfig         mGlobbalConfig;
-
+#include <iostream>
+#include <ctime>
+using namespace std;
 double CConfig::shipHeadingDeg=5;
 double CConfig::shipSpeed=0;
 double CConfig::antennaAziDeg=0;
@@ -55,6 +57,7 @@ CConfig::CConfig(void)
 {
     //hashData.;
     //shipHeadingDeg = 0;
+
     readFile();
 }
 
@@ -71,6 +74,18 @@ void CConfig::SaveToFile()
         ++it;
     }
     QXmlStreamWriter writer;
+    if (QFile::exists(HR_CONFIG_FILE_BACKUP_2))
+    {
+        QFile::remove(HR_CONFIG_FILE_BACKUP_2);
+    }
+    if (QFile::exists(HR_CONFIG_FILE_BACKUP_1))
+    {
+        QFile::rename(HR_CONFIG_FILE_BACKUP_1,HR_CONFIG_FILE_BACKUP_2);
+    }
+    if (QFile::exists(HR_CONFIG_FILE))
+    {
+        QFile::rename(HR_CONFIG_FILE,HR_CONFIG_FILE_BACKUP_1);
+    }
     QFile xmlFile(HR_CONFIG_FILE);
     xmlFile.open(QIODevice::WriteOnly);
     writer.setDevice(&xmlFile);
@@ -78,7 +93,24 @@ void CConfig::SaveToFile()
     writer.writeAttributes(attr);
     writer.writeEndElement();
     xmlFile.close();
+    //QFile xmlFile(HR_CONFIG_FILE_BACKUP_1);
+    //xmlFile.copy(HR_CONFIG_FILE);
+}
 
+void CConfig::ReportError(const char* error)
+{
+    freopen(HR_ERROR_FILE, "a", stderr );
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer[80];
+
+    time (&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    strftime(buffer,sizeof(buffer),"%d-%m-%Y %H:%M:%S    ",timeinfo);
+    cerr << buffer;
+    cerr << error;
+    cerr << endl;
 }
 
 void CConfig::setDefault()
@@ -91,20 +123,24 @@ void CConfig::setDefault()
     QFile::copy(HR_CONFIG_FILE_DF, HR_CONFIG_FILE);
 
 }
-
-QHash<QString, QString> CConfig::readFile() {
-
-    QFile xmlFile(HR_CONFIG_FILE);
+QHash<QString, QString> CConfig::readFile(QString fileName)
+{
+    QFile xmlFile(fileName);
     xmlFile.open(QIODevice::ReadOnly);
+
     QXmlStreamReader xml;
     xml.setDevice(&xmlFile);
+    int nElement = 0;
     QHash<QString, QString> hashData;
     while (xml.readNextStartElement())
     {
+
         if(xml.name()==XML_ELEM_NAME)
         {
+
            for (uint i=0;i<xml.attributes().size();i++)
            {
+               nElement++;
                QXmlStreamAttribute attr = xml.attributes().at(i);
                hashData.insert( attr.name().toString(),
                                 attr.value().toString());
@@ -116,10 +152,28 @@ QHash<QString, QString> CConfig::readFile() {
         // an invalid state at the end. A single readNext()
         // will advance us to EndDocument.
         if (xml.hasError()) {
-            continue;
+            if(fileName==HR_CONFIG_FILE) readFile(HR_CONFIG_FILE_BACKUP_1);
+            else if(fileName==HR_CONFIG_FILE_BACKUP_1)readFile(HR_CONFIG_FILE_BACKUP_2);
+            else
+            {
+                ReportError("Config load failed");
+            }
+        }
+    }
+    if(!nElement)
+    {
+        if(fileName==HR_CONFIG_FILE) readFile(HR_CONFIG_FILE_BACKUP_1);
+        else if(fileName==HR_CONFIG_FILE_BACKUP_1)readFile(HR_CONFIG_FILE_BACKUP_2);
+        else
+        {
+            ReportError("Config load failed");
         }
     }
     xmlFile.close();
     return hashData;
+}
+QHash<QString, QString> CConfig::readFile() {
+
+    return readFile(HR_CONFIG_FILE);
 }
 

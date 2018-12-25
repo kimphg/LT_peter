@@ -620,6 +620,12 @@ private slots:
 
     void on_checkBox_clicked();
 
+    void on_toolButton_chong_nhieu_1_clicked(bool checked);
+
+    void on_toolButton_chong_nhieu_2_clicked(bool checked);
+
+    void on_toolButton_chong_nhieu_3_clicked(bool checked);
+
 private:
 
 //    bool mShowobjects,

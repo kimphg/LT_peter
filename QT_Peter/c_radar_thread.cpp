@@ -149,7 +149,12 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
     {
         if(mReceiveBuff[2]==0x65)// trang thai may 2-2
         {
-            mRadarStat.ReadStatusMessage(&mReceiveBuff[4]);
+            mRadarStat.ReadStatus22(&mReceiveBuff[4]);
+        }
+        if(mReceiveBuff[2]==0x27)// trang thai may 2-2
+        {
+            mRadarStat.ReadStatusGlobal(&mReceiveBuff[0]);
+            mRadarStat.gConnected++;
         }
     }
     else if(mReceiveBuff[0]==0x5a&&mReceiveBuff[1]==0xa5&&mReceiveBuff[31]==0xAA&&len>=32)//gyro messages
@@ -170,14 +175,14 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
             if(mGPS.decode(mReceiveBuff[i]))
             {
                GPSData newGPSPoint;
-               mGPS.get_position(&(newGPSPoint.lat),&(newGPSPoint.lon));
+               mGPS.get_position(&(newGPSPoint.lat),&(newGPSPoint.lon),&(newGPSPoint.ageMili));
                newGPSPoint.heading =  mGPS.course()/100.0;
                while(mGpsData.size()>10)
                {
                    mGpsData.pop();
                }
                mGpsData.push(newGPSPoint);
-               if(mGpsData.size()>5)
+               if(mGpsData.size()>=5)
                {
                    double dLat = mGpsData.back().lat - mGpsData.front().lat;
                    double dLon = mGpsData.back().lon - mGpsData.front().lon;
@@ -528,6 +533,7 @@ void dataProcessingThread::processARPAData(QByteArray inputdata)
                     obj.isSelected = oldObj.isSelected;
                     if(obj.mName.isEmpty()&&(!oldObj.mName.isEmpty()))
                         obj.mName = oldObj.mName;
+                    obj.mAgeMillis = clock();
                     if(obj.mLat==0)obj.mLat = oldObj.mLat;
                     if(obj.mLong==0)obj.mLong = oldObj.mLong;
                     if(obj.mDst.isEmpty())
@@ -595,6 +601,7 @@ void dataProcessingThread::run()
             }
 
         }
+        msleep(1);
     }
 
 }
@@ -765,6 +772,21 @@ void dataProcessingThread::radTxOff()
     //        logFile.close();
 
     //    }
+}
+
+void dataProcessingThread::setVaru(bool isOn)
+{
+
+}
+
+void dataProcessingThread::setSharu(bool isOn)
+{
+
+}
+
+void dataProcessingThread::setBaru(bool isOn)
+{
+
 }
 
 void dataProcessingThread::sendCommand(unsigned char *commandBuff, short len,bool queued )

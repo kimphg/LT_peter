@@ -199,6 +199,7 @@ void Mainwindow::drawAisTarget(QPainter *p)
         AIS_object_t aisObj = *iter;
         iter++;
 
+        if(aisObj.mAgeMillis>300000)continue;
         double fx,fy;
         ConvWGSToKm(&fx,&fy,aisObj.mLong,aisObj.mLat);
         short x = (fx*mScale);//+;
@@ -732,7 +733,7 @@ void Mainwindow::DrawMap()
     pMapPainter.drawPixmap((-pix.width()/2+pMap->width()/2),
                            (-pix.height()/2+pMap->height()/2),pix.width(),pix.height(),pix
                            );
-
+    repaint();
     //view frame
     //fill back ground
     //p.setBrush(QColor(40,60,100,255));
@@ -1131,6 +1132,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
 {
 
     clkBegin = clock();
+    //printf("paint:%ld\n",clkBegin);
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing, true);
     if(pMap)
@@ -1423,11 +1425,10 @@ void Mainwindow::addToTargets()
         msgBox.setText(QString::fromUtf8("Lỗi:")+error);
         msgBox.exec();
     }
-
-
 }
 void Mainwindow::InitSetting()
 {
+
     updateSimTargetStatus();
     //penTargetEnemySelected.setWidth(3);
     //penTarget.setWidth(2);
@@ -1796,10 +1797,10 @@ void Mainwindow::UpdateVideo()
             pRadar->isClkAdcChanged = false;
         }
         pRadar->UpdateData();
-
+        CConfig::time_now_ms  = QDateTime::currentMSecsSinceEpoch() - pRadar->time_start_ms;
+        repaint();
     }
-    CConfig::time_now_ms  = QDateTime::currentMSecsSinceEpoch() - pRadar->time_start_ms;
-    repaint();
+
     /*QStandardItemModel* model = new QStandardItemModel(trackListPt->size(), 5);
     for (int row = 0; row < trackListPt->size(); ++row)
     {
@@ -2340,10 +2341,10 @@ void Mainwindow::sync1S()//period 1 second
     UpdateGpsData();
     ViewTrackInfo();
     int sampleTime = CLOCKS_PER_SEC*1.4/frameRate;
-    if(sampleTime>25)sampleTime=25;
+    if(sampleTime<25)sampleTime=25;
     timerVideoUpdate.start(sampleTime);
     timerMetaUpdate.start(sampleTime*4);
-    ui->label_frame_rate->setText("FR:"+QString::number(frameRate));
+    ui->label_frame_rate->setText("FR:"+QString::number(1000/sampleTime));
     if(ui->toolButton_chi_thi_mt->isChecked())mTargetMan.OutputTargetToKasu();
     if(isScaleChanged ) {
 
@@ -3859,14 +3860,15 @@ void Mainwindow::on_toolButton_gps_update_auto_clicked()
 void Mainwindow::UpdateGpsData()
 {
 
-    if(processing->mGpsData.size()>4)
+    if(processing->mGpsData.size()>5)
     {
-        ui->groupBox_gps->setTitle(QString::fromUtf8("GPS(đã kết nối)"));
+
         GPSData data = processing->mGpsData.back();
         if(processing->mGpsData.size()>10)processing->mGpsData.pop();
         SetGPS(data.lat, data.lon);
+        if(data.ageMili<5000)   ui->groupBox_gps->setTitle(QString::fromUtf8("GPS(đã kết nối)"));
+        else                    ui->groupBox_gps->setTitle(QString::fromUtf8("GPS(mất kết nối)"));
     }
-    else ui->groupBox_gps->setTitle(QString::fromUtf8("GPS(chưa kết nối)"));
 }
 void Mainwindow::on_toolButton_set_zoom_ar_size_clicked()
 {
@@ -4947,4 +4949,19 @@ void Mainwindow::on_toolButton_sim_target_autogenerate_clicked()
 void Mainwindow::on_checkBox_clicked()
 {
 
+}
+
+void Mainwindow::on_toolButton_chong_nhieu_1_clicked(bool checked)
+{
+    processing->setVaru(checked);
+}
+
+void Mainwindow::on_toolButton_chong_nhieu_2_clicked(bool checked)
+{
+    processing->setSharu(checked);
+}
+
+void Mainwindow::on_toolButton_chong_nhieu_3_clicked(bool checked)
+{
+    processing->setBaru(checked);
 }

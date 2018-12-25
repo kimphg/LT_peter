@@ -30,7 +30,7 @@ struct GPSData
 {
     double lat,lon;
     double heading,speed;
-    long long timeStamp;
+    unsigned long ageMili;
     bool isFixed;
 };
 struct DataBuff// buffer for data frame
@@ -44,7 +44,7 @@ class radarStatus_3C
 public:
     radarStatus_3C();
     ~radarStatus_3C();
-    void ReadStatusMessage(uchar* mes)
+    void ReadStatus22(uchar* mes)
     {
         mTaiAngTen = mes[0];
         mSuyGiam = mes[1];
@@ -52,7 +52,13 @@ public:
         mCaoApReady = mes[3];
         mCaoApKetNoi = mes[4];
         isStatChange = true;
+        gConnected = 0;
     }
+    void ReadStatusGlobal(uchar* mes)
+    {
+        memcpy(&(msgGlobal[0]),(char*)(mes),32);
+    }
+    //2-2 status
     int     mCheDoDK;
     bool    isStatChange ;
     int     mCaoApReady;
@@ -61,6 +67,9 @@ public:
     int     mSuyGiam;
     int     mMaHieu;
     bool    mMayPhatOK;
+    //global Status
+    int gConnected;
+    char msgGlobal[32];
     bool isStatChanged()
     {
         if(isStatChange)
@@ -104,6 +113,9 @@ public:
     void radRequestTemp(char index);
     void radTxOn();
     void radTxOff();
+    void setVaru(bool isOn);
+    void setSharu(bool isOn);
+    void setBaru(bool isOn);
     void sendCommand(unsigned char* commandBuff, short len, bool queued = true);
     void loadRecordDataFile(QString fileName);
     void togglePlayPause(bool play);
