@@ -4632,7 +4632,7 @@ void Mainwindow::on_toolButton_start_simulation_start_clicked(bool checked)
 {
     if(checked)
     {
-        simulator->play();
+        simulator->play();//todo: stop receving signal
     }
 }
 

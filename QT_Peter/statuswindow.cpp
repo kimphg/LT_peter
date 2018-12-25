@@ -99,11 +99,11 @@ bool StatusWindow::receiveRes()
     ui->label_byte_2->setText(QString::number(paramIndex));
     ui->label_byte_3->setText(QString::number(paramValue));
     ui->label_byte_4->setText(QString::number(recvValue));
-    if(moduleIndex==3&&paramIndex==0xcc)ui->label_res_dds_out->setText(QString::number(paramValue));
-    if(moduleIndex==3&&paramIndex==0xbb)ui->label_vco_output_1->setText(QString::number(paramValue));
-    if(moduleIndex==2&&paramIndex==0xbb)ui->label_vco_output_2->setText(QString::number(paramValue));
-    if(moduleIndex==3&&paramIndex==0xdd)ui->label_trans_input->setText(QString::number(paramValue));
-    if(moduleIndex==1&&paramIndex==0xcc)ui->label_trans_output->setText(QString::number(paramValue));
+    if((moduleIndex==3)&&paramIndex==0xcc)ui->label_res_dds_out->setText(QString::number(paramValue));
+    if((moduleIndex==3)&&paramIndex==0xbb)ui->label_vco_output_1->setText(QString::number(paramValue));
+    if((moduleIndex==2)&&paramIndex==0xbb)ui->label_vco_output_2->setText(QString::number(paramValue));
+    if((moduleIndex==3)&&paramIndex==0xdd)ui->label_trans_input->setText(QString::number(paramValue));
+    if((moduleIndex==1)&&paramIndex==0xcc)ui->label_trans_output->setText(QString::number(paramValue));
     return true;
     /*QString resVal;
     double hsTap = mRadar->mRadarData->get_tb_tap();
