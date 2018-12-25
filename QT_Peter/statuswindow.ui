@@ -98,7 +98,7 @@ border: 2px solid darkgreen;
         </property>
         <property name="text">
          <string>Hệ số K.đại
-(52-&gt;58dBm):</string>
+(40-&gt;70dBm):</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
@@ -172,7 +172,7 @@ border: 2px solid darkgreen;
         </property>
         <property name="text">
          <string>C.suất ra
- (4-&gt;10dBm):</string>
+ 60-65</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
@@ -274,7 +274,7 @@ border: 2px solid darkgreen;
         </property>
         <property name="text">
          <string>C.suất ra
-(4-&gt;10dBm):</string>
+60-&gt;70:</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
@@ -360,7 +360,7 @@ border: 2px solid darkgreen;
         </property>
         <property name="text">
          <string>C.suất ra
-(4-&gt;10dBm):</string>
+58-65:</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
@@ -475,7 +475,7 @@ border: 2px solid darkgreen;
         </property>
         <property name="text">
          <string>C.suất vào
-(-15 -&gt; -5dBm):</string>
+(170-180):</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>

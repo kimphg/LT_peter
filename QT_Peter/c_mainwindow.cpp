@@ -4529,7 +4529,6 @@ void Mainwindow::on_toolButton_xl_nguong_5_clicked(bool checked)
 void Mainwindow::on_toolButton_second_azi_clicked(bool checked)
 {
     pRadar->giaQuayPhanCung=checked;
-
 }
 
 void Mainwindow::on_on_toolButton_xl_nguong_3_toggled(bool checked)

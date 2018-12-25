@@ -48,7 +48,6 @@ các tham số trên nằm trong 3 byte 1,2,3  trong khung truyền:
 void StatusWindow::sendReq()
 {
     moduleId++;
-    if(moduleId>5)moduleId=1;
     switch (moduleId) {
     case 1:
         command[2]=0x03;
@@ -70,7 +69,12 @@ void StatusWindow::sendReq()
         command[2]=0x01;
         command[3]=0xcc;
         break;
+    case 6:
+        command[2]=0x00;
+        command[3]=0xaa;
+        break;
     default:
+        moduleId=0;
         return;
     }
     mRadar->sendCommand(&command[0],8);
@@ -95,6 +99,15 @@ bool StatusWindow::receiveRes()
     int paramIndex  = header[2];
     int paramValue  = header[3];
     int recvValue   = (header[7]<<8)+header[8];
+    recvAverage.push_back(recvValue);
+    if(recvAverage.size()>10)recvAverage.pop_front();
+    double recvAver=0;
+    int count = 0;
+    for (int i=0;i<recvAverage.size();i++) {
+        recvAver+=recvAverage[i];
+        count++;
+    }
+    recvAver/=count;
     ui->label_byte_1->setText(QString::number(moduleIndex));
     ui->label_byte_2->setText(QString::number(paramIndex));
     ui->label_byte_3->setText(QString::number(paramValue));
@@ -104,6 +117,9 @@ bool StatusWindow::receiveRes()
     if((moduleIndex==2)&&paramIndex==0xbb)ui->label_vco_output_2->setText(QString::number(paramValue));
     if((moduleIndex==3)&&paramIndex==0xdd)ui->label_trans_input->setText(QString::number(paramValue));
     if((moduleIndex==1)&&paramIndex==0xcc)ui->label_trans_output->setText(QString::number(paramValue));
+    if((moduleIndex==0)&&paramIndex==0xaa)ui->label_res_main_temp->setText(QString::number(paramValue/4.0));
+    recvAver=60+20*log10(recvAver/55.0);
+    ui->label_res_receiver->setText(QString::number(recvAver,'f',1));
     return true;
     /*QString resVal;
     double hsTap = mRadar->mRadarData->get_tb_tap();

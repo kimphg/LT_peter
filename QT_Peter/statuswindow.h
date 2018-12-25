@@ -2,7 +2,7 @@
 #define STATUSWINDOW_H
 
 #include "c_radar_thread.h"
-
+#include <queue>
 #include <QMainWindow>
 
 namespace Ui {
@@ -23,6 +23,7 @@ protected slots:
 private slots:
     void closeEvent(QCloseEvent *event);
 private:
+    deque<int> recvAverage;
     bool warningBlink;
     bool ansTrue;
     int timerId;
