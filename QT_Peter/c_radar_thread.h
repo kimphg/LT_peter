@@ -91,6 +91,7 @@ class dataProcessingThread:public QThread
 {
     Q_OBJECT
 public:
+    bool isPaused;
     std::queue<GPSData> mGpsData;
     unsigned char       connect_timeout;
     RadarSignMode       mRadMode;

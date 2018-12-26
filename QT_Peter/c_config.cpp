@@ -5,6 +5,7 @@
 #include <ctime>
 using namespace std;
 double CConfig::shipHeadingDeg=5;
+double CConfig::shipCourseDeg = 0;
 double CConfig::shipSpeed=0;
 double CConfig::antennaAziDeg=0;
 QHash<QString, QString> CConfig::mHashData = CConfig::readFile();

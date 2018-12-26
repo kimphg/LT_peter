@@ -24,6 +24,7 @@ public:
     CConfig(void);
     ~CConfig(void);
     static double shipHeadingDeg;
+    static double shipCourseDeg;
     static double shipSpeed;
     static double antennaAziDeg;
     static volatile long long int time_now_ms;

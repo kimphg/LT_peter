@@ -85,6 +85,7 @@ double dataProcessingThread::getSelsynAzi() const
 }
 dataProcessingThread::dataProcessingThread()
 {
+    isPaused = false;
     mRadMode = ModeComplexSignal;
     mAntennaAzi = 0;
     failureCount = 0;
@@ -158,16 +159,26 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
         }
     }
     else if(mReceiveBuff[0]=='$'
-            &&mReceiveBuff[1]=='V'
-            &&mReceiveBuff[2]=='W'
             &&mReceiveBuff[3]=='V'
-            &&mReceiveBuff[4]=='L'
+            &&mReceiveBuff[4]=='B'
             &&mReceiveBuff[5]=='W')//speed message
     {
         QString message((char*)&mReceiveBuff[0]);
         QStringList tokens = message.split(',');
-        if(tokens.size()<2)return;
-        CConfig::shipSpeed = tokens[1].toDouble()/1852.0*3600;
+        if(tokens.size()<7)return;
+        if(tokens[6]=="A")CConfig::shipSpeed = tokens[4].toDouble();
+        //std::cout<<speed;
+    }
+    else if(mReceiveBuff[0]=='$'
+            &&mReceiveBuff[3]=='V'
+            &&mReceiveBuff[4]=='H'
+            &&mReceiveBuff[5]=='W')//speed message
+    {
+        QString message((char*)&mReceiveBuff[0]);
+        QStringList tokens = message.split(',');
+        if(tokens.size()<9)return;
+        if(tokens[6]=="N")CConfig::shipSpeed = tokens[5].toDouble();
+        if(tokens[2]=="T")CConfig::shipCourseDeg = tokens[1].toDouble();
         //std::cout<<speed;
     }
     else if(mReceiveBuff[0]==0x5a&&mReceiveBuff[1]==0xa5&&mReceiveBuff[31]==0xAA&&len>=32)//gyro messages
@@ -596,6 +607,8 @@ void dataProcessingThread::run()
 
     while(true)
     {
+        msleep(1);
+        if(isPaused)continue;
         while(radarSocket->hasPendingDatagrams())
         {
             int len = radarSocket->pendingDatagramSize();
@@ -614,7 +627,7 @@ void dataProcessingThread::run()
             }
 
         }
-        msleep(1);
+
     }
 
 }

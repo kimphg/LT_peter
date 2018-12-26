@@ -1859,6 +1859,7 @@ void Mainwindow::Update100ms()
     }
     //smooth the heading
     ui->label_head_ship->setText(QString::number(CConfig::shipHeadingDeg,'f',1));
+    ui->label_course_ship->setText(QString::number(CConfig::shipCourseDeg,'f',1));
     ui->label_speed_ship->setText(QString::number(CConfig::shipSpeed,'f',1));
     double headingDiff = CConfig::shipHeadingDeg-mShipHeading;
     if(abs(headingDiff)>0.5)
@@ -4311,7 +4312,7 @@ void Mainwindow::on_toolButton_dk_1_clicked()
 
 void Mainwindow::on_toolButton_chi_thi_mt_clicked(bool checked)
 {
-    //ui->toolButton_chi_thi_mt->sette
+
 }
 
 void Mainwindow::on_bt_rg_1_toggled(bool checked)
@@ -4529,6 +4530,8 @@ void Mainwindow::on_toolButton_xl_nguong_5_clicked(bool checked)
 void Mainwindow::on_toolButton_second_azi_clicked(bool checked)
 {
     pRadar->giaQuayPhanCung=checked;
+    if(checked)sendToRadarHS("1dab010070");
+    else sendToRadarHS("1dab000070");
 }
 
 void Mainwindow::on_on_toolButton_xl_nguong_3_toggled(bool checked)
@@ -4632,6 +4635,7 @@ void Mainwindow::on_toolButton_start_simulation_start_clicked(bool checked)
     if(checked)
     {
         simulator->play();//todo: stop receving signal
+        processing->stopThread();
     }
 }
 
@@ -4952,15 +4956,68 @@ void Mainwindow::on_checkBox_clicked()
 
 void Mainwindow::on_toolButton_chong_nhieu_1_clicked(bool checked)
 {
-    processing->setVaru(checked);
+    //processing->setVaru(checked);
+    if(checked)
+    {
+        uchar depth = ui->horizontalSlider_varu_depth->value();
+        uchar width = ui->horizontalSlider_varu_width->value();
+        uchar comand[5];
+        comand[0] = 0x29;
+        comand[1] = 0xab;
+        comand[2] = 0x01;
+        comand[3] = width;
+        comand[4] = depth;
+        sendToRadarHS((const char*)comand);
+    }
+    else
+    {
+        sendToRadarHS("29ab00");
+    }
 }
 
 void Mainwindow::on_toolButton_chong_nhieu_2_clicked(bool checked)
 {
-    processing->setSharu(checked);
+    //processing->setSharu(checked);
 }
 
 void Mainwindow::on_toolButton_chong_nhieu_3_clicked(bool checked)
 {
-    processing->setBaru(checked);
+    //processing->setBaru(checked);
+    if(checked)
+    {
+        sendToRadarHS("03ab2f00");
+    }
+    else
+    {
+        sendToRadarHS("03abffff");
+    }
+}
+
+void Mainwindow::on_toolButton_auto_freq_clicked(bool checked)
+{
+    if(checked)
+    {
+        sendToRadarHS("28ab2001");
+        sendToRadarHS("1aab01");
+    }
+    else sendToRadarHS("1aab00");
+}
+
+void Mainwindow::on_toolButton_chong_nhieu_ppy_clicked(bool checked)
+{
+    if(checked)
+    {
+        uchar gain = 100-ui->horizontalSlider_ppy_gain->value();
+        uchar comand[5];
+        comand[0] = 0x03;
+        comand[1] = 0xab;
+        if(gain<=63)comand[2] = gain;
+        else        comand[2] = 63;
+        if(gain<=63)comand[3] = 0;
+        else        comand[3] = gain-63;
+
+        comand[4] = 0;
+        sendToRadarHS((const char*)comand);
+    }
+    else sendToRadarHS("03abffff");
 }

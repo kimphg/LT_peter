@@ -626,6 +626,10 @@ private slots:
 
     void on_toolButton_chong_nhieu_3_clicked(bool checked);
 
+    void on_toolButton_auto_freq_clicked(bool checked);
+
+    void on_toolButton_chong_nhieu_ppy_clicked(bool checked);
+
 private:
 
 //    bool mShowobjects,
