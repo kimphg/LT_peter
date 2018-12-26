@@ -141,10 +141,8 @@ private slots:
 //    void on_actionExit_triggered();
     void UpdateVideo();
     void PlaybackRecFile();
-    void on_actionConnect_triggered();
-    void on_actionTx_On_triggered();
-    void on_actionTx_Off_triggered();
-    void on_actionRecording_toggled(bool arg1);
+
+//    void on_actionRecording_toggled(bool arg1);
     void on_actionOpen_rec_file_triggered();
     void on_actionOpen_map_triggered();
     void on_actionSaveMap_triggered();
@@ -174,7 +172,7 @@ private slots:
 
     void on_horizontalSlider_sea_valueChanged(int value);
 
-    void on_toolButton_exit_clicked();
+//    void on_toolButton_exit_clicked();
 
     //void on_toolButton_setting_clicked();
 
@@ -184,7 +182,7 @@ private slots:
 
 //    void on_toolButton_scan_toggled(bool checked);
 
-    void on_toolButton_xl_nguong_toggled(bool checked);
+//    void on_toolButton_xl_nguong_toggled(bool checked);
 
     void on_toolButton_replay_toggled(bool checked);
 
@@ -236,7 +234,7 @@ private slots:
 
     void on_toolButton_xl_dopler_toggled(bool checked);
 
-    void on_toolButton_xl_nguong_3_toggled(bool checked);
+//    void on_toolButton_xl_nguong_3_toggled(bool checked);
 
 //    void on_groupBox_3_currentChanged(int index);
 
@@ -244,21 +242,21 @@ private slots:
 
 
 
-    void on_toolButton_reset_3_clicked();
+//    void on_toolButton_reset_3_clicked();
 
-    void on_toolButton_reset_2_clicked();
+//    void on_toolButton_reset_2_clicked();
 
-    void on_toolButton_vet_clicked(bool checked);
+//    void on_toolButton_vet_clicked(bool checked);
 
     void on_label_status_warning_clicked();
 
-    void on_toolButton_delete_target_clicked();
+//    void on_toolButton_delete_target_clicked();
 
     void on_toolButton_tx_clicked();
 
     void on_toolButton_tx_off_clicked();
 
-    void on_toolButton_filter2of3_clicked(bool checked);
+//    void on_toolButton_filter2of3_clicked(bool checked);
 
    // void on_comboBox_radar_resolution_currentIndexChanged(int index);
 
@@ -274,7 +272,7 @@ private slots:
 
     void on_toolButton_export_data_clicked(bool checked);
 
-    void on_toolButton_auto_select_toggled(bool checked);
+//    void on_toolButton_auto_select_toggled(bool checked);
 
     void on_toolButton_ais_reset_clicked();
 
@@ -313,9 +311,9 @@ private slots:
 
     void on_toolButton_selfRotation_toggled(bool checked);
 
-    void on_toolButton_scope_toggled(bool checked);
+//    void on_toolButton_scope_toggled(bool checked);
 
-    void on_toolButton_manual_track_toggled(bool checked);
+//    void on_toolButton_manual_track_toggled(bool checked);
 
     void on_toolButton_measuring_toggled(bool checked);
 
@@ -629,6 +627,8 @@ private slots:
     void on_toolButton_auto_freq_clicked(bool checked);
 
     void on_toolButton_chong_nhieu_ppy_clicked(bool checked);
+
+    void on_toolButton_record_clicked(bool checked);
 
 private:
 

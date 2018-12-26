@@ -23,6 +23,7 @@ protected slots:
 private slots:
     void closeEvent(QCloseEvent *event);
 private:
+    void readGlobalStatus();
     deque<int> recvAverage;
     bool warningBlink;
     bool ansTrue;

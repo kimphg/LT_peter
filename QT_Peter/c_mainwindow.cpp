@@ -171,7 +171,7 @@ void Mainwindow::sendToRadarString(QString command)
 }
 void Mainwindow::sendToRadarHS(const char* hexdata)//todo:move to radar class
 {
-    short len = strlen(hexdata);
+    size_t len = strlen(hexdata);
     if(len>16)return;
     if(len%2)return;
     len/=2;
@@ -705,6 +705,9 @@ void MainWindow::openShpFile()
 
 Mainwindow::~Mainwindow()
 {
+    processing->stopThread();
+    processing->wait();
+
     delete ui;
     CConfig::SaveToFile();
     if(pMap)delete pMap;
@@ -2065,10 +2068,10 @@ void Mainwindow::ExitProgram()
 #endif
 }
 
-void Mainwindow::on_actionConnect_triggered()
-{
+//void Mainwindow::on_actionConnect_triggered()
+//{
 
-}
+//}
 void Mainwindow::sync5p()//period 10 second
 {
 
@@ -2528,74 +2531,9 @@ void Mainwindow::setRadarState(radarSate radarState)
     }
 }
 
-void Mainwindow::on_actionTx_On_triggered()
-{
-    //sendFrame("aaab030200000000", QHostAddress("192.168.0.44"),2573);
-    //on_actionRotateStart_toggled(true);
-    //    Command_Control new_com;
-    //    new_com.bytes[0] = 0xaa;
-    //    new_com.bytes[1] = 0xab;
-    //    new_com.bytes[2] = 0x02;
-    //    new_com.bytes[3] = 0x01;
-    //    new_com.bytes[4] = 0x00;
-    //    new_com.bytes[5] = 0x00;
-    //    new_com.bytes[6] = 0x00;
-    //    new_com.bytes[7] = 0;//new_com.bytes[0]+new_com.bytes[1]+new_com.bytes[2]+new_com.bytes[3]+new_com.bytes[4]+new_com.bytes[5]+new_com.bytes[6];
-    //    command_queue.push(new_com);
-    //    new_com.bytes[0] = 0xaa;
-    //    new_com.bytes[1] = 0xab;
-    //    new_com.bytes[2] = 0x00;
-    //    new_com.bytes[3] = 0x01;
-    //    new_com.bytes[4] = 0x00;
-    //    new_com.bytes[5] = 0x00;
-    //    new_com.bytes[6] = 0x00;
-    //    new_com.bytes[7] = 0;//new_com.bytes[0]+new_com.bytes[1]+new_com.bytes[2]+new_com.bytes[3]+new_com.bytes[4]+new_com.bytes[5]+new_com.bytes[6];
-    //    command_queue.push(new_com);
 
-}
 
-void Mainwindow::on_actionTx_Off_triggered()
-{
-    //    //on_actionRotateStart_toggled(false);
-    //    Command_Control new_com;
-    //    new_com.bytes[0] = 0xaa;
-    //    new_com.bytes[1] = 0xab;
-    //    new_com.bytes[2] = 0x00;
-    //    new_com.bytes[3] = 0x00;
-    //    new_com.bytes[4] = 0x00;
-    //    new_com.bytes[5] = 0x00;
-    //    new_com.bytes[6] = 0x00;
-    //    new_com.bytes[7] = 0;//new_com.bytes[0]+new_com.bytes[1]+new_com.bytes[2]+new_com.bytes[3]+new_com.bytes[4]+new_com.bytes[5]+new_com.bytes[6];
-    //    command_queue.push(new_com);
-    //    new_com.bytes[0] = 0xaa;
-    //    new_com.bytes[1] = 0xab;
-    //    new_com.bytes[2] = 0x02;
-    //    new_com.bytes[3] = 0x00;
-    //    new_com.bytes[4] = 0x00;
-    //    new_com.bytes[5] = 0x00;
-    //    new_com.bytes[6] = 0x00;
-    //    new_com.bytes[7] = 0;//new_com.bytes[0]+new_com.bytes[1]+new_com.bytes[2]+new_com.bytes[3]+new_com.bytes[4]+new_com.bytes[5]+new_com.bytes[6];
-    //    command_queue.push(new_com);
-}
 
-void Mainwindow::on_actionRecording_toggled(bool arg1)
-{
-    if(arg1)
-    {
-
-        QDateTime now = QDateTime::currentDateTime();
-        QString filename = now.toString("dd.MM_hh.mm.ss")+
-                "_"+ui->label_range_resolution->text()+
-                "_"+ui->label_sn_type->text()+
-                "_"+ui->label_sn_param->text();
-        ui->label_record_file_name->setText(filename);
-        processing->startRecord("D:/HR2D/rec_"+filename+HR_FILE_EXTENSION);
-    }
-    else
-    {
-        processing->stopRecord();
-    }
-}
 
 void Mainwindow::on_actionOpen_rec_file_triggered()
 {
@@ -3118,12 +3056,10 @@ void Mainwindow::on_horizontalSlider_sea_valueChanged(int value)
         */
 
 
-void Mainwindow::on_toolButton_exit_clicked()
-{
-    processing->stopThread();
-    processing->wait();
-    ExitProgram();
-}
+//void Mainwindow::on_toolButton_exit_clicked()
+//{
+
+//}
 
 //void Mainwindow::on_toolButton_setting_clicked()
 //{
@@ -3159,22 +3095,22 @@ void Mainwindow::on_toolButton_exit_clicked()
         */
 
 
-void Mainwindow::on_toolButton_xl_nguong_toggled(bool checked)
-{
-    pRadar->setAutorgs(checked);
-    if(checked)
-    {
-        //        ui->horizontalSlider_gain->setVisible(false);
-        //        ui->horizontalSlider_rain->setVisible(false);
-        //        ui->horizontalSlider_sea->setVisible(false);
-    }
-    else
-    {
-        //        ui->horizontalSlider_gain->setVisible(true);
-        //        ui->horizontalSlider_rain->setVisible(true);
-        //        ui->horizontalSlider_sea->setVisible(true);
-    }
-}
+//void Mainwindow::on_toolButton_xl_nguong_toggled(bool checked)
+//{
+//    pRadar->setAutorgs(checked);
+//    if(checked)
+//    {
+//        //        ui->horizontalSlider_gain->setVisible(false);
+//        //        ui->horizontalSlider_rain->setVisible(false);
+//        //        ui->horizontalSlider_sea->setVisible(false);
+//    }
+//    else
+//    {
+//        //        ui->horizontalSlider_gain->setVisible(true);
+//        //        ui->horizontalSlider_rain->setVisible(true);
+//        //        ui->horizontalSlider_sea->setVisible(true);
+//    }
+//}
 
 void Mainwindow::on_toolButton_replay_toggled(bool checked)
 {
@@ -3195,7 +3131,21 @@ void Mainwindow::on_toolButton_replay_fast_toggled(bool checked)
 
 void Mainwindow::on_toolButton_record_toggled(bool checked)
 {
-    this->on_actionRecording_toggled(checked);
+    if(checked)
+    {
+
+        QDateTime now = QDateTime::currentDateTime();
+        QString filename = now.toString("dd.MM_hh.mm.ss")+
+                "_"+ui->label_range_resolution->text()+
+                "_"+ui->label_sn_type->text()+
+                "_"+ui->label_sn_param->text();
+        ui->label_record_file_name->setText(filename);
+        processing->startRecord("D:/HR2D/rec_"+filename+HR_FILE_EXTENSION);
+    }
+    else
+    {
+        processing->stopRecord();
+    }
 }
 
 void Mainwindow::on_toolButton_open_record_clicked()
@@ -3499,10 +3449,10 @@ void Mainwindow::on_toolButton_xl_dopler_toggled(bool checked)
 }
 
 
-void Mainwindow::on_toolButton_xl_nguong_3_toggled(bool checked)
-{
-    pRadar->noise_nornalize = checked;
-}
+//void Mainwindow::on_toolButton_xl_nguong_3_toggled(bool checked)
+//{
+//    pRadar->noise_nornalize = checked;
+//}
 
 //void Mainwindow::on_groupBox_3_currentChanged(int index)
 //{
@@ -3516,24 +3466,24 @@ void Mainwindow::on_toolButton_xl_dopler_2_toggled(bool checked)
 
 
 
-void Mainwindow::on_toolButton_reset_3_clicked()
-{
-    pRadar->resetTrack();
-    //    for(short i = 0;i<targetDisplayList.size();i++)
-    //    {
-    //        targetDisplayList.at(i)->deleteLater();
-    //    }
-    //    targetDisplayList.clear();
-}
+//void Mainwindow::on_toolButton_reset_3_clicked()
+//{
+//    pRadar->resetTrack();
+//    //    for(short i = 0;i<targetDisplayList.size();i++)
+//    //    {
+//    //        targetDisplayList.at(i)->deleteLater();
+//    //    }
+//    //    targetDisplayList.clear();
+//}
 
-void Mainwindow::on_toolButton_reset_2_clicked()
-{
-    pRadar->resetSled();
-}
-void Mainwindow::on_toolButton_vet_clicked(bool checked)
-{
-    pRadar->isSled = checked;
-}
+//void Mainwindow::on_toolButton_reset_2_clicked()
+//{
+//    pRadar->resetSled();
+//}
+//void Mainwindow::on_toolButton_vet_clicked(bool checked)
+//{
+//    pRadar->isSled = checked;
+//}
 
 void Mainwindow::on_label_status_warning_clicked()
 {
@@ -3549,16 +3499,16 @@ void Mainwindow::on_label_status_warning_clicked()
     }
 }
 
-void Mainwindow::on_toolButton_delete_target_clicked()
-{
-    /*if(targetList.at(selected_target_index)->isLost)
-            {
-                targetList.at(selected_target_index)->hide();
-            }
+//void Mainwindow::on_toolButton_delete_target_clicked()
+//{
+//    /*if(targetList.at(selected_target_index)->isLost)
+//            {
+//                targetList.at(selected_target_index)->hide();
+//            }
 
-            else*/
-    //    pRadar->mTrackList.at(targetDisplayList.at(selected_target_index)->trackId).isManual = false;
-}
+//            else*/
+//    //    pRadar->mTrackList.at(targetDisplayList.at(selected_target_index)->trackId).isManual = false;
+//}
 
 void Mainwindow::on_toolButton_tx_clicked()
 {
@@ -3573,10 +3523,10 @@ void Mainwindow::on_toolButton_tx_off_clicked()
     sendToRadarString(CConfig::getString("mRxCommand"));
 }
 
-void Mainwindow::on_toolButton_filter2of3_clicked(bool checked)
-{
-    pRadar->filter2of3 = checked;
-}
+//void Mainwindow::on_toolButton_filter2of3_clicked(bool checked)
+//{
+//    pRadar->filter2of3 = checked;
+//}
 
 
 
@@ -3619,18 +3569,18 @@ void Mainwindow::on_toolButton_export_data_clicked(bool checked)
 
 
 
-void Mainwindow::on_toolButton_auto_select_toggled(bool checked)
-{
-    setMouseMode(MouseAutoSelect,checked);
-    //    if(!checked)
-    //    {
-    //        this->setCursor(Qt::ArrowCursor);
-    //    }
-    //    else
-    //    {
-    //        this->setCursor(Qt::CrossCursor);
-    //    }
-}
+//void Mainwindow::on_toolButton_auto_select_toggled(bool checked)
+//{
+//    setMouseMode(MouseAutoSelect,checked);
+//    //    if(!checked)
+//    //    {
+//    //        this->setCursor(Qt::ArrowCursor);
+//    //    }
+//    //    else
+//    //    {
+//    //        this->setCursor(Qt::CrossCursor);
+//    //    }
+//}
 
 void Mainwindow::on_toolButton_ais_reset_clicked()
 {
@@ -3745,15 +3695,15 @@ void Mainwindow::on_toolButton_selfRotation_toggled(bool checked)
         pRadar->SelfRotationOff();
 }
 
-void Mainwindow::on_toolButton_scope_toggled(bool checked)
-{
-    setMouseMode(MouseScope,checked);
-}
+//void Mainwindow::on_toolButton_scope_toggled(bool checked)
+//{
+//    setMouseMode(MouseScope,checked);
+//}
 
-void Mainwindow::on_toolButton_manual_track_toggled(bool checked)
-{
-    setMouseMode(MouseAddingTrack,checked);
-}
+//void Mainwindow::on_toolButton_manual_track_toggled(bool checked)
+//{
+//    setMouseMode(MouseAddingTrack,checked);
+//}
 void Mainwindow::setMouseMode(mouseMode mode,bool isOn)
 {
     if(isOn)
@@ -5020,4 +4970,9 @@ void Mainwindow::on_toolButton_chong_nhieu_ppy_clicked(bool checked)
         sendToRadarHS((const char*)comand);
     }
     else sendToRadarHS("03abffff");
+}
+
+void Mainwindow::on_toolButton_record_clicked(bool checked)
+{
+
 }

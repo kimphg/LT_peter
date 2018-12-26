@@ -21,11 +21,18 @@ StatusWindow::StatusWindow(dataProcessingThread *radar,QWidget *parent) :
     command[6]=0x00;
     command[7]=0x00;
     this->setWindowFlags(Qt::WindowStaysOnTopHint);
-
+    ui->tableView->
 }
 void StatusWindow::closeEvent(QCloseEvent *event)
 {
     killTimer(timerId);
+}
+
+void StatusWindow::readGlobalStatus()
+{
+    radarStatus_3C* mRadarStat = mRadar->mRadarStat;
+
+    mRadarStat->msgGlobal[0];
 }
 /*
 1. DDS: aaab03cc
@@ -94,11 +101,11 @@ void StatusWindow::sendReq()
 */
 bool StatusWindow::receiveRes()
 {
-    unsigned char* header = mRadar->mRadarData->mHeader;
-    int moduleIndex = header[1];
-    int paramIndex  = header[2];
-    int paramValue  = header[3];
-    int recvValue   = (header[7]<<8)+header[8];
+    unsigned char* signalFrameHeader = mRadar->mRadarData->mHeader;
+    int moduleIndex = signalFrameHeader[1];
+    int paramIndex  = signalFrameHeader[2];
+    int paramValue  = signalFrameHeader[3];
+    int recvValue   = (signalFrameHeader[7]<<8)+signalFrameHeader[8];
     recvAverage.push_back(recvValue);
     if(recvAverage.size()>10)recvAverage.pop_front();
     double recvAver=0;
@@ -206,7 +213,7 @@ void StatusWindow::timerEvent(QTimerEvent *event)
     warningBlink=!warningBlink;
     ansTrue = receiveRes();
     sendReq();
-
+    readGlobalStatus();
 }
 StatusWindow::~StatusWindow()
 {

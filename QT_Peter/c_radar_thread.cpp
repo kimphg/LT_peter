@@ -150,10 +150,12 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
     {
         if(mReceiveBuff[2]==0x65)// trang thai may 2-2
         {
+
             mRadarStat.ReadStatus22(&mReceiveBuff[4]);
         }
         if(mReceiveBuff[2]==0x27)// trang thai may 2-2
         {
+            if(len<24)return;
             mRadarStat.ReadStatusGlobal(&mReceiveBuff[0]);
             mRadarStat.gConnected++;
         }
