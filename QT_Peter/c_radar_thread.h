@@ -53,7 +53,6 @@ public:
 //        isStatChange = true;
 //        gConnected = 0;
         c22UpdateTime = clock();
-
     }
     void ReadStatusGlobal(uchar* mes)
     {
@@ -62,7 +61,6 @@ public:
     }
     //2-2 status
     int     mCheDoDK;
-//    bool    isStatChange ;
     int     mCaoApReady;
     int     mCaoApKetNoi;
     bool    mTaiAngTen;

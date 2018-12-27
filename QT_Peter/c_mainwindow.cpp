@@ -876,6 +876,12 @@ void Mainwindow::DrawDetectZones(QPainter* p)//draw radar target from pRadar->mT
         x1 = radCtX-rg;
         y1 = radCtY-rg;
         p->drawArc(x1,y1,rg*2,rg*2,int(azi-dazi)*5760/360,int(dazi*2)*5760/360);
+
+        if(CalcAziContour(azi,rg))
+        {
+
+
+        }
     }
 
 }
@@ -986,7 +992,6 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
                 if(track->mSpeedkmhFit>10){
                     sx = sx1+short(10*sinFast(track->courseRadFit));
                     sy = sy1-short(10*cosFast(track->courseRadFit));
-
                     p->drawLine(sx,sy,sx1,sy1);
                 }
 
@@ -1707,12 +1712,29 @@ void Mainwindow::DrawViewFrame(QPainter* p)
     if(CalcAziContour(radHeading,SCR_H-SCR_BORDER_SIZE-18))
     {
         p->setPen(QPen(Qt::cyan,2,Qt::SolidLine,Qt::RoundCap));
-        p->drawLine(radCtX,radCtY,
-                    points[1].x(),
-                points[1].y());
-        //p->drawText(720,60,200,20,0,"Heading: "+QString::number(mHeadingGPS,'f',1));
+//        p->drawLine(radCtX,radCtY,
+//                    points[1].x(),
+//                    points[1].y());
+        //p->setPen(QPen(Qt::magenta,2,Qt::SolidLine,Qt::RoundCap));
+        QPoint p1(radCtX+23*sin(radians(radHeading)),
+                  radCtY-23*cos(radians(radHeading)));
+        QPoint p2(radCtX+15*sin(radians(radHeading+30)),
+                  radCtY-15*cos(radians(radHeading+30)));
+        QPoint p3(radCtX+15*sin(radians(radHeading+150)),
+                  radCtY-15*cos(radians(radHeading+150)));
+        QPoint p4(radCtX+15*sin(radians(radHeading-150)),
+                  radCtY-15*cos(radians(radHeading-150)));
+        QPoint p5(radCtX+15*sin(radians(radHeading-30)),
+                  radCtY-15*cos(radians(radHeading-30)));
+        p->drawLine(p1,points[1]);
+        p->drawLine(p1,p2);
+        p->drawLine(p2,p3);
+        p->drawLine(p3,p4);
+        p->drawLine(p4,p5);
+        p->drawLine(p5,p1);
 
     }
+
 
 
 

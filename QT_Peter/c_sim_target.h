@@ -89,7 +89,6 @@ public:
 			outputFrame[a][(int)range + FRAME_LEN + 1 + FRAME_HEADER_SIZE] = dopler;
 			outputFrame[a][(int)range + FRAME_HEADER_SIZE] = value + int(distribNoise(generator));
 			outputFrame[a][(int)range + 1 + FRAME_HEADER_SIZE] = value + int(distribNoise(generator));
-			
 			k++;
 		}
 	}
@@ -135,8 +134,6 @@ public:
 		//
 		azi = ConvXYToAziRd(x, y) / 3.141592653589*1024.0;// +(distribAzi(generator));
 		range	= ConvXYToRg(x, y) / rResolution;
-		
-		
 		generateSignal();
 	}
 	~target_t();

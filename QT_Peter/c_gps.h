@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef C_GPS_H
 #define C_GPS_H
 #define DEG_RAD 57.295779513
-#define radians(x) (x/57.295779513)
-#define degrees(x) (x*57.295779513)
+#define radians(x) ((x)/57.295779513)
+#define degrees(x) ((x)*57.295779513)
 #define  sq(x) (x*x)
 #include<time.h>
 #define millis() clock()
