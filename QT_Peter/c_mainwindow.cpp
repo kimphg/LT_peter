@@ -871,17 +871,21 @@ void Mainwindow::DrawDetectZones(QPainter* p)//draw radar target from pRadar->mT
         rotateVector(trueShift,&sx,&sy);*/
         int x1 = radCtX-rg;
         int y1 = radCtY-rg;
-        p->drawArc(x1,y1,rg*2,rg*2,int(azi-dazi)*5760/360,int(dazi*2)*5760/360);
+        p->drawArc(x1,y1,rg*2,rg*2,(azi-dazi)*5760/360,int(dazi*2)*5760/360);
         rg+=(drg*2);
         x1 = radCtX-rg;
         y1 = radCtY-rg;
-        p->drawArc(x1,y1,rg*2,rg*2,int(azi-dazi)*5760/360,int(dazi*2)*5760/360);
+        p->drawArc(x1,y1,rg*2,rg*2,(azi-dazi)*5760/360,int(dazi*2)*5760/360);
 
-        if(CalcAziContour(azi,rg))
-        {
-
-
-        }
+        azi = (trueShiftDeg+dw->aziDeg);
+        p->drawLine(radCtX+rg*sin(radians(azi-dazi)),
+                    radCtY-rg*cos(radians(azi-dazi)),
+                    radCtX+(rg-2*drg)*sin(radians(azi-dazi)),
+                    radCtY-(rg-2*drg)*cos(radians(azi-dazi)));
+        p->drawLine(radCtX+rg*sin(radians(azi+dazi)),
+                    radCtY-rg*cos(radians(azi+dazi)),
+                    radCtX+(rg-2*drg)*sin(radians(azi+dazi)),
+                    radCtY-(rg-2*drg)*cos(radians(azi+dazi)));
     }
 
 }
@@ -1711,7 +1715,7 @@ void Mainwindow::DrawViewFrame(QPainter* p)
 
     if(CalcAziContour(radHeading,SCR_H-SCR_BORDER_SIZE-18))
     {
-        p->setPen(QPen(Qt::cyan,2,Qt::SolidLine,Qt::RoundCap));
+        p->setPen(QPen(Qt::cyan,1,Qt::SolidLine,Qt::RoundCap));
 //        p->drawLine(radCtX,radCtY,
 //                    points[1].x(),
 //                    points[1].y());
