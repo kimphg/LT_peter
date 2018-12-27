@@ -20,14 +20,13 @@ dataProcessingThread::~dataProcessingThread()
 
 void dataProcessingThread::ReadDataBuffer()
 {
+
+    short nread = 0;
     if(iRec!=iRead)
     {
-        connect_timeout = 4;
-    }else
-    {
-        if(connect_timeout)connect_timeout--;
+        if(isPaused)return;
+        mStat.c21UpdateTime = clock();
     }
-    short nread = 0;
     while(iRec!=iRead)
     {
         nread++;
@@ -41,8 +40,8 @@ void dataProcessingThread::ReadDataBuffer()
         unsigned short dataLen = dataB[iRead].len;
         if(!isPlaying)
         {
-            mRadarData->processSocketData(pData,dataLen);
 
+            mRadarData->processSocketData(pData,dataLen);
             if(isRecording)
             {
                 signRecFile.write((char*)&dataLen,2);
@@ -94,7 +93,6 @@ dataProcessingThread::dataProcessingThread()
     isXuLyThuCap = false;
     dataBuff = &dataB[0];
     iRec=0;iRead=0;
-    connect_timeout = 0;
 //    pIsDrawn = &isDrawn;
 //    isDrawn = true;
     pIsPlaying = &isPlaying;
@@ -127,7 +125,7 @@ dataProcessingThread::dataProcessingThread()
     connect(&commandSendTimer, &QTimer::timeout, this, &dataProcessingThread::PushCommandQueue);
     commandSendTimer.start(100);
     connect(&readUdpBuffTimer, &QTimer::timeout, this, &dataProcessingThread::ReadDataBuffer);
-    readUdpBuffTimer.start(10);
+    readUdpBuffTimer.start(20);
     initSerialComm();
 }
 void dataProcessingThread::ReadNavData()
@@ -151,13 +149,13 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
         if(mReceiveBuff[2]==0x65)// trang thai may 2-2
         {
 
-            mRadarStat.ReadStatus22(&mReceiveBuff[4]);
+            mStat.ReadStatus22(&mReceiveBuff[4]);
         }
-        if(mReceiveBuff[2]==0x27)// trang thai may 2-2
+        if(mReceiveBuff[2]==0x03)// trang thai may 2-2
         {
             if(len<24)return;
-            mRadarStat.ReadStatusGlobal(&mReceiveBuff[0]);
-            mRadarStat.gConnected++;
+            mStat.ReadStatusGlobal(&mReceiveBuff[4]);
+
         }
     }
     else if(mReceiveBuff[0]=='$'
@@ -169,7 +167,7 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
         QStringList tokens = message.split(',');
         if(tokens.size()<7)return;
         if(tokens[6]=="A")CConfig::shipSpeed = tokens[4].toDouble();
-        //std::cout<<speed;
+        mStat.cVeloUpdateTime = clock();
     }
     else if(mReceiveBuff[0]=='$'
             &&mReceiveBuff[3]=='V'
@@ -181,10 +179,11 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
         if(tokens.size()<9)return;
         if(tokens[6]=="N")CConfig::shipSpeed = tokens[5].toDouble();
         if(tokens[2]=="T")CConfig::shipCourseDeg = tokens[1].toDouble();
-        //std::cout<<speed;
+        mStat.cVeloUpdateTime = clock();
     }
     else if(mReceiveBuff[0]==0x5a&&mReceiveBuff[1]==0xa5&&mReceiveBuff[31]==0xAA&&len>=32)//gyro messages
     {
+        mStat.cGyroUpdateTime = clock();
         CConfig::shipHeadingDeg = (((mReceiveBuff[6])<<8)|mReceiveBuff[7])/182.044444444;//*360.0/65535.0;
         int vy = (((mReceiveBuff[18])<<8)|mReceiveBuff[19]);
         int vx = (((mReceiveBuff[20])<<8)|mReceiveBuff[21]);
@@ -200,8 +199,9 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
         {
             if(mGPS.decode(mReceiveBuff[i]))
             {
+               mStat.cGpsUpdateTime = clock();
                GPSData newGPSPoint;
-               mGPS.get_position(&(newGPSPoint.lat),&(newGPSPoint.lon),&(newGPSPoint.ageMili));
+               mGPS.get_position(&(newGPSPoint.lat),&(newGPSPoint.lon));
                newGPSPoint.heading =  mGPS.course()/100.0;
                while(mGpsData.size()>10)
                {
@@ -543,7 +543,9 @@ void dataProcessingThread::processARPAData(QByteArray inputdata)
     for(int i = 0;i<strlist.size()-1;i++)
         if(aisMessageHandler.ProcessNMEA(strlist.at(i)))
         {
-            AIS_object_t obj = aisMessageHandler.GetAisObject(); ;
+            mStat.cAisUpdateTime = clock();
+            AIS_object_t obj = aisMessageHandler.GetAisObject();
+
             QMutableListIterator<AIS_object_t> i(m_aisList);
             int elecount = 0;
             bool objExist = false;
@@ -559,7 +561,7 @@ void dataProcessingThread::processARPAData(QByteArray inputdata)
                     obj.isSelected = oldObj.isSelected;
                     if(obj.mName.isEmpty()&&(!oldObj.mName.isEmpty()))
                         obj.mName = oldObj.mName;
-                    obj.mAgeMillis = clock();
+                    obj.mUpdateTime = clock();
                     if(obj.mLat==0)obj.mLat = oldObj.mLat;
                     if(obj.mLong==0)obj.mLong = oldObj.mLong;
                     if(obj.mDst.isEmpty())
@@ -609,8 +611,8 @@ void dataProcessingThread::run()
 
     while(true)
     {
-        msleep(1);
-        if(isPaused)continue;
+
+        //int nframe=0;
         while(radarSocket->hasPendingDatagrams())
         {
             int len = radarSocket->pendingDatagramSize();
@@ -623,12 +625,17 @@ void dataProcessingThread::run()
             else if(len<=MAX_FRAME_SIZE)
             {
                 dataB[iRec].len = len;
+
                 radarSocket->readDatagram(( char*)&(dataB[iRec].data[0]),len);
+
                 iRec++;
                 if(iRec>=MAX_IREC)iRec = 0;
+                //nframe++;
             }
 
         }
+
+
 
     }
 
@@ -882,7 +889,15 @@ void dataProcessingThread::stopRecord()
 
 radarStatus_3C::radarStatus_3C()
 {
-    isStatChange = false;
+//    isStatChange = false;
+    memset(&(msgGlobal[0]),0,32);
+    cAisUpdateTime  = clock();
+    cGpsUpdateTime  = clock();
+    c22UpdateTime   = clock();
+    c21UpdateTime   = clock();
+    cBHUpdateTime   = clock();
+    cGyroUpdateTime = clock();
+    cVeloUpdateTime = clock();
 }
 
 radarStatus_3C::~radarStatus_3C()

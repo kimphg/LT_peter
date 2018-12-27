@@ -35,6 +35,7 @@ private:
     Ui::StatusWindow *ui;
     void sendReq();
     bool receiveRes();
+    void readConectionStat();
 };
 
 #endif // STATUSWINDOW_H

@@ -18,7 +18,7 @@ static QPen penYellow(QBrush(QColor(255,255,50 ,255)),1);
 static QPen mGridViewPen1(QBrush(QColor(150,150,150,255)),1);
 static clock_t clkBegin = clock();
 static clock_t clkEnd = clock();
-static int frameRate = 20;
+static clock_t paintTime = 20;
 static QStringList                 commandLogList;
 static QTransform                  mTrans;
 static QPixmap                     *pMap=nullptr;// painter cho ban do
@@ -199,7 +199,7 @@ void Mainwindow::drawAisTarget(QPainter *p)
         AIS_object_t aisObj = *iter;
         iter++;
 
-        if(aisObj.mAgeMillis>300000)continue;
+        if(aisObj.mUpdateTime>300000)continue;
         double fx,fy;
         ConvWGSToKm(&fx,&fy,aisObj.mLong,aisObj.mLat);
         short x = (fx*mScale);//+;
@@ -1133,7 +1133,7 @@ void Mainwindow::UpdateMouseStat(QPainter *p)
 
 void Mainwindow::paintEvent(QPaintEvent *event)
 {
-
+    CConfig::time_now_ms  = QDateTime::currentMSecsSinceEpoch();
     clkBegin = clock();
     //printf("paint:%ld\n",clkBegin);
     QPainter p(this);
@@ -1187,7 +1187,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     DrawViewFrame(&p);
     DrawIADArea(&p);
     clkEnd = clock();
-    frameRate = (CLOCKS_PER_SEC/(clkEnd-clkBegin));
+    paintTime = (clkEnd-clkBegin);
 }
 void Mainwindow::DrawIADArea(QPainter* p)
 {
@@ -1788,6 +1788,8 @@ void Mainwindow::DisplayClkAdc(int clk)
 }
 void Mainwindow::UpdateVideo()
 {
+
+    //clock_t ageVideo = clock()-pRadar->mUpdateTime;
     if(!processing->getIsDrawn())
     {
         if(pRadar->isClkAdcChanged)
@@ -1800,7 +1802,6 @@ void Mainwindow::UpdateVideo()
             pRadar->isClkAdcChanged = false;
         }
         pRadar->UpdateData();
-        CConfig::time_now_ms  = QDateTime::currentMSecsSinceEpoch() - pRadar->time_start_ms;
         repaint();
     }
 
@@ -2179,14 +2180,12 @@ void Mainwindow::autoSwitchFreq()
 
 
 }//label_data_range_2
-int failCounter = 0;
-void Mainwindow::UpdateDataStatus()
+void Mainwindow::UpdateMay22Status()
 {
-    if(processing->mRadarStat.isStatChanged())
+    clock_t ageMay22 = processing->mStat.getAge22();
+    if(ageMay22<3000)
     {
-        failCounter=0;
-
-        if(processing->mRadarStat.mMayPhatOK)
+        if(processing->mStat.mMayPhatOK)
         {
             ui->label_status_may_22->setStyleSheet("color: rgb(10, 255, 10);");
             ui->label_status_may_22->setText(QString::fromUtf8("Máy phát hoạt động bình thường"));
@@ -2196,28 +2195,26 @@ void Mainwindow::UpdateDataStatus()
             ui->label_status_may_22->setStyleSheet("color: rgb(255, 10, 10);");
             ui->label_status_may_22->setText(QString::fromUtf8("Máy phát không hoạt động"));
         }
-        if(processing->mRadarStat.mTaiAngTen==1)ui->toolButton_dk_2->setChecked(true);//tai ang ten
-        else if(processing->mRadarStat.mTaiAngTen==0)ui->toolButton_dk_13->setChecked(true);//tai tuong duong
-        if(processing->mRadarStat.mMaHieu==0)ui->toolButton_dk_11->setChecked(true);//ma hieu
-        else if(processing->mRadarStat.mMaHieu==1)ui->toolButton_dk_16->setChecked(true);//ma hieu
-        else if(processing->mRadarStat.mMaHieu==2)ui->toolButton_dk_17->setChecked(true);//ma hieu
-        if(processing->mRadarStat.mSuyGiam==7)ui->toolButton_dk_3->setChecked(true);//suy giam
-        else if(processing->mRadarStat.mSuyGiam==6)ui->toolButton_dk_4->setChecked(true);//suy giam
-        else if(processing->mRadarStat.mSuyGiam==5)ui->toolButton_dk_5->setChecked(true);//suy giam
-        else if(processing->mRadarStat.mSuyGiam==4)ui->toolButton_dk_6->setChecked(true);//suy giam
-        else if(processing->mRadarStat.mSuyGiam==3)ui->toolButton_dk_7->setChecked(true);//suy giam
-        else if(processing->mRadarStat.mSuyGiam==2)ui->toolButton_dk_8->setChecked(true);//suy giam
-        else if(processing->mRadarStat.mSuyGiam==1)ui->toolButton_dk_9->setChecked(true);//suy giam
-        if(processing->mRadarStat.mCaoApKetNoi==0)ui->toolButton_dk_15->setChecked(true);//cao ap
-        else if(processing->mRadarStat.mCaoApKetNoi==1)ui->toolButton_dk_10->setChecked(true);//cao ap
-        else if(processing->mRadarStat.mCaoApKetNoi==2)ui->toolButton_dk_14->setChecked(true);//cao ap
+        if(processing->mStat.mTaiAngTen==1)ui->toolButton_dk_2->setChecked(true);//tai ang ten
+        else if(processing->mStat.mTaiAngTen==0)ui->toolButton_dk_13->setChecked(true);//tai tuong duong
+        if(processing->mStat.mMaHieu==0)ui->toolButton_dk_11->setChecked(true);//ma hieu
+        else if(processing->mStat.mMaHieu==1)ui->toolButton_dk_16->setChecked(true);//ma hieu
+        else if(processing->mStat.mMaHieu==2)ui->toolButton_dk_17->setChecked(true);//ma hieu
+        if(processing->mStat.mSuyGiam==7)ui->toolButton_dk_3->setChecked(true);//suy giam
+        else if(processing->mStat.mSuyGiam==6)ui->toolButton_dk_4->setChecked(true);//suy giam
+        else if(processing->mStat.mSuyGiam==5)ui->toolButton_dk_5->setChecked(true);//suy giam
+        else if(processing->mStat.mSuyGiam==4)ui->toolButton_dk_6->setChecked(true);//suy giam
+        else if(processing->mStat.mSuyGiam==3)ui->toolButton_dk_7->setChecked(true);//suy giam
+        else if(processing->mStat.mSuyGiam==2)ui->toolButton_dk_8->setChecked(true);//suy giam
+        else if(processing->mStat.mSuyGiam==1)ui->toolButton_dk_9->setChecked(true);//suy giam
+        if(processing->mStat.mCaoApKetNoi==0)ui->toolButton_dk_15->setChecked(true);//cao ap
+        else if(processing->mStat.mCaoApKetNoi==1)ui->toolButton_dk_10->setChecked(true);//cao ap
+        else if(processing->mStat.mCaoApKetNoi==2)ui->toolButton_dk_14->setChecked(true);//cao ap
     }
     else
     {
-        if(failCounter>5)ui->label_status_may_22->setText(QString::fromUtf8("Chưa có kết nối"));
-        else
-            failCounter++;
-
+        ui->label_status_may_22->setStyleSheet("color: rgb(255, 10, 10);");
+        ui->label_status_may_22->setText(QString::fromUtf8("Mất kết nối máy phát ")+QString::number(ageMay22/1000));
     }
 }
 void Mainwindow::ViewTrackInfo()
@@ -2341,14 +2338,17 @@ void Mainwindow::ViewTrackInfo()
 }
 void Mainwindow::sync1S()//period 1 second
 {
-    UpdateDataStatus();
+    UpdateMay22Status();
     UpdateGpsData();
     ViewTrackInfo();
-    int sampleTime = CLOCKS_PER_SEC*1.4/frameRate;
+    // update rate
+    int sampleTime = 10*paintTime/7;
     if(sampleTime<25)sampleTime=25;
     timerVideoUpdate.start(sampleTime);
     timerMetaUpdate.start(sampleTime*4);
     ui->label_frame_rate->setText("FR:"+QString::number(1000/sampleTime));
+
+    //target manager
     if(ui->toolButton_chi_thi_mt->isChecked())mTargetMan.OutputTargetToKasu();
     if(isScaleChanged ) {
 
@@ -2356,67 +2356,9 @@ void Mainwindow::sync1S()//period 1 second
         isScaleChanged = false;
     }
     ui->label_speed_2->setText(QString::number(pRadar->rotation_per_min,'f',1)+"v/p");
-    return;
-    //    this->updateTargetInfo();
-    if(processing->isConnected())
-        setRadarState(CONNECTED);
-    else
-        setRadarState(DISCONNECTED);
-    if(warningList.size())
-    {
-        ui->label_status_warning->setText(warningList.at(warningList.size()-1));
-        ui->label_status_warning->setStyleSheet("background-color: rgb(230, 160, 10);");
-        if(ui->label_status_warning->isHidden())ui->label_status_warning->setHidden(false);
-        else ui->label_status_warning->setHidden(true);
-    }
-
-
-
     showTime();
-    /*
-    // display radar temperature:
-    temperature[pRadar->tempType] = pRadar->moduleVal;
+    return;
 
-    //    ui->label_noiseAverrage->setText(QString::number(pRadar->getNoiseAverage(),'f',1));
-    ui->label_temp->setText(QString::number(pRadar->tempType)
-                            +"|"+QString::number(pRadar->moduleVal,'f',0)
-                            + QString::fromLocal8Bit("\260 C"));
-    // request radar temperature:
-    if(radar_state!=DISCONNECTED)
-    {
-        if(ui->toolButton_temp_update->isChecked())
-        {
-            processing->radRequestTemp(curTempIndex);
-            curTempIndex++;
-            if(curTempIndex>4)curTempIndex=0;
-        }
-        QByteArray array((char*)pRadar->getFeedback(), 8);
-        QString commandLog = QString(array.toHex());
-        ui->label_command->setText(commandLog);
-        cmLog->AddString(commandLog);
-    }
-
-
-    switch(radar_state)
-    {
-    case DISCONNECTED:
-        ui->label_status->setText(QString::fromUtf8("Chưa k. nối"));
-        //ui->toolButton_tx->setEnabled(false);
-        //        ui->toolButton_scan->setEnabled(false);
-        if(!warningList.size())warningList.push_back(QString::fromUtf8("Chưa kết nối radar"));
-        m_udpSocket->writeDatagram("d",1,QHostAddress("127.0.0.1"),8001);
-        break;
-    case CONNECTED:
-        //printf("\ns_tx");
-        //ui->label_status_warning->setText(QString::fromUtf8("Đã kết nối radar"));
-        ui->label_status->setText(QString::fromUtf8("sẵn sàng"));
-        //ui->label_status_warning->setHidden(false);
-
-        m_udpSocket->writeDatagram("c",1,QHostAddress("127.0.0.1"),8001);
-        break;
-    default:
-        break;
-    }*/
     ui->label_debug_data->setText("Chu ky: "+QString::number(pRadar->chu_ky));
     unsigned int chuKy = 1000000/(pRadar->chu_ky*(pow(2,pRadar->clk_adc))/10.0);
 
@@ -3811,14 +3753,16 @@ void Mainwindow::on_toolButton_gps_update_auto_clicked()
 void Mainwindow::UpdateGpsData()
 {
 
-    if(processing->mGpsData.size()>5)
+    if(processing->mGpsData.size())
     {
 
         GPSData data = processing->mGpsData.back();
         if(processing->mGpsData.size()>10)processing->mGpsData.pop();
         SetGPS(data.lat, data.lon);
-        if(data.ageMili<5000)   ui->groupBox_gps->setTitle(QString::fromUtf8("GPS(đã kết nối)"));
-        else                    ui->groupBox_gps->setTitle(QString::fromUtf8("GPS(mất kết nối)"));
+        clock_t gpsAge = clock()-processing->mStat.cGpsUpdateTime;
+        //processing->mStat.cAisAge = gpsAge;
+        if(gpsAge<3000)   ui->groupBox_gps->setTitle(QString::fromUtf8("GPS"));
+        else              ui->groupBox_gps->setTitle(QString::fromUtf8("GPS(mất kết nối ")+QString::number(gpsAge/1000)+")");
     }
 }
 void Mainwindow::on_toolButton_set_zoom_ar_size_clicked()
@@ -4585,7 +4529,7 @@ void Mainwindow::on_toolButton_start_simulation_start_clicked(bool checked)
     if(checked)
     {
         simulator->play();//todo: stop receving signal
-        processing->stopThread();
+        processing->isPaused = true;
     }
 }
 
@@ -4850,6 +4794,7 @@ void Mainwindow::on_toolButton_start_simulation_stop_clicked(bool checked)
     if(checked)
     {
         simulator->pause();
+        processing->isPaused = false;
     }
 }
 
@@ -4873,10 +4818,10 @@ void Mainwindow::on_toolButton_sim_target_autogenerate_clicked()
     ui->doubleSpinBox_12->setValue(5+(rand()%300)/2.0);
     ui->doubleSpinBox_22->setValue(5+(rand()%300)/2.0);
     ui->doubleSpinBox_32->setValue(5+(rand()%300)/2.0);
-    ui->doubleSpinBox_42->setValue((rand()%720)/2.0);
-    ui->doubleSpinBox_52->setValue((rand()%720)/2.0);
-    ui->doubleSpinBox_62->setValue((rand()%720)/2.0);
-    ui->doubleSpinBox_72->setValue((rand()%720)/2.0);
+    ui->doubleSpinBox_42->setValue((rand()%300)/2.0);
+    ui->doubleSpinBox_52->setValue((rand()%300)/2.0);
+    ui->doubleSpinBox_62->setValue((rand()%300)/2.0);
+    ui->doubleSpinBox_72->setValue((rand()%300)/2.0);
 
     ui->doubleSpinBox_3->setValue((rand()%720)/2.0);
     ui->doubleSpinBox_13->setValue((rand()%720)/2.0);
@@ -4887,14 +4832,14 @@ void Mainwindow::on_toolButton_sim_target_autogenerate_clicked()
     ui->doubleSpinBox_63->setValue((rand()%720)/2.0);
     ui->doubleSpinBox_73->setValue((rand()%720)/2.0);
 
-    ui->doubleSpinBox_4->setValue((rand()%60)/2.0);
-    ui->doubleSpinBox_14->setValue((rand()%60)/2.0);
-    ui->doubleSpinBox_24->setValue((rand()%60)/2.0);
-    ui->doubleSpinBox_34->setValue((rand()%60)/2.0);
-    ui->doubleSpinBox_44->setValue((rand()%720)/2.0);
-    ui->doubleSpinBox_54->setValue((rand()%720)/2.0);
-    ui->doubleSpinBox_64->setValue((rand()%720)/2.0);
-    ui->doubleSpinBox_74->setValue((rand()%720)/2.0);
+    ui->doubleSpinBox_4->setValue((rand()%50)/2.0);
+    ui->doubleSpinBox_14->setValue((rand()%50)/2.0);
+    ui->doubleSpinBox_24->setValue((rand()%50)/2.0);
+    ui->doubleSpinBox_34->setValue((rand()%50)/2.0);
+    ui->doubleSpinBox_44->setValue((rand()%50)/2.0);
+    ui->doubleSpinBox_54->setValue((rand()%50)/2.0);
+    ui->doubleSpinBox_64->setValue((rand()%50)/2.0);
+    ui->doubleSpinBox_74->setValue((rand()%50)/2.0);
     updateSimTargetStatus();
 
 }
@@ -4911,13 +4856,14 @@ void Mainwindow::on_toolButton_chong_nhieu_1_clicked(bool checked)
     {
         uchar depth = ui->horizontalSlider_varu_depth->value();
         uchar width = ui->horizontalSlider_varu_width->value();
-        uchar comand[5];
+        uchar comand[8];
         comand[0] = 0x29;
         comand[1] = 0xab;
         comand[2] = 0x01;
         comand[3] = width;
         comand[4] = depth;
-        sendToRadarHS((const char*)comand);
+        processing->sendCommand(&comand[0]);
+        //sendToRadarHS((const char*)comand);
     }
     else
     {
@@ -4958,7 +4904,7 @@ void Mainwindow::on_toolButton_chong_nhieu_ppy_clicked(bool checked)
     if(checked)
     {
         uchar gain = 100-ui->horizontalSlider_ppy_gain->value();
-        uchar comand[5];
+        uchar comand[8];
         comand[0] = 0x03;
         comand[1] = 0xab;
         if(gain<=63)comand[2] = gain;
@@ -4967,7 +4913,7 @@ void Mainwindow::on_toolButton_chong_nhieu_ppy_clicked(bool checked)
         else        comand[3] = gain-63;
 
         comand[4] = 0;
-        sendToRadarHS((const char*)comand);
+        processing->sendCommand(&comand[0],8);
     }
     else sendToRadarHS("03abffff");
 }

@@ -62,7 +62,7 @@
 #include <QImage>
 #include <QDateTime>
 #include <QFile>
-//#include <Eigen/Dense>
+#include <time.h>
 #include <queue>
 //#include <c_target_manager.h>
 inline double sinFast(double a)
@@ -100,7 +100,7 @@ inline double ConvXYToAziRd(double x, double y)
 typedef struct
 {
     int trackCount;
-    uint timeStart;
+    qint64 timeStart;
     double xkm,ykm;
     double aziDeg,rg;
     double maxDrg,maxDazDeg;
@@ -130,7 +130,7 @@ typedef struct  {
     //    float          terrain;
     double           rgStdEr;
     double           aziStdEr;
-    long long          timeMs;
+    qint64          timeMs;
     //    float           scorepObj,scorep2;
     //    float scoreTrack;
     unsigned long int period;
@@ -218,92 +218,7 @@ public:
 //    uint time;
     int uniqId;
     bool isUpdating;
-    void update(uint now_ms)
-    {
-        isUpdating = true;
-        ageMs=now_ms-lastTimeMs;
-        if(ageMs>180000)
-            mState = TrackState::removed;
-        else
-            if(ageMs>120000)
-                mState = TrackState::lost;
-        if(possibleMaxScore>0)
-        {
-            if(now_ms-possibleObj.timeMs>300)
-            {
-                objectList.push_back(possibleObj);
-                while(objectList.size()>4)
-                {
-                    objectList.erase(objectList.begin());
-
-                }
-                if(objectList.size()>3)         mState = TrackState::confirmed;
-                lastTimeMs = possibleObj.timeMs;
-                if((lastTimeMs-objectHistory.back().timeMs)>60000)
-                    objectHistory.push_back(possibleObj);
-                possibleMaxScore = 0;
-                if(objectList.size()<4)
-                {//new target
-                    object_t* obj1  = &(objectList.back());
-                    object_t* obj2  = &(objectList.back())-1;
-                    double dx       = obj1->xkm - obj2->xkm;
-                    double dy       = obj1->ykm - obj2->ykm;
-                    double dtime    = (obj1->timeMs-obj2->timeMs)/3600000.0;
-                    rgSpeedkmh      = (obj1->rgKm-obj2->rgKm)/dtime;
-                    //speed param
-                    mSpeedkmhFit    = sqrt(dx*dx+dy*dy)/dtime;
-                    sko_spd         = mSpeedkmhFit/2.0;
-                    //course param
-                    courseRadFit    = ConvXYToAziRd(dx,dy);
-                    courseDeg = degrees(courseRadFit);
-                    sko_cour = 30.0;
-                    //xy coordinates
-                    xkm             = obj1->xkm;
-                    ykm             = obj1->ykm;
-                    //range
-                    rgKm            = ConvXYToRg(xkm,ykm);
-                    sko_rgKm          = obj1->rgStdEr;
-                    //azi
-                    aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
-                    sko_aziDeg         = degrees((obj1->aziStdEr));
-                }
-                else
-                {
-                    LinearFit();
-                    object_t* obj1  = &(objectList.back());
-                    object_t* obj2  = &(objectList.back())-3;
-                    double dx       = obj1->xkm - obj2->xkm;
-                    double dy       = obj1->ykm - obj2->ykm;
-                    double dtime    = (obj1->timeMs-obj2->timeMs)/3600000.0;
-                    rgSpeedkmh      = (obj1->rgKm-obj2->rgKm)/dtime;
-                    //speed param
-                    double mSpeedkmhFitNew    = sqrt(dx*dx+dy*dy)/dtime;
-                    double sko_spdNew = abs(mSpeedkmhFitNew-mSpeedkmhFit);
-                    sko_spd         +=(sko_spdNew-sko_spd)/5.0;
-                    mSpeedkmhFit    +=(mSpeedkmhFitNew-mSpeedkmhFit)/2.0;
-                    //course param
-                    courseRadFit   = ConvXYToAziRd(dx,dy);
-                    double courseDegNew = degrees(courseRadFit);
-                    double sko_courNew = abs(courseDegNew-courseDeg);
-                    courseDeg       +=(courseDegNew-courseDeg)/2.0;
-                    sko_cour        +=(sko_courNew-sko_cour)/5.0;
-                    //xy
-                    xkm             = obj1->xkm;
-                    ykm             = obj1->ykm;
-                    //range
-                    rgKm            = ConvXYToRg(xkm,ykm);
-                    double sko_rgNew         = abs(rgKm-obj1->rgKm);
-                    sko_rgKm+=(sko_rgNew-sko_rgKm)/5.0;
-                    //azi
-                    aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
-                    double sko_aziNew         = abs(aziDeg-degrees(obj1->azRad));
-                    sko_aziDeg += (sko_aziNew-sko_aziDeg)/5.0;
-                }
-            }
-
-        }
-        isUpdating = false;
-    }
+    void update();
     //uint  dtime;
     double lineScore;
     double mSpeedkmhFit;
@@ -319,7 +234,7 @@ public:
     double                  sko_rgKm;
     double                  sko_spd;
     double                  sko_cour;
-    uint          lastTimeMs;
+    qint64                  lastTimeMs;
     void LinearFit();
     void addPossible(object_t *obj, double score);
     double LinearFitCost(object_t *myobj);
@@ -355,12 +270,12 @@ public:
     std::vector<object_t>       mFreeObjList;
     unsigned     long int       mPeriodCount;
     float rgStdErr;
-    qint64 time_start_ms;
+//    qint64 time_start_ms;
     double sn_scale;
     bool isTrueHeading;
     bool isDrawn;
     //    double mShipHeading;
-    uint   now_ms ;
+
     //    bool                    isEncoderAzi;
     //    int                     mEncoderAzi;
     unsigned char           mHeader[FRAME_HEADER_SIZE];

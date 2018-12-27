@@ -24,7 +24,38 @@ int C_primary_track::IDCounter =1;
 static int sumvar = 0;
 static int nNoiseCalculator = 0;
 static short lastProcessAzi = 0;
+static short curIdCount = 1;
+static qint64 cur_rot_timeMSecs ;//= QDateTime::currentMSecsSinceEpoch();
 
+static float                   rot_period_sec =0;
+static short histogram[256];
+qint64   now_ms ;
+typedef struct  {
+    //processing dataaziQueue
+    unsigned char level [MAX_AZIR][RADAR_RESOLUTION];
+    unsigned char may_hoi[MAX_AZIR][RADAR_RESOLUTION];
+    unsigned char level_disp [MAX_AZIR][RADAR_RESOLUTION];
+    bool          detect[MAX_AZIR][RADAR_RESOLUTION];
+    //unsigned char rainLevel[MAX_AZIR][RADAR_RESOLUTION];
+    unsigned char dopler[MAX_AZIR][RADAR_RESOLUTION];
+    unsigned char terrain[MAX_AZIR][RADAR_RESOLUTION];
+    //    unsigned char dopler_old[MAX_AZIR][RADAR_RESOLUTION];
+    //    unsigned char dopler_old2[MAX_AZIR][RADAR_RESOLUTION];
+    unsigned char sled[MAX_AZIR][RADAR_RESOLUTION];
+    unsigned char hot[MAX_AZIR][RADAR_RESOLUTION];
+    unsigned char hot_disp[MAX_AZIR][RADAR_RESOLUTION];
+    short         plotIndex[MAX_AZIR][RADAR_RESOLUTION];
+    //display data
+    unsigned char display_ray [RAD_DISPLAY_RES][3];//0 - signal, 1- dopler, 2 - sled;
+    unsigned char display_ray_zoom [DISPLAY_RES_ZOOM][3];
+    unsigned char display_mask [RAD_DISPLAY_RES*2+1][RAD_DISPLAY_RES*2+1];
+    unsigned char display_mask_zoom [DISPLAY_RES_ZOOM*2+1][DISPLAY_RES_ZOOM*2+1];
+    short xkm[MAX_AZIR_DRAW][RAD_DISPLAY_RES+1];
+    short ykm[MAX_AZIR_DRAW][RAD_DISPLAY_RES+1];
+    short xzoom[MAX_AZIR_DRAW][DISPLAY_RES_ZOOM];
+    short yzoom[MAX_AZIR_DRAW][DISPLAY_RES_ZOOM];
+} signal_map_t;
+static signal_map_t data_mem;
 /*
 +-------+-----------+-----------------------------------------------------+
 |       |           |                                                     |
@@ -130,37 +161,8 @@ static short lastProcessAzi = 0;
 |       |           |                                                     |
 +-------+-----------+-----------------------------------------------------+
 */
-typedef struct  {
-    //processing dataaziQueue
-    unsigned char level [MAX_AZIR][RADAR_RESOLUTION];
-    unsigned char may_hoi[MAX_AZIR][RADAR_RESOLUTION];
-    unsigned char level_disp [MAX_AZIR][RADAR_RESOLUTION];
-    bool          detect[MAX_AZIR][RADAR_RESOLUTION];
-    //unsigned char rainLevel[MAX_AZIR][RADAR_RESOLUTION];
-    unsigned char dopler[MAX_AZIR][RADAR_RESOLUTION];
-    unsigned char terrain[MAX_AZIR][RADAR_RESOLUTION];
-    //    unsigned char dopler_old[MAX_AZIR][RADAR_RESOLUTION];
-    //    unsigned char dopler_old2[MAX_AZIR][RADAR_RESOLUTION];
-    unsigned char sled[MAX_AZIR][RADAR_RESOLUTION];
-    unsigned char hot[MAX_AZIR][RADAR_RESOLUTION];
-    unsigned char hot_disp[MAX_AZIR][RADAR_RESOLUTION];
-    short         plotIndex[MAX_AZIR][RADAR_RESOLUTION];
-    //display data
-    unsigned char display_ray [RAD_DISPLAY_RES][3];//0 - signal, 1- dopler, 2 - sled;
-    unsigned char display_ray_zoom [DISPLAY_RES_ZOOM][3];
-    unsigned char display_mask [RAD_DISPLAY_RES*2+1][RAD_DISPLAY_RES*2+1];
-    unsigned char display_mask_zoom [DISPLAY_RES_ZOOM*2+1][DISPLAY_RES_ZOOM*2+1];
-    short xkm[MAX_AZIR_DRAW][RAD_DISPLAY_RES+1];
-    short ykm[MAX_AZIR_DRAW][RAD_DISPLAY_RES+1];
-    short xzoom[MAX_AZIR_DRAW][DISPLAY_RES_ZOOM];
-    short yzoom[MAX_AZIR_DRAW][DISPLAY_RES_ZOOM];
-} signal_map_t;
 
-static short curIdCount = 1;
-static qint64 cur_timeMSecs = 0;//QDateTime::currentMSecsSinceEpoch();
-static signal_map_t data_mem;
-static float                   rot_period_sec =0;
-static short histogram[256];
+
 void C_primary_track::addPossible(object_t *obj,double score)
 {
     possibleObj=(*obj);
@@ -169,7 +171,7 @@ void C_primary_track::addPossible(object_t *obj,double score)
 
 double C_primary_track::estimateScore(object_t *obj1,object_t *obj2)
 {
-    double dtime = (obj1->timeMs - obj2->timeMs);
+    double dtime = int(obj1->timeMs - obj2->timeMs);
     if(dtime<500)return -1;
     dtime/=3600000.0;//time in hours
     //ENVAR min time between plots in a line(1s)
@@ -181,7 +183,7 @@ double C_primary_track::estimateScore(object_t *obj1,object_t *obj2)
 
     double speedkmh = distancekm/(dtime);
     if(speedkmh>500)return -1;
-    double distanceCoeff = distancekm/(TARGET_MAX_SPEED_MARINE*dtime+ obj1->rgKm*AZI_ERROR_STD);
+    double distanceCoeff = distancekm/(TARGET_MAX_SPEED_MARINE*dtime+ 3*obj1->rgKm*AZI_ERROR_STD);
     if(distanceCoeff>1.0)return -1;
     double rgSpeedkmh = abs(obj1->rgKm - obj2->rgKm)/(dtime);
 
@@ -231,7 +233,7 @@ double C_primary_track::LinearFitCost(object_t *myobj)
     {
         y1[i] = obj[i]->xkm;
         y2[i] = obj[i]->ykm;
-        t[i] = obj[i]->timeMs;
+        t[i] = int(now_ms-obj[i]->timeMs);
     }
     double y1sum = 0;//r1+r2+r3;
     double y2sum = 0;
@@ -300,7 +302,7 @@ double C_primary_track::estimateScore(object_t *obj1)
     if(objectList.size()<2)
         return -1;
     object_t* obj2 = &(this->objectList.back());
-    double dtime = (obj1->timeMs - obj2->timeMs);
+    double dtime = int(obj1->timeMs - obj2->timeMs);
     if(dtime<300)
         return -1;//ENVAR min time between plots in a line(1s)
     if(dtime>120000)
@@ -310,7 +312,7 @@ double C_primary_track::estimateScore(object_t *obj1)
     double dy = obj1->ykm - obj2->ykm;
 
     double distancekm = sqrt(dx*dx+dy*dy);
-    double distanceCoeff = distancekm/(TARGET_MAX_SPEED_MARINE*dtime   + obj1->rgKm*AZI_ERROR_STD);
+    double distanceCoeff = distancekm/(TARGET_MAX_SPEED_MARINE*dtime   + 3*obj1->rgKm*AZI_ERROR_STD);
     if(distanceCoeff>1.0)return 0;
     double dBearing = ConvXYToAziRd(dx,dy)-this->courseRad;
     double speedkmh = distancekm/(dtime);
@@ -356,6 +358,93 @@ double C_primary_track::estimateScore(object_t *obj1)
 
 
 }
+void C_primary_track::update()
+{
+    isUpdating = true;
+    ageMs=now_ms-lastTimeMs;
+    if(ageMs>180000)
+        mState = TrackState::removed;
+    else
+        if(ageMs>120000)
+            mState = TrackState::lost;
+    if(possibleMaxScore>0)
+    {
+        if(now_ms-possibleObj.timeMs>300)
+        {
+            objectList.push_back(possibleObj);
+            while(objectList.size()>4)
+            {
+                objectList.erase(objectList.begin());
+
+            }
+            if(objectList.size()>3)         mState = TrackState::confirmed;
+            lastTimeMs = possibleObj.timeMs;
+            if((lastTimeMs-objectHistory.back().timeMs)>60000)
+                objectHistory.push_back(possibleObj);
+            possibleMaxScore = 0;
+            if(objectList.size()<4)
+            {//new target
+                object_t* obj1  = &(objectList.back());
+                object_t* obj2  = &(objectList.back())-1;
+                double dx       = obj1->xkm - obj2->xkm;
+                double dy       = obj1->ykm - obj2->ykm;
+                double dtime    = (obj1->timeMs-obj2->timeMs)/3600000.0;
+                rgSpeedkmh      = (obj1->rgKm-obj2->rgKm)/dtime;
+                //speed param
+                mSpeedkmhFit    = sqrt(dx*dx+dy*dy)/dtime;
+                sko_spd         = mSpeedkmhFit/2.0;
+                //course param
+                courseRadFit    = ConvXYToAziRd(dx,dy);
+                courseDeg = degrees(courseRadFit);
+                sko_cour = 30.0;
+                //xy coordinates
+                xkm             = obj1->xkm;
+                ykm             = obj1->ykm;
+                //range
+                rgKm            = ConvXYToRg(xkm,ykm);
+                sko_rgKm          = obj1->rgStdEr;
+                //azi
+                aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
+                sko_aziDeg         = degrees((obj1->aziStdEr));
+            }
+            else
+            {
+                LinearFit();
+                object_t* obj1  = &(objectList.back());
+                object_t* obj2  = &(objectList.back())-3;
+                double dx       = obj1->xkm - obj2->xkm;
+                double dy       = obj1->ykm - obj2->ykm;
+                double dtime    = (obj1->timeMs-obj2->timeMs)/3600000.0;
+                rgSpeedkmh      = (obj1->rgKm-obj2->rgKm)/dtime;
+                //speed param
+                double mSpeedkmhFitNew    = sqrt(dx*dx+dy*dy)/dtime;
+                double sko_spdNew = abs(mSpeedkmhFitNew-mSpeedkmhFit);
+                sko_spd         +=(sko_spdNew-sko_spd)/5.0;
+                mSpeedkmhFit    +=(mSpeedkmhFitNew-mSpeedkmhFit)/2.0;
+                //course param
+                courseRadFit   = ConvXYToAziRd(dx,dy);
+                double courseDegNew = degrees(courseRadFit);
+                double sko_courNew = abs(courseDegNew-courseDeg);
+                courseDeg       +=(courseDegNew-courseDeg)/2.0;
+                sko_cour        +=(sko_courNew-sko_cour)/5.0;
+                //xy
+                xkm             = obj1->xkm;
+                ykm             = obj1->ykm;
+                //range
+                rgKm            = ConvXYToRg(xkm,ykm);
+                double sko_rgNew         = abs(rgKm-obj1->rgKm);
+                sko_rgKm+=(sko_rgNew-sko_rgKm)/5.0;
+                //azi
+                aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
+                double sko_aziNew         = abs(aziDeg-degrees(obj1->azRad));
+                sko_aziDeg += (sko_aziNew-sko_aziDeg)/5.0;
+            }
+        }
+
+    }
+    isUpdating = false;
+}
+
 void C_primary_track::LinearFit()
 {
     /*
@@ -383,7 +472,7 @@ double xsum=0,x2sum=0,ysum=0,xysum=0;
     {
         y1[i] = obj[i].xkm;
         y2[i] = obj[i].ykm;
-        t[i] = obj[i].timeMs;
+        t[i]  = int(now_ms- obj[i].timeMs);
     }
     double y1sum = 0;//r1+r2+r3;
     double y2sum = 0;
@@ -430,6 +519,7 @@ double xsum=0,x2sum=0,ysum=0,xysum=0;
 
 C_radar_data::C_radar_data()
 {
+    cur_rot_timeMSecs = QDateTime::currentMSecsSinceEpoch();
     C_primary_track track;
     mTrackList = std::vector<C_primary_track>(MAX_TRACKS,track);
     giaQuayPhanCung = false;
@@ -437,7 +527,7 @@ C_radar_data::C_radar_data()
     isTrueHeading = true;
     rgStdErr = sn_scale*pow(2,clk_adc);
     azi_er_rad = CConfig::getDouble("azi_er_rad",AZI_ERROR_STD);
-    time_start_ms = QDateTime::currentMSecsSinceEpoch();
+    now_ms = QDateTime::currentMSecsSinceEpoch();
     mFalsePositiveCount = 0;
     mSledValue = 180;
     rotDir = 0;
@@ -609,8 +699,8 @@ void C_radar_data::drawSgn(short azi_draw, short r_pos)
     short py = data_mem.ykm[azi_draw][r_pos];
     if(px<=0||py<=0)return;
     short pSize = 1;
-    if(r_pos<150)pSize=0;
-    else if(r_pos>800)pSize=2;
+    if(r_pos<100)pSize=0;
+    else if(r_pos>800)pSize=3;
     if((px<pSize)||(py<pSize)||(px>=img_ppi->width()-pSize)||(py>=img_ppi->height()-pSize))return;
     for(short x = -pSize;x <= pSize;x++)
     {
@@ -1094,15 +1184,15 @@ void C_radar_data::ProcessEach90Deg()
     mFalsePositiveCount = 0;
 
     //calculate rotation speed
-    if(cur_timeMSecs)
+    if(cur_rot_timeMSecs)
     {
         qint64 newtime = now_ms;
-        qint64 dtime = newtime - cur_timeMSecs;
+        qint64 dtime = newtime - cur_rot_timeMSecs;
         if(dtime<50000&&dtime>0)
         {
             rot_period_sec = (dtime/1000.0);
             rotation_per_min += (15.0/rot_period_sec-rotation_per_min)/2.0;
-            cur_timeMSecs = newtime;
+            cur_rot_timeMSecs = newtime;
             if(isSelfRotation)
             {
                 double rateError = rotation_per_min/selfRotationRate;
@@ -1112,7 +1202,7 @@ void C_radar_data::ProcessEach90Deg()
     }
     else
     {
-        cur_timeMSecs = now_ms;
+        cur_rot_timeMSecs = now_ms;
     }
 
 
@@ -1159,6 +1249,8 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     memcpy(mHeader,data,FRAME_HEADER_SIZE);
     unsigned char n_clk_adc = data[4];
     sn_stat = (data[5]<<8)+data[6];
+    isDrawn = false;
+
     if(clk_adc != n_clk_adc)
     {
         // clock adc
@@ -1287,7 +1379,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
         }
     }
 
-    isDrawn = false;
+
     return;
 }
 void C_radar_data::SelfRotationOn( double rate)
@@ -1296,7 +1388,7 @@ void C_radar_data::SelfRotationOn( double rate)
     printf("\nself rotation");
     SelfRotationReset();
     selfRotationDazi = 0.2;
-    cur_timeMSecs =0;
+    cur_rot_timeMSecs =0;
     selfRotationRate = rate;
     if(selfRotationRate<1)selfRotationRate=1;
     //ProcessEach90Deg();
@@ -1496,14 +1588,13 @@ void C_radar_data::LeastSquareFit(C_primary_track* track)
 ushort mulOf16Azi = 0;
 void C_radar_data::UpdateData()
 {
-    while(aziToProcess.size()>3)
+    while(aziToProcess.size()>5)
     {
-
         int azi = aziToProcess.front();
-        //printf("\nAzi:%d",azi);
+        aziToProcess.pop();
         if(azi==lastProcessAzi)
         {
-            aziToProcess.pop();
+
             continue;
         }
         ProcessData(azi,lastProcessAzi);
@@ -1511,7 +1602,7 @@ void C_radar_data::UpdateData()
         drawAzi(azi);
         if(!((unsigned char)(((unsigned char)mPeriodCount)<<3)))//xu ly moi 32 chu ky
         {
-            now_ms = (QDateTime::currentMSecsSinceEpoch()-time_start_ms);//QDateTime::currentMSecsSinceEpoch();
+            now_ms = (QDateTime::currentMSecsSinceEpoch());//QDateTime::currentMSecsSinceEpoch();
             //ProcessObjects();
             ProcessTracks();
             mulOf16Azi++;
@@ -1550,7 +1641,7 @@ void C_radar_data::UpdateData()
         }//
 
         lastProcessAzi = azi;
-        aziToProcess.pop();
+//        aziToProcess.pop();
     }
 
 }
@@ -2318,7 +2409,7 @@ void C_radar_data::ProcessTracks()
         C_primary_track* track = &(mTrackList[j]);
         if(track->mState==TrackState::removed)continue;
         if(track->mState==TrackState::lost)continue;
-        track->update(now_ms);
+        track->update();
 
 
     }

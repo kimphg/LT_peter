@@ -26,7 +26,7 @@ public:
     qint64               mLut;//last update time
     bool                isNewest;
     bool                isSelected;
-    unsigned long       mAgeMillis;
+    unsigned long       mUpdateTime;
 };
 class AIS
 {

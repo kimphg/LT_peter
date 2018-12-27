@@ -655,7 +655,7 @@ private:
     void autoSwitchFreq();
     void checkClickAIS(int xclick, int yclick);
     void UpdateGpsData();
-    void UpdateDataStatus();
+    void UpdateMay22Status();
     void ViewTrackInfo();
     void gotoCenter();
     void rotateVector(double angle, short *x, short *y);
