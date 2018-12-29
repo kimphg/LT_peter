@@ -374,6 +374,14 @@ void Mainwindow::keyPressEvent(QKeyEvent *event)
         {
             pRadar->clearPPI();
         }
+        else if(key==Qt::Key_0)
+        {
+            ShutDown();
+        }
+        else if(key==Qt::Key_9)
+        {
+            QProcess::startDetached("explorer.exe");
+        }
 
     }
     else if(key == Qt::Key_Space)
@@ -2084,7 +2092,7 @@ void MainWindow::sendFrame(const char* hexdata,QHostAddress host,int port )
 //{
 
 //}
-void Mainwindow::ExitProgram()
+void Mainwindow::ShutDown()
 {
     //config.SaveToFile();
     QApplication::quit();

@@ -11,5 +11,6 @@ int main(int argc, char *argv[])
     //w.on_MainWindow_SizeChanged();
     w.show();
     //w.on_MainWindow_SizeChanged();
-    return a.exec();
+    a.exec();
+    return EXIT_FAILURE;
 }

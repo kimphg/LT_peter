@@ -135,7 +135,7 @@ private slots:
     void readBuffer();
     void sync1S();
     void sync5p();
-    void ExitProgram();
+    void ShutDown();
     void gpsOption();
     void processARPA();
 //    void on_actionExit_triggered();
