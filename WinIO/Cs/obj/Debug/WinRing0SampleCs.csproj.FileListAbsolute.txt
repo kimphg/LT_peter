@@ -1,0 +1,8 @@
+C:\Users\Phuong\Documents\GitHub\LT_peter\WinIO\release\WinRing0SampleCs.exe
+C:\Users\Phuong\Documents\GitHub\LT_peter\WinIO\release\WinRing0SampleCs.pdb
+C:\Users\Phuong\Documents\GitHub\LT_peter\WinIO\source\sample\Cs\obj\Debug\WinRing0SampleCs.csprojResolveAssemblyReference.cache
+C:\Users\Phuong\Documents\GitHub\LT_peter\WinIO\source\sample\Cs\obj\Debug\WinRing0SampleCs.WinRing0Sample.resources
+C:\Users\Phuong\Documents\GitHub\LT_peter\WinIO\source\sample\Cs\obj\Debug\WinRing0SampleCs.Properties.Resources.resources
+C:\Users\Phuong\Documents\GitHub\LT_peter\WinIO\source\sample\Cs\obj\Debug\WinRing0SampleCs.csproj.GenerateResource.Cache
+C:\Users\Phuong\Documents\GitHub\LT_peter\WinIO\source\sample\Cs\obj\Debug\WinRing0SampleCs.exe
+C:\Users\Phuong\Documents\GitHub\LT_peter\WinIO\source\sample\Cs\obj\Debug\WinRing0SampleCs.pdb

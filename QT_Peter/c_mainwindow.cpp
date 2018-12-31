@@ -2097,7 +2097,7 @@ void Mainwindow::ShutDown()
     //config.SaveToFile();
     QApplication::quit();
 #ifdef _WIN32
-    QProcess::startDetached("shutdown -s -f -t 0");
+    system("shutdown -s -f -t 00");
 #else
     //system("/sbin/halt -p");
 #endif

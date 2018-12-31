@@ -19326,7 +19326,7 @@
      <bool>false</bool>
     </property>
     <property name="currentIndex">
-     <number>5</number>
+     <number>3</number>
     </property>
     <property name="elideMode">
      <enum>Qt::ElideNone</enum>
@@ -41071,7 +41071,7 @@ color: rgb(255, 0, 0);</string>
     <property name="geometry">
      <rect>
       <x>230</x>
-      <y>970</y>
+      <y>960</y>
       <width>71</width>
       <height>23</height>
      </rect>
