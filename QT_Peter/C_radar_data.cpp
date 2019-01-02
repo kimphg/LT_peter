@@ -519,6 +519,7 @@ double xsum=0,x2sum=0,ysum=0,xysum=0;
 
 C_radar_data::C_radar_data()
 {
+    aziRotCorrection = CConfig::getDouble("aziRotCorrection");
     cur_rot_timeMSecs = QDateTime::currentMSecsSinceEpoch();
     C_primary_track track;
     mTrackList = std::vector<C_primary_track>(MAX_TRACKS,track);

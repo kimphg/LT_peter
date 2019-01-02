@@ -35,7 +35,7 @@
 #define MAX_TRACK_LEN               400
 #define MAX_TRACKS                  400
 #define ENCODER_RES                 5000
-#define MAX_AZIR                    2048
+#define MAX_AZIR                    RADAR_RESOLUTION
 #define MAX_AZIR_DRAW               6144
 //#define RAD_M_PULSE_RES             1536
 #define RAD_S_PULSE_RES             256
@@ -297,7 +297,8 @@ public:
     void setAutorgs( bool aut);
     void                    clearPPI();
     unsigned char           moduleVal;
-    double                   aziOffsetRad;
+    double                  aziOffsetRad;
+    double                  aziRotCorrection;
     DataOverLay             dataOver;
     //    unsigned char           noise_level[8];
     unsigned char           rotation_speed;
@@ -328,7 +329,7 @@ public:
 
         while(trueN_deg<0)trueN_deg+=360;
         while(trueN_deg>=360)trueN_deg-=360;
-        aziOffsetRad =(trueN_deg/360.0*PI_NHAN2);
+        aziOffsetRad =radians(trueN_deg);
         raw_map_init();
         resetTrack();
     }
