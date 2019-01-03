@@ -25,7 +25,7 @@ void dataProcessingThread::ReadDataBuffer()
     if(iRec!=iRead)
     {
         if(isPaused)return;
-        mStat.c21UpdateTime = clock();
+        CConfig::mStat.c21UpdateTime = clock();
     }
     while(iRec!=iRead)
     {
@@ -181,13 +181,29 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
         if(tokens[2]=="T")CConfig::shipCourseDeg = tokens[1].toDouble();
         mStat.cVeloUpdateTime = clock();
     }
+    else if(mReceiveBuff[0]=='$'
+            &&mReceiveBuff[3]=='H'
+            &&mReceiveBuff[4]=='D'
+            &&mReceiveBuff[5]=='T')//true heading message xxHDT
+    {
+        //if(mStat.getAgeGyro()<10000)return;// only work when no gyro available
+        QString message((char*)&mReceiveBuff[0]);
+        QStringList tokens = message.split(',');
+        if(tokens.size()<3)return;
+        CConfig::mStat.inputHDT(tokens[1].toDouble());
+        //CConfig::shipHeadingDeg = tokens[1].toDouble();
+        //clock_t time_now = clock();
+        //mStat.cHDTUpdateTime = clock();
+    }
     else if(mReceiveBuff[0]==0x5a&&mReceiveBuff[1]==0xa5&&mReceiveBuff[31]==0xAA&&len>=32)//gyro messages
     {
-        mStat.cGyroUpdateTime = clock();
-        CConfig::shipHeadingDeg = (((mReceiveBuff[6])<<8)|mReceiveBuff[7])/182.044444444;//*360.0/65535.0;
-        int vy = (((mReceiveBuff[18])<<8)|mReceiveBuff[19]);
-        int vx = (((mReceiveBuff[20])<<8)|mReceiveBuff[21]);
-        CConfig::shipSpeed = sqrt(vy*vy+vx*vx)*0.00388768898488120950323974082073;//*2/1000000/CONST_NM*36000; kn
+        CConfig::mStat.cGyroUpdateTime = clock();
+        double heading = (((mReceiveBuff[6])<<8)|mReceiveBuff[7])/182.044444444;//deg
+        double headingRate = degrees((((mReceiveBuff[12])<<8)|mReceiveBuff[13])/10430.21919552736);//deg per sec
+        CConfig::mStat.inputGyro(heading,headingRate);
+        //int vy = (((mReceiveBuff[18])<<8)|mReceiveBuff[19]);
+        //int vx = (((mReceiveBuff[20])<<8)|mReceiveBuff[21]);
+        //CConfig::mStat.sh = sqrt(vy*vy+vx*vx)*0.00388768898488120950323974082073;//*2/1000000/CONST_NM*36000; kn
     }
     else if(mReceiveBuff[0]=='!'&&mReceiveBuff[1]=='A')//AIS
     {
@@ -887,20 +903,3 @@ void dataProcessingThread::stopRecord()
 }
 
 
-radarStatus_3C::radarStatus_3C()
-{
-//    isStatChange = false;
-    memset(&(msgGlobal[0]),0,32);
-    cAisUpdateTime  = clock();
-    cGpsUpdateTime  = clock();
-    c22UpdateTime   = clock();
-    c21UpdateTime   = clock();
-    cBHUpdateTime   = clock();
-    cGyroUpdateTime = clock();
-    cVeloUpdateTime = clock();
-}
-
-radarStatus_3C::~radarStatus_3C()
-{
-
-}

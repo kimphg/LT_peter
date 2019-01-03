@@ -525,7 +525,7 @@ C_radar_data::C_radar_data()
     mTrackList = std::vector<C_primary_track>(MAX_TRACKS,track);
     giaQuayPhanCung = false;
     //    mShipHeading = 0;
-    isTrueHeading = true;
+    isTrueHeadingFromRadar = true;
     rgStdErr = sn_scale*pow(2,clk_adc);
     azi_er_rad = CConfig::getDouble("azi_er_rad",AZI_ERROR_STD);
     now_ms = QDateTime::currentMSecsSinceEpoch();
@@ -1282,22 +1282,28 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     }
     else
     {
-        if(data[0]!=0x55)// tao gia bang simulator
+        if(data[0]==0x55)//TH tao gia
         {
-            if(isTrueHeading)
+            newAzi = (data[2]<<8)|data[3];
+
+        }
+        else
+        {
+            if(isTrueHeadingFromRadar)
             {
                 newAzi = (data[9]<<24)|(data[10]<<16)|(data[11]<<8)|(data[12]);
                 newAzi>>=3;
                 newAzi&=    0xffff;
                 int heading = ((data[15]<<8)|data[16])>>5;
-                CConfig::shipHeadingDeg = heading/double(MAX_AZIR)*180.0;
+                //CConfig::shipHeadingDeg = heading/double(MAX_AZIR)*180.0;
+
                 newAzi = ssiDecode(newAzi);
                 newAzi += heading;
                 if(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
             }
             else
             {
-                int heading = (CConfig::shipHeadingDeg)/360.0*MAX_AZIR;
+                int heading = (CConfig::mStat.shipHeadingDeg)/360.0*MAX_AZIR;
                 newAzi = (data[9]<<24)|(data[10]<<16)|(data[11]<<8)|(data[12]);
                 newAzi>>=3;
                 newAzi&=0xffff;
@@ -1307,11 +1313,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
             }
 
         }
-        else
-        {
-            newAzi = (data[2]<<8)|data[3];
 
-        }
 
     }
     newAzi&=0x07ff;

@@ -382,6 +382,10 @@ void Mainwindow::keyPressEvent(QKeyEvent *event)
         {
             QProcess::startDetached("explorer.exe");
         }
+        else if(key==Qt::Key_8)
+        {
+            on_toolButton_set_commands_clicked();
+        }
 
     }
     else if(key == Qt::Key_Space)
@@ -3916,7 +3920,7 @@ void Mainwindow::on_toolButton_dobupsong_toggled(bool checked)
 
 void Mainwindow::on_toolButton_set_commands_clicked()
 {
-    DialogCommandSet *dlg=new DialogCommandSet();
+    DialogConfig *dlg= new DialogConfig();
     dlg->setModal(false);
     dlg->showNormal();
 
@@ -4224,7 +4228,7 @@ void Mainwindow::on_toolButton_setRangeUnit_toggled(bool checked)
 
 void Mainwindow::on_toolButton_xl_dopler_3_clicked(bool checked)
 {
-    pRadar->isTrueHeading = checked;
+    pRadar->isTrueHeadingFromRadar = checked;
 }
 
 void Mainwindow::on_toolButton_head_up_clicked(bool checked)

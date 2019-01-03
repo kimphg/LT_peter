@@ -4,10 +4,39 @@
 #include <iostream>
 #include <ctime>
 using namespace std;
-double CConfig::shipHeadingDeg=5;
-double CConfig::shipCourseDeg = 0;
-double CConfig::shipSpeed=0;
-double CConfig::antennaAziDeg=0;
+//double CConfig::shipHeadingDeg=5;
+//double CConfig::shipCourseDeg = 0;
+//double CConfig::shipSpeed=0;
+//double CConfig::antennaAziDeg=0;
+radarStatus_3C::radarStatus_3C()
+{
+//    isStatChange = false;
+    memset(&(msgGlobal[0]),0,32);
+    cAisUpdateTime  = clock();
+    cGpsUpdateTime  = clock();
+    c22UpdateTime   = clock();
+    c21UpdateTime   = clock();
+    cBHUpdateTime   = clock();
+    cGyroUpdateTime = clock();
+    cVeloUpdateTime = clock();
+    cHDTUpdateTime = clock();
+    shipHeadingDeg = 30;
+    shipHeadingRate_dps=0;
+    isGyro = false;
+}
+
+radarStatus_3C::~radarStatus_3C()
+{
+
+}
+
+double radarStatus_3C::getShipHeadingDeg() const
+{
+    clock_t ageGyro = clock();!!!!!!!!!!!!
+    double heading = shipHeadingDeg+shipHeadingRate_dps*(clock()-)
+    return heading;
+}
+
 QHash<QString, QString> CConfig::mHashData = CConfig::readFile();
 volatile long long int CConfig::time_now_ms = 0;
 void CConfig::setValue(QString key, double value)

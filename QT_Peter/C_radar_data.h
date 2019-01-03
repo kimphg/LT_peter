@@ -272,7 +272,7 @@ public:
     float rgStdErr;
 //    qint64 time_start_ms;
     double sn_scale;
-    bool isTrueHeading;
+    bool isTrueHeadingFromRadar;
     bool isDrawn;
     //    double mShipHeading;
 

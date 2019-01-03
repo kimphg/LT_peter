@@ -17,16 +17,108 @@
 #include <QFile>
 #include <QHash>
 #include <QXmlStreamReader>
-//#include <QSettings>
+#include <time.h>
+
+class radarStatus_3C
+{
+public:
+    radarStatus_3C();
+    ~radarStatus_3C();
+    void ReadStatus22(uchar* mes)
+    {
+        mTaiAngTen = mes[0];
+        mSuyGiam = mes[1];
+        mMayPhatOK = mes[2];
+        mCaoApReady = mes[3];
+        mCaoApKetNoi = mes[4];
+//        isStatChange = true;
+//        gConnected = 0;
+        c22UpdateTime = clock();
+    }
+    void ReadStatusGlobal(uchar* mes)
+    {
+        cBHUpdateTime = clock();
+        memcpy(&(msgGlobal[0]),(char*)(mes),32);
+    }
+    void inputGyro(double heading,double headingRateDps)
+    {
+        // auto learning algorithm
+        shipHeadingRate_dps = headingRateDps;
+        shipHeadingDeg = heading;
+        cGyroUpdateTime = clock();
+    }
+    void inputHDT(double heading)
+    {
+        if(getAgeGyro()<3000){isGyro = true; return;}
+        isGyro = false;
+        double headingDiff = heading-shipHeadingDeg;
+        shipHeadingDeg = heading;
+        clock_t timeNow = clock();
+        clock_t age = timeNow-cHDTUpdateTime;
+        if(age<2000)
+        {
+
+            shipHeadingRate_dps = headingDiff/(age/1000.0);
+        }
+        else
+            shipHeadingRate_dps = 0;
+        cHDTUpdateTime = timeNow;
+    }
+    //2-2 status
+    int     mCheDoDK;
+    int     mCaoApReady;
+    int     mCaoApKetNoi;
+    bool    mTaiAngTen;
+    int     mSuyGiam;
+    int     mMaHieu;
+    bool    mMayPhatOK;
+private:
+    bool    isGyro;
+    double shipHeadingDeg;
+    double shipHeadingRate_dps;
+public:
+    //global Status
+    char msgGlobal[32];
+    // connection age
+    //clock_t cGpsAge;
+    clock_t cAisUpdateTime;
+    clock_t cGpsUpdateTime;
+    clock_t c22UpdateTime;
+    clock_t c21UpdateTime;
+    clock_t cBHUpdateTime;
+    clock_t cGyroUpdateTime;
+    clock_t cVeloUpdateTime;
+    clock_t cHDTUpdateTime;
+//    bool isStatChanged()
+//    {
+//        if(isStatChange)
+//        {
+//            isStatChange = false;
+//            return true;
+//        }
+//        else return false;
+//    }
+
+    clock_t getAgeAis(){return clock()-cAisUpdateTime;}
+    clock_t getAgeGps(){return clock()-cGpsUpdateTime;}
+    clock_t getAge22(){return clock()-c22UpdateTime;}
+    clock_t getAge21(){return clock()-c21UpdateTime;}
+    clock_t getAgeBH(){return clock()-cBHUpdateTime;}
+    clock_t getAgeGyro(){return clock()-cGyroUpdateTime;}
+    clock_t getAgeVelo(){return clock()-cVeloUpdateTime;}
+    clock_t getAgeHDT(){return clock()-cHDTUpdateTime;}
+    double getShipHeadingDeg() const;
+};
 class CConfig
 {
 public:
     CConfig(void);
     ~CConfig(void);
-    static double shipHeadingDeg;
-    static double shipCourseDeg;
-    static double shipSpeed;
-    static double antennaAziDeg;
+    static radarStatus_3C mStat;
+//    static double shipHeadingDeg;
+//    static double shipCourseDeg;
+//    static double shipSpeed;
+//    static double antennaAziDeg;
     static volatile long long int time_now_ms;
     static QHash<QString, QString> mHashData;
     static void    setValue(QString key, double value);

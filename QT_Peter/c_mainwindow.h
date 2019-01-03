@@ -35,7 +35,7 @@
 #include "c_target_manager.h"
 #include "Cmap/cmap.h"
 #include "dialogcommandlog.h"
-#include "dialogcommandset.h"
+#include "dialogconfig.h"
 
 namespace Ui {
 class MainWindow;

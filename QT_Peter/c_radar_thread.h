@@ -38,63 +38,6 @@ struct DataBuff// buffer for data frame
     unsigned char data[MAX_FRAME_SIZE];
 };
 
-class radarStatus_3C
-{
-public:
-    radarStatus_3C();
-    ~radarStatus_3C();
-    void ReadStatus22(uchar* mes)
-    {
-        mTaiAngTen = mes[0];
-        mSuyGiam = mes[1];
-        mMayPhatOK = mes[2];
-        mCaoApReady = mes[3];
-        mCaoApKetNoi = mes[4];
-//        isStatChange = true;
-//        gConnected = 0;
-        c22UpdateTime = clock();
-    }
-    void ReadStatusGlobal(uchar* mes)
-    {
-        cBHUpdateTime = clock();
-        memcpy(&(msgGlobal[0]),(char*)(mes),32);
-    }
-    //2-2 status
-    int     mCheDoDK;
-    int     mCaoApReady;
-    int     mCaoApKetNoi;
-    bool    mTaiAngTen;
-    int     mSuyGiam;
-    int     mMaHieu;
-    bool    mMayPhatOK;
-    //global Status
-    char msgGlobal[32];
-    // connection age
-    //clock_t cGpsAge;
-    clock_t cAisUpdateTime;
-    clock_t cGpsUpdateTime;
-    clock_t c22UpdateTime;
-    clock_t c21UpdateTime;
-    clock_t cBHUpdateTime;
-    clock_t cGyroUpdateTime;
-    clock_t cVeloUpdateTime;
-//    bool isStatChanged()
-//    {
-//        if(isStatChange)
-//        {
-//            isStatChange = false;
-//            return true;
-//        }
-//        else return false;
-//    }
-    clock_t getAgeAis(){return clock()-cAisUpdateTime;}
-    clock_t getAgeGps(){return clock()-cGpsUpdateTime;}
-    clock_t getAge22(){return clock()-c22UpdateTime;}
-    clock_t getAge21(){return clock()-c21UpdateTime;}
-    clock_t getAgeBH(){return clock()-cBHUpdateTime;}
-    clock_t getAgeGyro(){return clock()-cGyroUpdateTime;}
-    clock_t getAgeVelo(){return clock()-cVeloUpdateTime;}
-};
 struct  RadarCommand// radar control commmand
 {
     unsigned char bytes[8];
@@ -121,7 +64,7 @@ public:
     QTimer commandSendTimer;
     QTimer readUdpBuffTimer;
     QTimer readSerialTimer;
-    radarStatus_3C mStat;
+
     void PlaybackFile();
     void startRecord(QString fileName);
     void stopRecord();
