@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
+#define degrees(x) (x*57.295779513)
+#define radians(x) (x/57.295779513)
 #include <QMainWindow>
 #include <QDateTime>
 namespace Ui {
