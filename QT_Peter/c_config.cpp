@@ -32,9 +32,7 @@ radarStatus_3C::~radarStatus_3C()
 
 double radarStatus_3C::getShipHeadingDeg() const
 {
-    clock_t ageGyro = clock();!!!!!!!!!!!!
-    double heading = shipHeadingDeg+shipHeadingRate_dps*(clock()-)
-    return heading;
+    return shipHeadingDeg+shipHeadingRate_dps*(getAgeGyro()/1000.0);
 }
 
 QHash<QString, QString> CConfig::mHashData = CConfig::readFile();

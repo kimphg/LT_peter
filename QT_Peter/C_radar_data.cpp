@@ -1303,7 +1303,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
             }
             else
             {
-                int heading = (CConfig::mStat.shipHeadingDeg)/360.0*MAX_AZIR;
+                int heading = (CConfig::mStat.getShipHeadingDeg())/360.0*MAX_AZIR;
                 newAzi = (data[9]<<24)|(data[10]<<16)|(data[11]<<8)|(data[12]);
                 newAzi>>=3;
                 newAzi&=0xffff;
