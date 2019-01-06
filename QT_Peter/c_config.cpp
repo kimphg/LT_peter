@@ -8,18 +8,20 @@ using namespace std;
 //double CConfig::shipCourseDeg = 0;
 //double CConfig::shipSpeed=0;
 //double CConfig::antennaAziDeg=0;
+radarStatus_3C CConfig::mStat ;
 radarStatus_3C::radarStatus_3C()
 {
 //    isStatChange = false;
     memset(&(msgGlobal[0]),0,32);
-    cAisUpdateTime  = clock();
-    cGpsUpdateTime  = clock();
-    c22UpdateTime   = clock();
-    c21UpdateTime   = clock();
-    cBHUpdateTime   = clock();
-    cGyroUpdateTime = clock();
-    cVeloUpdateTime = clock();
-    cHDTUpdateTime = clock();
+    cAisUpdateTime      = clock();
+    cGpsUpdateTime      = clock();
+    c22UpdateTime       = clock();
+    c21UpdateTime       = clock();
+    cBHUpdateTime       = clock();
+    cGyroUpdateTime     = clock();
+    cVeloUpdateTime     = clock();
+    cHDTUpdateTime      = clock();
+    cCourseUpdateTime   = clock();
     shipHeadingDeg = 30;
     shipHeadingRate_dps=0;
     isGyro = false;
@@ -30,7 +32,25 @@ radarStatus_3C::~radarStatus_3C()
 
 }
 
-double radarStatus_3C::getShipHeadingDeg() const
+void radarStatus_3C::setGPSLocation(double lat, double lon)
+{
+    mLat = lat;mLon = lon;
+    cGpsUpdateTime = clock();
+}
+
+void radarStatus_3C::setShipCourse(double value)
+{
+    shipCourseDeg = value;
+    cCourseUpdateTime = clock();
+}
+
+void radarStatus_3C::setShipSpeed(double value)
+{
+    shipSpeed = value;
+    cVeloUpdateTime = clock();
+}
+
+double radarStatus_3C::getShipHeadingDeg()
 {
     return shipHeadingDeg+shipHeadingRate_dps*(getAgeGyro()/1000.0);
 }

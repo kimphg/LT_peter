@@ -3,7 +3,7 @@
 
 #define MAX_IREC 500
 //#include <QGeoCoordinate>
-#include <QNmeaPositionInfoSource>
+//#include <QNmeaPositionInfoSource>
 DataBuff dataB[MAX_IREC];
 //uchar udpFrameBuffer[MAX_IREC][OUTPUT_FRAME_SIZE];
 short iRec=0,iRead=0;
@@ -149,12 +149,12 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
         if(mReceiveBuff[2]==0x65)// trang thai may 2-2
         {
 
-            mStat.ReadStatus22(&mReceiveBuff[4]);
+            CConfig::mStat.ReadStatus22(&mReceiveBuff[4]);
         }
         if(mReceiveBuff[2]==0x03)// trang thai may 2-2
         {
             if(len<24)return;
-            mStat.ReadStatusGlobal(&mReceiveBuff[4]);
+            CConfig::mStat.ReadStatusGlobal(&mReceiveBuff[4]);
 
         }
     }
@@ -166,8 +166,8 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
         QString message((char*)&mReceiveBuff[0]);
         QStringList tokens = message.split(',');
         if(tokens.size()<7)return;
-        if(tokens[6]=="A")CConfig::shipSpeed = tokens[4].toDouble();
-        mStat.cVeloUpdateTime = clock();
+        if(tokens[6]=="A")CConfig::mStat.setShipSpeed( tokens[4].toDouble());
+
     }
     else if(mReceiveBuff[0]=='$'
             &&mReceiveBuff[3]=='V'
@@ -177,9 +177,8 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
         QString message((char*)&mReceiveBuff[0]);
         QStringList tokens = message.split(',');
         if(tokens.size()<9)return;
-        if(tokens[6]=="N")CConfig::shipSpeed = tokens[5].toDouble();
-        if(tokens[2]=="T")CConfig::shipCourseDeg = tokens[1].toDouble();
-        mStat.cVeloUpdateTime = clock();
+        if(tokens[6]=="N")CConfig::mStat.setShipSpeed( tokens[4].toDouble());
+        if(tokens[2]=="T")CConfig::mStat.setShipCourse( tokens[1].toDouble());
     }
     else if(mReceiveBuff[0]=='$'
             &&mReceiveBuff[3]=='H'
@@ -215,8 +214,11 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
         {
             if(mGPS.decode(mReceiveBuff[i]))
             {
-               mStat.cGpsUpdateTime = clock();
-               GPSData newGPSPoint;
+               //mStat.cGpsUpdateTime = clock();
+               double mLat,mLon;
+               mGPS.get_position(&mLat,&mLon);
+               CConfig::mStat.setGPSLocation(mLat,mLon);
+               /*GPSData newGPSPoint;
                mGPS.get_position(&(newGPSPoint.lat),&(newGPSPoint.lon));
                newGPSPoint.heading =  mGPS.course()/100.0;
                while(mGpsData.size()>10)
@@ -229,7 +231,7 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
                    double dLat = mGpsData.back().lat - mGpsData.front().lat;
                    double dLon = mGpsData.back().lon - mGpsData.front().lon;
                    newGPSPoint.heading = degrees(ConvXYToAziRd(dLon,dLat));
-               }
+               }*/
             }
 
         }
@@ -559,7 +561,7 @@ void dataProcessingThread::processARPAData(QByteArray inputdata)
     for(int i = 0;i<strlist.size()-1;i++)
         if(aisMessageHandler.ProcessNMEA(strlist.at(i)))
         {
-            mStat.cAisUpdateTime = clock();
+            CConfig::mStat.cAisUpdateTime = clock();
             AIS_object_t obj = aisMessageHandler.GetAisObject();
 
             QMutableListIterator<AIS_object_t> i(m_aisList);
@@ -659,7 +661,7 @@ void dataProcessingThread::run()
 
 bool dataProcessingThread::getIsDrawn()
 {
-    if(!mRadarData->isDrawn){mRadarData->isDrawn = true;return false;}
+    if(!mRadarData->mUpdateTime){mRadarData->mUpdateTime = true;return false;}
     else return true;
 
 

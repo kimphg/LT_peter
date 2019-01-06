@@ -33,6 +33,7 @@ public:
         mCaoApKetNoi = mes[4];
 //        isStatChange = true;
 //        gConnected = 0;
+        shipSpeed=0;
         c22UpdateTime = clock();
     }
     void ReadStatusGlobal(uchar* mes)
@@ -40,6 +41,7 @@ public:
         cBHUpdateTime = clock();
         memcpy(&(msgGlobal[0]),(char*)(mes),32);
     }
+    void setGPSLocation(double lat, double lon);
     void inputGyro(double heading,double headingRateDps)
     {
         // auto learning algorithm
@@ -74,9 +76,15 @@ public:
     bool    mMayPhatOK;
 private:
     bool    isGyro;
-    double shipHeadingDeg;
     double shipHeadingRate_dps;
+
+
 public:
+    double mLat,mLon;
+    double shipSpeed;
+    double shipCourseDeg;
+    double antennaAziDeg;
+    double shipHeadingDeg;
     //global Status
     char msgGlobal[32];
     // connection age
@@ -89,6 +97,7 @@ public:
     clock_t cGyroUpdateTime;
     clock_t cVeloUpdateTime;
     clock_t cHDTUpdateTime;
+    clock_t cCourseUpdateTime;
 //    bool isStatChanged()
 //    {
 //        if(isStatChange)
@@ -107,7 +116,9 @@ public:
     clock_t getAgeGyro(){return clock()-cGyroUpdateTime;}
     clock_t getAgeVelo(){return clock()-cVeloUpdateTime;}
     clock_t getAgeHDT(){return clock()-cHDTUpdateTime;}
-    double getShipHeadingDeg() const;
+    double getShipHeadingDeg();
+    void setShipSpeed(double value);
+    void setShipCourse(double value);
 };
 class CConfig
 {

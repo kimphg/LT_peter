@@ -273,7 +273,7 @@ public:
 //    qint64 time_start_ms;
     double sn_scale;
     bool isTrueHeadingFromRadar;
-    bool isDrawn;
+    clock_t mUpdateTime;
     //    double mShipHeading;
 
     //    bool                    isEncoderAzi;

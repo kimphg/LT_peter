@@ -32,7 +32,7 @@ static int                         mDistanceUnit=0;//0:NM;1:KM
 static double                      mZoomSizeRg = 2;
 static double                      mZoomSizeAz = 10;
 static double                      mLat=DEFAULT_LAT,mLon = DEFAULT_LONG;
-static double                      mShipHeading=20;
+//static double                      CConfig::mStat.shipHeadingDeg=20;
 static bool                        isMapOutdated = true;
 static bool isHeadUp = false;
 static int   mMousex =0,mMousey=0;
@@ -1584,8 +1584,8 @@ void Mainwindow::ReloadSetting()
 }
 bool Mainwindow::CalcAziContour(double theta, int d)
 {
-    if(theta>=360)theta-=360.0;
-    if(theta<0)theta+=360.0;
+    while (theta>=360)theta-=360.0;
+    while(theta<0)theta+=360.0;
     double tanA = tan(theta/57.295779513);
     double sinA = sinFast(theta/57.295779513);
     double cosA = cosFast(theta/57.295779513);
@@ -1723,7 +1723,7 @@ void Mainwindow::DrawViewFrame(QPainter* p)
     if(isHeadUp)
     {
         radHeading=0;
-    }else radHeading = (mShipHeading);
+    }else radHeading = (CConfig::mStat.shipHeadingDeg);
 
     if(CalcAziContour(radHeading,SCR_H-SCR_BORDER_SIZE-18))
     {
@@ -1764,7 +1764,7 @@ void Mainwindow::DrawViewFrame(QPainter* p)
     //        //p->drawText(720,20,200,20,0,"Antenna: "+QString::number(aziDeg,'f',1));
 
     //    }
-    if(CalcAziContour((CConfig::antennaAziDeg)+trueShiftDeg,SCR_H-SCR_BORDER_SIZE-20))
+    if(CalcAziContour((CConfig::mStat.antennaAziDeg)+trueShiftDeg,SCR_H-SCR_BORDER_SIZE-20))
     {
         p->setPen(QPen(Qt::red,4,Qt::SolidLine,Qt::RoundCap));
         p->drawLine(points[2],points[1]);
@@ -1900,36 +1900,37 @@ void Mainwindow::Update100ms()
             mTargetMan.addTrack(&pRadar->mTrackList[i]);
     }
     //smooth the heading
-    ui->label_head_ship->setText(QString::number(CConfig::shipHeadingDeg,'f',1));
-    ui->label_course_ship->setText(QString::number(CConfig::shipCourseDeg,'f',1));
-    ui->label_speed_ship->setText(QString::number(CConfig::shipSpeed,'f',1));
-    double headingDiff = CConfig::shipHeadingDeg-mShipHeading;
+    ui->label_head_ship->setText(QString::number(CConfig::mStat.shipHeadingDeg,'f',1));
+    ui->label_course_ship->setText(QString::number(CConfig::mStat.shipCourseDeg,'f',1));
+    ui->label_speed_ship->setText(QString::number(CConfig::mStat.shipSpeed,'f',1));
+    /*double headingDiff = CConfig::shipHeadingDeg-CConfig::mStat.shipHeadingDeg;
     if(abs(headingDiff)>0.5)
     {
         if(headingDiff<-180)headingDiff+=360;
         if(headingDiff>180)headingDiff-=360;
-        mShipHeading+=headingDiff/3.0;
+        CConfig::mStat.shipHeadingDeg+=headingDiff/3.0;
         isMapOutdated = true;
-    }else mShipHeading = CConfig::shipHeadingDeg;
+    }else CConfig::mStat.shipHeadingDeg = CConfig::shipHeadingDeg;*/
+
     //calculate heading
     if(isHeadUp)
     {
-        trueShiftDeg = -mShipHeading;
+        trueShiftDeg = -CConfig::mStat.shipHeadingDeg;
         headShift = 0;
         mTrans.reset();
-        mTrans = mTrans.rotate((-mShipHeading));
+        mTrans = mTrans.rotate((-CConfig::mStat.shipHeadingDeg));
     }
     else
     {
         trueShiftDeg = 0;
-        headShift = mShipHeading;
+        headShift = CConfig::mStat.shipHeadingDeg;
     }
 
     DrawMap();
     mMousex=this->mapFromGlobal(QCursor::pos()).x();
     mMousey=this->mapFromGlobal(QCursor::pos()).y();
-    CConfig::antennaAziDeg = degrees(pRadar->getCurAziRad());
-    this->ui->label_azi_antenna_head_true->setText(QString::number(CConfig::antennaAziDeg,'f',1));
+    CConfig::mStat.antennaAziDeg = degrees(pRadar->getCurAziRad());
+    this->ui->label_azi_antenna_head_true->setText(QString::number(CConfig::mStat.antennaAziDeg,'f',1));
     if(isInsideViewZone(mMousex,mMousey))
     {
         QApplication::setOverrideCursor(Qt::CrossCursor);
@@ -1948,12 +1949,12 @@ void Mainwindow::Update100ms()
         if(isHeadUp)
         {
             headAzi= azi;
-            azi+=mShipHeading;
+            azi+=CConfig::mStat.shipHeadingDeg;
             if(azi<0)azi+=360;
         }
         else
         {
-            headAzi= azi-mShipHeading;
+            headAzi= azi-CConfig::mStat.shipHeadingDeg;
         }
         if(headAzi>180)headAzi-=360;
         if(headAzi<-180)headAzi+=360;
@@ -2220,10 +2221,10 @@ void Mainwindow::autoSwitchFreq()
 }//label_data_range_2
 void Mainwindow::UpdateMay22Status()
 {
-    clock_t ageMay22 = processing->mStat.getAge22();
+    clock_t ageMay22 = CConfig::mStat.getAge22();
     if(ageMay22<3000)
     {
-        if(processing->mStat.mMayPhatOK)
+        if(CConfig::mStat.mMayPhatOK)
         {
             ui->label_status_may_22->setStyleSheet("color: rgb(10, 255, 10);");
             ui->label_status_may_22->setText(QString::fromUtf8("Máy phát hoạt động bình thường"));
@@ -2233,21 +2234,21 @@ void Mainwindow::UpdateMay22Status()
             ui->label_status_may_22->setStyleSheet("color: rgb(255, 10, 10);");
             ui->label_status_may_22->setText(QString::fromUtf8("Máy phát không hoạt động"));
         }
-        if(processing->mStat.mTaiAngTen==1)ui->toolButton_dk_2->setChecked(true);//tai ang ten
-        else if(processing->mStat.mTaiAngTen==0)ui->toolButton_dk_13->setChecked(true);//tai tuong duong
-        if(processing->mStat.mMaHieu==0)ui->toolButton_dk_11->setChecked(true);//ma hieu
-        else if(processing->mStat.mMaHieu==1)ui->toolButton_dk_16->setChecked(true);//ma hieu
-        else if(processing->mStat.mMaHieu==2)ui->toolButton_dk_17->setChecked(true);//ma hieu
-        if(processing->mStat.mSuyGiam==7)ui->toolButton_dk_3->setChecked(true);//suy giam
-        else if(processing->mStat.mSuyGiam==6)ui->toolButton_dk_4->setChecked(true);//suy giam
-        else if(processing->mStat.mSuyGiam==5)ui->toolButton_dk_5->setChecked(true);//suy giam
-        else if(processing->mStat.mSuyGiam==4)ui->toolButton_dk_6->setChecked(true);//suy giam
-        else if(processing->mStat.mSuyGiam==3)ui->toolButton_dk_7->setChecked(true);//suy giam
-        else if(processing->mStat.mSuyGiam==2)ui->toolButton_dk_8->setChecked(true);//suy giam
-        else if(processing->mStat.mSuyGiam==1)ui->toolButton_dk_9->setChecked(true);//suy giam
-        if(processing->mStat.mCaoApKetNoi==0)ui->toolButton_dk_15->setChecked(true);//cao ap
-        else if(processing->mStat.mCaoApKetNoi==1)ui->toolButton_dk_10->setChecked(true);//cao ap
-        else if(processing->mStat.mCaoApKetNoi==2)ui->toolButton_dk_14->setChecked(true);//cao ap
+        if(CConfig::mStat.mTaiAngTen==1)ui->toolButton_dk_2->setChecked(true);//tai ang ten
+        else if(CConfig::mStat.mTaiAngTen==0)ui->toolButton_dk_13->setChecked(true);//tai tuong duong
+        if(CConfig::mStat.mMaHieu==0)ui->toolButton_dk_11->setChecked(true);//ma hieu
+        else if(CConfig::mStat.mMaHieu==1)ui->toolButton_dk_16->setChecked(true);//ma hieu
+        else if(CConfig::mStat.mMaHieu==2)ui->toolButton_dk_17->setChecked(true);//ma hieu
+        if(CConfig::mStat.mSuyGiam==7)ui->toolButton_dk_3->setChecked(true);//suy giam
+        else if(CConfig::mStat.mSuyGiam==6)ui->toolButton_dk_4->setChecked(true);//suy giam
+        else if(CConfig::mStat.mSuyGiam==5)ui->toolButton_dk_5->setChecked(true);//suy giam
+        else if(CConfig::mStat.mSuyGiam==4)ui->toolButton_dk_6->setChecked(true);//suy giam
+        else if(CConfig::mStat.mSuyGiam==3)ui->toolButton_dk_7->setChecked(true);//suy giam
+        else if(CConfig::mStat.mSuyGiam==2)ui->toolButton_dk_8->setChecked(true);//suy giam
+        else if(CConfig::mStat.mSuyGiam==1)ui->toolButton_dk_9->setChecked(true);//suy giam
+        if(CConfig::mStat.mCaoApKetNoi==0)ui->toolButton_dk_15->setChecked(true);//cao ap
+        else if(CConfig::mStat.mCaoApKetNoi==1)ui->toolButton_dk_10->setChecked(true);//cao ap
+        else if(CConfig::mStat.mCaoApKetNoi==2)ui->toolButton_dk_14->setChecked(true);//cao ap
     }
     else
     {
@@ -3790,18 +3791,25 @@ void Mainwindow::on_toolButton_gps_update_auto_clicked()
 
 void Mainwindow::UpdateGpsData()
 {
+    if(CConfig::mStat.getAgeGps()<3000)
+    {
+    SetGPS(CConfig::mStat.mLat, CConfig::mStat.mLon);
+    }
+    else
+    {
 
-    if(processing->mGpsData.size())
+    }
+    /*if(processing->mGpsData.size())
     {
 
         GPSData data = processing->mGpsData.back();
         if(processing->mGpsData.size()>10)processing->mGpsData.pop();
         SetGPS(data.lat, data.lon);
-        clock_t gpsAge = clock()-processing->mStat.cGpsUpdateTime;
-        //processing->mStat.cAisAge = gpsAge;
+        clock_t gpsAge = clock()-CConfig::mStat.cGpsUpdateTime;
+        //CConfig::mStat.cAisAge = gpsAge;
         if(gpsAge<3000)   ui->groupBox_gps->setTitle(QString::fromUtf8("GPS"));
         else              ui->groupBox_gps->setTitle(QString::fromUtf8("GPS(mất kết nối ")+QString::number(gpsAge/1000)+")");
-    }
+    }*/
 }
 void Mainwindow::on_toolButton_set_zoom_ar_size_clicked()
 {

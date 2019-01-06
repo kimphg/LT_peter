@@ -3,7 +3,7 @@
 #include <QThread>
 #include <queue>
 #include <QTimer>
-#include <QGeoPositionInfo>
+//#include <QGeoPositionInfo>
 #include "c_config.h"
 #include "c_radar_data.h"
 //#include "c_arpa_data.h"
@@ -26,12 +26,12 @@
 #endif
 #define HR2D_UDP_PORT 5000
 using namespace std;
-struct GPSData
-{
-    double lat,lon;
-    double heading,speed;
-    bool isFixed;
-};
+//struct GPSData
+//{
+//    double lat,lon;
+//    double course,speed;
+//    bool isFixed;
+//};
 struct DataBuff// buffer for data frame
 {
     short len;
@@ -50,7 +50,7 @@ class dataProcessingThread:public QThread
     Q_OBJECT
 public:
     bool isPaused;
-    std::queue<GPSData> mGpsData;
+//    std::queue<GPSData> mGpsData;
 //    unsigned char       connect_timeout;
     RadarSignMode       mRadMode;
     unsigned short      playRate;

@@ -1250,8 +1250,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     memcpy(mHeader,data,FRAME_HEADER_SIZE);
     unsigned char n_clk_adc = data[4];
     sn_stat = (data[5]<<8)+data[6];
-    isDrawn = false;
-
+    mUpdateTime = clock();
     if(clk_adc != n_clk_adc)
     {
         // clock adc
