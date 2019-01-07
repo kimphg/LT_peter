@@ -666,16 +666,23 @@ border-color: rgb(100,100,10);</string>
     </property>
     <layout class="QGridLayout" name="gridLayout_8">
      <item row="0" column="0">
-      <widget class="QTableWidget" name="tableWidget"/>
+      <widget class="QTableWidget" name="tableWidget">
+       <attribute name="horizontalHeaderStretchLastSection">
+        <bool>true</bool>
+       </attribute>
+       <attribute name="verticalHeaderStretchLastSection">
+        <bool>false</bool>
+       </attribute>
+      </widget>
      </item>
     </layout>
    </widget>
    <widget class="QGroupBox" name="groupBox_3">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>60</x>
       <y>280</y>
-      <width>191</width>
+      <width>731</width>
       <height>491</height>
      </rect>
     </property>
@@ -685,11 +692,18 @@ border-color: rgb(100,100,10);</string>
      </font>
     </property>
     <property name="title">
-     <string>Trạng thái kết nối:</string>
+     <string>Trạng thái kết nối</string>
     </property>
     <layout class="QGridLayout" name="gridLayout_9">
      <item row="0" column="0">
-      <widget class="QTableWidget" name="tableWidget_connection"/>
+      <widget class="QTableWidget" name="tableWidget_connection">
+       <attribute name="horizontalHeaderStretchLastSection">
+        <bool>true</bool>
+       </attribute>
+       <attribute name="verticalHeaderStretchLastSection">
+        <bool>false</bool>
+       </attribute>
+      </widget>
      </item>
     </layout>
    </widget>

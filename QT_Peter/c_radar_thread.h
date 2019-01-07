@@ -64,7 +64,7 @@ public:
     QTimer commandSendTimer;
     QTimer readUdpBuffTimer;
     QTimer readSerialTimer;
-
+    double mFramesPerSec;
     void PlaybackFile();
     void startRecord(QString fileName);
     void stopRecord();
@@ -85,11 +85,7 @@ public:
     bool getIsDrawn();
     AIS aisMessageHandler;
     QList<AIS_object_t> m_aisList;
-//    bool isConnected()
-//    {
-//        return bool(connect_timeout);
-//    }
-    void setIsDrawn(bool value);
+
 
     void setRotationSpeed(int index);
     bool getIsXuLyThuCap() const;
@@ -104,7 +100,7 @@ public:
 signals:
     void HeadingDataReceived(double heading);
 private:
-
+    void CalculateRFR();
     QSerialPort     mEncoderPort;
     double          mHeading ;
 
@@ -130,7 +126,7 @@ private:
     void sendAziData();
 private slots:
     void ReadDataBuffer();
-    void PushCommandQueue();
+    void Timer200ms();
     void processRadarData();
     void processARPAData(QByteArray inputdata);
     void playbackRadarData();
@@ -140,6 +136,7 @@ private slots:
     void ReadNavData();
 public slots:
     void StopProcessing();
+
 };
 
 #endif // DATAPROCESSINGTHREAD_H

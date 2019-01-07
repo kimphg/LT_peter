@@ -53,7 +53,7 @@ StatusWindow::StatusWindow(dataProcessingThread *radar,QWidget *parent) :
 
     //
     ui->tableWidget_connection->setColumnCount(2);
-    ui->tableWidget_connection->setColumnWidth(0,100);
+    ui->tableWidget_connection->setColumnWidth(0,200);
     ui->tableWidget_connection->setColumnWidth(1,20);
     ui->tableWidget_connection->setRowCount(8);
     item = new QTableWidgetItem(QString::fromUtf8("Switch Ethernet 1"));ui->tableWidget_connection->setItem(0,0,item);

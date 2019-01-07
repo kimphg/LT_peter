@@ -268,7 +268,7 @@ public:
     std::vector<C_primary_track>        mTrackList;
     std::vector<plot_t>         plot_list;
     std::vector<object_t>       mFreeObjList;
-    unsigned     long int       mPeriodCount;
+
     float rgStdErr;
 //    qint64 time_start_ms;
     double sn_scale;
@@ -282,6 +282,7 @@ public:
     unsigned char           overload, init_time, clk_adc;
     float                   scale_ppi,scale_zoom_ppi;
     short                   curAzir,arcMinAzi,arcMaxAzi,arcWidth;
+    double                  mRealAziRate,mRealAzi;
     void                    setZoomRectAR(float ctx, float cty, double sizeKM, double sizeDeg);
     void                    setZoomRectXY(float ctx, float cty);
     unsigned int            sn_stat,chu_ky;

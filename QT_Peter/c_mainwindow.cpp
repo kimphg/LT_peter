@@ -1930,7 +1930,15 @@ void Mainwindow::Update100ms()
     mMousex=this->mapFromGlobal(QCursor::pos()).x();
     mMousey=this->mapFromGlobal(QCursor::pos()).y();
     CConfig::mStat.antennaAziDeg = degrees(pRadar->getCurAziRad());
-    this->ui->label_azi_antenna_head_true->setText(QString::number(CConfig::mStat.antennaAziDeg,'f',1));
+
+    if(pRadar->init_time)
+    {
+
+    }
+    else
+    {
+        ui->label_azi_antenna_head_true->setText(QString::number(CConfig::mStat.antennaAziDeg,'f',1));
+    }
     if(isInsideViewZone(mMousex,mMousey))
     {
         QApplication::setOverrideCursor(Qt::CrossCursor);
@@ -2385,8 +2393,8 @@ void Mainwindow::sync1S()//period 1 second
     if(sampleTime<25)sampleTime=25;
     timerVideoUpdate.start(sampleTime);
     timerMetaUpdate.start(sampleTime*4);
-    ui->label_frame_rate->setText("FR:"+QString::number(1000/sampleTime));
-
+    ui->label_frame_rate->setText("SFR:"+QString::number(1000/sampleTime));
+    ui->label_radar_fps->setText("RFR:"+QString::number(int(processing->mFramesPerSec)));
     //target manager
     if(ui->toolButton_chi_thi_mt->isChecked())mTargetMan.OutputTargetToKasu();
     if(isScaleChanged ) {

@@ -519,6 +519,8 @@ double xsum=0,x2sum=0,ysum=0,xysum=0;
 
 C_radar_data::C_radar_data()
 {
+    mRealAziRate = 0;
+    mUpdateTime = clock();
     aziRotCorrection = CConfig::getDouble("aziRotCorrection");
     cur_rot_timeMSecs = QDateTime::currentMSecsSinceEpoch();
     C_primary_track track;
@@ -532,7 +534,6 @@ C_radar_data::C_radar_data()
     mFalsePositiveCount = 0;
     mSledValue = 180;
     rotDir = 0;
-    mPeriodCount = 0;
     logfile = fopen("logfile.dat", "wt");
     isMarineMode = true;
     range_max = RADAR_RESOLUTION;
@@ -1251,6 +1252,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     unsigned char n_clk_adc = data[4];
     sn_stat = (data[5]<<8)+data[6];
     mUpdateTime = clock();
+    CConfig::mStat.mFrameCount++;
     if(clk_adc != n_clk_adc)
     {
         // clock adc
@@ -1260,6 +1262,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
         resetData();
     }
     uint newAzi =0;
+//    azi queue
     if(giaQuayPhanCung)
     {
         newAzi = ((data[11]<<8)|data[12])>>5;
@@ -1284,7 +1287,11 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
         if(data[0]==0x55)//TH tao gia
         {
             newAzi = (data[2]<<8)|data[3];
-
+            int heading = (CConfig::mStat.getShipHeadingDeg())/360.0*MAX_AZIR;
+            newAzi+= heading;
+            if(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
+            //printf("\nheading:%d",heading);
+            //printf(" newAzi:%d",newAzi);
         }
         else
         {
@@ -1322,19 +1329,41 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
         return;
     }
     if(curAzir==newAzi)return;
+
     //if(newAzi==0)dir= !dir;
-    int dazi = newAzi-curAzir;
-    if(abs(dazi)>10&&((MAX_AZIR -abs(dazi))>10))
+    double dazi = newAzi-mRealAzi;
+    if(dazi>MAX_AZIR/2)dazi = dazi-MAX_AZIR;
+    if(abs(dazi)>10)
     {
-        init_time+=2;
-        curAzir=newAzi;
-        memcpy(&data_mem.level[curAzir][0],data+FRAME_HEADER_SIZE,range_max);
-        memcpy(&data_mem.dopler[curAzir][0],data+FRAME_HEADER_SIZE+range_max,range_max);
-        aziToProcess.push(curAzir);
+        mRealAziRate=0.5;
+        mRealAzi=newAzi;
     }
-    else if(dazi<0&&(-dazi)<MAX_AZIR/2)//quay nguoc
+    else
     {
-        while(curAzir != newAzi)
+        mRealAziRate+=(dazi-mRealAziRate)/10.0;
+        mRealAzi+=mRealAziRate;
+    }
+
+
+    int intAzi=int(mRealAzi);
+    printf("\nmRealAzi:%f mRealAziRate:%f",mRealAzi,mRealAziRate);
+    curAzir = intAzi;
+    memcpy(&data_mem.level[curAzir][0],data+FRAME_HEADER_SIZE,range_max);
+    memcpy(&data_mem.dopler[curAzir][0],data+FRAME_HEADER_SIZE+range_max,range_max);
+    aziToProcess.push(curAzir);
+    return;
+    if(abs(dazi)>10&&((MAX_AZIR -abs(dazi))>10))//skip big amount
+    {
+
+        init_time+=2;
+        mRealAzi = newAzi;
+        mRealAziRate = 0;
+        curAzir =   int(mRealAzi);
+
+    }
+    else if(dazi<0&&(-dazi)<MAX_AZIR/2)//quay nguoc small amount
+    {
+        while(curAzir != intAzi)
         {
             curAzir--;
             if(curAzir<0)curAzir+=MAX_AZIR;
@@ -1343,10 +1372,20 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
             aziToProcess.push(curAzir);
         }
     }
-    else if(dazi>0&&(dazi)<MAX_AZIR/2)//quay thuan
+    else if(dazi>0&&(dazi)<MAX_AZIR/2)//quay thuan small
     {
-
-        while(curAzir != newAzi)
+        while(curAzir != intAzi)
+        {
+            curAzir++;
+            if(curAzir>=MAX_AZIR)curAzir-=MAX_AZIR;
+            memcpy(&data_mem.level[curAzir][0],data+FRAME_HEADER_SIZE,range_max);
+            memcpy(&data_mem.dopler[curAzir][0],data+FRAME_HEADER_SIZE+range_max,range_max);
+            aziToProcess.push(curAzir);
+        }
+    }
+    else if(dazi<0&&(-dazi)>MAX_AZIR/2)//quay thuan qua diem 0 small
+    {
+        while(curAzir != intAzi)
         {
 
             curAzir++;
@@ -1356,23 +1395,10 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
             aziToProcess.push(curAzir);
         }
     }
-    else if(dazi<0&&(-dazi)>MAX_AZIR/2)//quay thuan qua diem 0
+    else if(dazi>0&&(dazi)>MAX_AZIR/2)//quay nguoc qua diem 0 small
     {
-        while(curAzir != newAzi)
+        while(curAzir != intAzi)
         {
-
-            curAzir++;
-            if(curAzir>=MAX_AZIR)curAzir-=MAX_AZIR;
-            memcpy(&data_mem.level[curAzir][0],data+FRAME_HEADER_SIZE,range_max);
-            memcpy(&data_mem.dopler[curAzir][0],data+FRAME_HEADER_SIZE+range_max,range_max);
-            aziToProcess.push(curAzir);
-        }
-    }
-    else if(dazi>0&&(dazi)>MAX_AZIR/2)//quay nguoc qua diem 0
-    {
-        while(curAzir != newAzi)
-        {
-
             curAzir--;
             if(curAzir<0)curAzir+=MAX_AZIR;
             memcpy(&data_mem.level[curAzir][0],data+FRAME_HEADER_SIZE,range_max);
@@ -1596,13 +1622,12 @@ void C_radar_data::UpdateData()
         aziToProcess.pop();
         if(azi==lastProcessAzi)
         {
-
             continue;
         }
         ProcessData(azi,lastProcessAzi);
-        mPeriodCount++;
+
         drawAzi(azi);
-        if(!((unsigned char)(((unsigned char)mPeriodCount)<<3)))//xu ly moi 32 chu ky
+        if(!(((unsigned char)azi)<<3))//xu ly moi 32 chu ky
         {
             now_ms = (QDateTime::currentMSecsSinceEpoch());//QDateTime::currentMSecsSinceEpoch();
             //ProcessObjects();
@@ -1613,6 +1638,7 @@ void C_radar_data::UpdateData()
                 mulOf16Azi=0;
                 ProcessEach90Deg();
             }
+            if(init_time>20)init_time=20;
             if(init_time)init_time--;
             for(unsigned short i = 0;i<plot_list.size();++i)
             {
@@ -1726,7 +1752,7 @@ void C_radar_data::procPLot(plot_t* mPlot)
     newobject.timeMs = now_ms;
     newobject.isRemoved = false;
     newobject.dazi = dAz;
-    newobject.period = mPeriodCount;
+    newobject.period = CConfig::mStat.mFrameCount;
     float ctR = (float)mPlot->sumR/(float)mPlot->size+0.5;//min value starts at 1
     if(ctR<mPlot->minR||ctR>mPlot->maxR+1)printf("\nWrong ctR");
     //todo: tinh dopler histogram

@@ -84,6 +84,7 @@ double dataProcessingThread::getSelsynAzi() const
 }
 dataProcessingThread::dataProcessingThread()
 {
+    mFramesPerSec=0;
     isPaused = false;
     mRadMode = ModeComplexSignal;
     mAntennaAzi = 0;
@@ -122,11 +123,12 @@ dataProcessingThread::dataProcessingThread()
         }
         port++;
     }
-    connect(&commandSendTimer, &QTimer::timeout, this, &dataProcessingThread::PushCommandQueue);
-    commandSendTimer.start(100);
+    connect(&commandSendTimer, &QTimer::timeout, this, &dataProcessingThread::Timer200ms);
+    commandSendTimer.start(200);
     connect(&readUdpBuffTimer, &QTimer::timeout, this, &dataProcessingThread::ReadDataBuffer);
     readUdpBuffTimer.start(20);
     initSerialComm();
+
 }
 void dataProcessingThread::ReadNavData()
 {
@@ -198,8 +200,11 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
     {
         CConfig::mStat.cGyroUpdateTime = clock();
         double heading = (((mReceiveBuff[6])<<8)|mReceiveBuff[7])/182.044444444;//deg
-        double headingRate = degrees((((mReceiveBuff[12])<<8)|mReceiveBuff[13])/10430.21919552736);//deg per sec
-        CConfig::mStat.inputGyro(heading,headingRate);
+        //double headingRate = degrees((((mReceiveBuff[12])<<8)|mReceiveBuff[13])/10430.21919552736);//deg per sec
+        double headingRate = ((mReceiveBuff[12])<<8)+mReceiveBuff[13];
+        if(headingRate>32768.0)headingRate=headingRate-65536.0;
+        headingRate/=32768.0;
+        CConfig::mStat.inputGyro(heading,degrees(headingRate));
         //int vy = (((mReceiveBuff[18])<<8)|mReceiveBuff[19]);
         //int vx = (((mReceiveBuff[20])<<8)|mReceiveBuff[21]);
         //CConfig::mStat.sh = sqrt(vy*vy+vx*vx)*0.00388768898488120950323974082073;//*2/1000000/CONST_NM*36000; kn
@@ -420,8 +425,10 @@ void dataProcessingThread::sendAziData()
     sendBuf[8]=0;
     sendCommand(&sendBuf[0],9,false);
 }
-void dataProcessingThread::PushCommandQueue()
+
+void dataProcessingThread::Timer200ms()
 {
+    CalculateRFR();
     sendAziData();
     if(radarComQ.size())
     {
@@ -521,10 +528,10 @@ void dataProcessingThread::StopProcessing()
 
     deleteLater();
 }
-void dataProcessingThread::setIsDrawn(bool value)
+/*void dataProcessingThread::setIsDrawn(bool value)
 {
     //isDrawn = value;
-}
+}*/
 
 void dataProcessingThread::SetRadarPort( unsigned short portNumber)
 {
@@ -622,11 +629,16 @@ void dataProcessingThread::processRadarData()
 {
 
 }
-
+static unsigned long int lastFrameCount=0;
 static uchar mReceiveBuff[1000];
+void dataProcessingThread::CalculateRFR()
+{
+    double fDrame = double(CConfig::mStat.mFrameCount-lastFrameCount);
+    mFramesPerSec = fDrame*5;
+    lastFrameCount=CConfig::mStat.mFrameCount;
+}
 void dataProcessingThread::run()
 {
-
     while(true)
     {
 
@@ -661,7 +673,7 @@ void dataProcessingThread::run()
 
 bool dataProcessingThread::getIsDrawn()
 {
-    if(!mRadarData->mUpdateTime){mRadarData->mUpdateTime = true;return false;}
+    if(clock()-mRadarData->mUpdateTime<2000){mRadarData->mUpdateTime = true;return false;}
     else return true;
 
 

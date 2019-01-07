@@ -12,6 +12,7 @@ radarStatus_3C CConfig::mStat ;
 radarStatus_3C::radarStatus_3C()
 {
 //    isStatChange = false;
+    mFrameCount = 0;
     memset(&(msgGlobal[0]),0,32);
     cAisUpdateTime      = clock();
     cGpsUpdateTime      = clock();
@@ -52,9 +53,12 @@ void radarStatus_3C::setShipSpeed(double value)
 
 double radarStatus_3C::getShipHeadingDeg()
 {
-    return shipHeadingDeg+shipHeadingRate_dps*(getAgeGyro()/1000.0);
+    return shipHeadingDeg;
 }
-
+double radarStatus_3C::getshipHeadingRate_dps()
+{
+    return shipHeadingRate_dps;
+}
 QHash<QString, QString> CConfig::mHashData = CConfig::readFile();
 volatile long long int CConfig::time_now_ms = 0;
 void CConfig::setValue(QString key, double value)

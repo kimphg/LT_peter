@@ -15,8 +15,12 @@ public:
     explicit DialogConfig(QWidget *parent = 0);
     ~DialogConfig();
 
+    void Reload();
+    void SaveConfig();
 private slots:
     void on_pushButton_load_clicked();
+
+    void on_pushButton_save_clicked();
 
 private:
     Ui::DialogConfig *ui;

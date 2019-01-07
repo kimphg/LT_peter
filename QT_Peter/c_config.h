@@ -80,6 +80,7 @@ private:
 
 
 public:
+    unsigned     long int       mFrameCount;
     double mLat,mLon;
     double shipSpeed;
     double shipCourseDeg;
@@ -119,6 +120,7 @@ public:
     double getShipHeadingDeg();
     void setShipSpeed(double value);
     void setShipCourse(double value);
+    double getshipHeadingRate_dps();
 };
 class CConfig
 {
@@ -138,12 +140,12 @@ public:
     static QString getString(QString key, QString defaultValue="0");
     static int     getInt(QString key, int defaultValue=0);
     static void    setDefault();
-    static void     SaveToFile();
+    static void    SaveToFile();
     static void ReportError(const char *error);
     //static QXmlStreamReader xml;
-
-private:
     static QHash<QString, QString> readFile();
+private:
+
     static QHash<QString, QString> readFile(QString fileName);
 
 };
