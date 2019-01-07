@@ -299,7 +299,7 @@ public:
     void setAutorgs( bool aut);
     void                    clearPPI();
     unsigned char           moduleVal;
-    double                  aziOffsetRad;
+    double                  aziViewOffsetRad;
     double                  aziRotCorrection;
     DataOverLay             dataOver;
     //    unsigned char           noise_level[8];
@@ -331,7 +331,7 @@ public:
 
         while(trueN_deg<0)trueN_deg+=360;
         while(trueN_deg>=360)trueN_deg-=360;
-        aziOffsetRad =radians(trueN_deg);
+        aziViewOffsetRad =radians(trueN_deg);
         raw_map_init();
         resetTrack();
     }

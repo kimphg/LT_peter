@@ -27,10 +27,10 @@ static short lastProcessAzi = 0;
 static short currProcessAzi = 0;
 static short curIdCount = 1;
 static qint64 cur_rot_timeMSecs ;//= QDateTime::currentMSecsSinceEpoch();
-
-static float                   rot_period_sec =0;
+static int antennaHeadOffset;
+static float                   rot_period_min =0;
 static short histogram[256];
-qint64   now_ms ;
+//qint64   CConfig::time_now_ms ;
 typedef struct  {
     //processing dataaziQueue
     unsigned char level [MAX_AZIR][RADAR_RESOLUTION];
@@ -234,7 +234,7 @@ double C_primary_track::LinearFitCost(object_t *myobj)
     {
         y1[i] = obj[i]->xkm;
         y2[i] = obj[i]->ykm;
-        t[i] = int(now_ms-obj[i]->timeMs);
+        t[i] = int(CConfig::time_now_ms-obj[i]->timeMs);
     }
     double y1sum = 0;//r1+r2+r3;
     double y2sum = 0;
@@ -362,7 +362,7 @@ double C_primary_track::estimateScore(object_t *obj1)
 void C_primary_track::update()
 {
     isUpdating = true;
-    ageMs=now_ms-lastTimeMs;
+    ageMs=CConfig::time_now_ms-lastTimeMs;
     if(ageMs>180000)
         mState = TrackState::removed;
     else
@@ -370,7 +370,7 @@ void C_primary_track::update()
             mState = TrackState::lost;
     if(possibleMaxScore>0)
     {
-        if(now_ms-possibleObj.timeMs>300)
+        if(CConfig::time_now_ms-possibleObj.timeMs>300)
         {
             objectList.push_back(possibleObj);
             while(objectList.size()>4)
@@ -473,7 +473,7 @@ double xsum=0,x2sum=0,ysum=0,xysum=0;
     {
         y1[i] = obj[i].xkm;
         y2[i] = obj[i].ykm;
-        t[i]  = int(now_ms- obj[i].timeMs);
+        t[i]  = int(CConfig::time_now_ms- obj[i].timeMs);
     }
     double y1sum = 0;//r1+r2+r3;
     double y2sum = 0;
@@ -520,6 +520,10 @@ double xsum=0,x2sum=0,ysum=0,xysum=0;
 
 C_radar_data::C_radar_data()
 {
+    antennaHeadOffset=CConfig::getInt("antennaHeadOffset",0);
+    while((antennaHeadOffset)>=MAX_AZIR)antennaHeadOffset-=MAX_AZIR;
+    while((antennaHeadOffset)<=0)antennaHeadOffset+=MAX_AZIR;
+
     mInverseRotAziCorrection = CConfig::getDouble("mInverseRotAziCorrection",0)/360.0*MAX_AZIR;
     mRealAziRate = 0;
     mUpdateTime = clock();
@@ -532,7 +536,7 @@ C_radar_data::C_radar_data()
     isTrueHeadingFromRadar = true;
     rgStdErr = sn_scale*pow(2,clk_adc);
     azi_er_rad = CConfig::getDouble("azi_er_rad",AZI_ERROR_STD);
-    now_ms = QDateTime::currentMSecsSinceEpoch();
+    CConfig::time_now_ms = QDateTime::currentMSecsSinceEpoch();
     mFalsePositiveCount = 0;
     mSledValue = 180;
     isInverseRotation = 0;
@@ -611,13 +615,13 @@ C_radar_data::~C_radar_data()
 
 double C_radar_data::getArcMaxAziRad() const
 {
-    double result = (aziOffsetRad+(double)arcMaxAzi/(double)MAX_AZIR*PI_NHAN2);
+    double result = ((double)arcMaxAzi/(double)MAX_AZIR*PI_NHAN2);
     if(result>PI_NHAN2)result-=PI_NHAN2;
     return ( result);
 }
 double C_radar_data::getArcMinAziRad() const
 {
-    double result = (aziOffsetRad+(double)arcMinAzi/(double)MAX_AZIR*PI_NHAN2);
+    double result = ((double)arcMinAzi/(double)MAX_AZIR*PI_NHAN2);
     if(result>PI_NHAN2)result-=PI_NHAN2;
     return (result );
 }
@@ -626,7 +630,7 @@ void C_radar_data::addDetectionZone(double x, double y, double dazi, double drg)
 {
     DetectionWindow dw;
     dw.trackCount=1;
-    dw.timeStart=now_ms;
+    dw.timeStart=CConfig::time_now_ms;
     dw.xkm=x;
     dw.ykm=y;
     kmxyToPolarDeg(x,y,&dw.aziDeg,&dw.rg);
@@ -634,7 +638,7 @@ void C_radar_data::addDetectionZone(double x, double y, double dazi, double drg)
     dw.maxDrg = drg;
     for(uint i=0;i<mDetectZonesList.size();i++)
     {
-        if(mDetectZonesList[i].trackCount==0||(now_ms-dw.timeStart>80000))
+        if(mDetectZonesList[i].trackCount==0||(CConfig::time_now_ms-dw.timeStart>80000))
         {
             mDetectZonesList[i] = dw;
             return;
@@ -656,7 +660,7 @@ void C_radar_data::setSelfRotationAzi(int value)
 double C_radar_data::getCurAziRad() const
 {
 
-    double result = (aziOffsetRad+(double)curAzir/(double)MAX_AZIR*PI_NHAN2);
+    double result = ((double)curAzir/(double)MAX_AZIR*PI_NHAN2);
     if(result>PI_NHAN2)result-=PI_NHAN2;
     return ( result);
 }
@@ -1166,7 +1170,7 @@ void C_radar_data::ProcessEach90Deg()
 
         if(!mFreeObjList.at(i).isRemoved)
         {
-            if((now_ms-mFreeObjList.at(i).timeMs)>80000)
+            if((CConfig::time_now_ms-mFreeObjList.at(i).timeMs)>80000)
                 mFreeObjList.at(i).isRemoved = true;
             else nObj++;
         }
@@ -1189,12 +1193,12 @@ void C_radar_data::ProcessEach90Deg()
 
     //calculate rotation speed
 
-    qint64 newtime = now_ms;
+    qint64 newtime = CConfig::time_now_ms;
     qint64 dtime = newtime - cur_rot_timeMSecs;
     if(dtime<60000&&dtime>0)
     {
-        rot_period_sec = (dtime/15000.0);// *4/60
-        rotation_per_min =1/rot_period_sec;
+        rot_period_min = (dtime/15000.0);// *4/60
+        rotation_per_min =1/rot_period_min;
 
         if(isSelfRotation)
         {
@@ -1248,7 +1252,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     memcpy(mHeader,data,FRAME_HEADER_SIZE);
     unsigned char n_clk_adc = data[4];
     sn_stat = (data[5]<<8)+data[6];
-    mUpdateTime = clock();
+
     CConfig::mStat.mFrameCount++;
     if(clk_adc != n_clk_adc)
     {
@@ -1285,7 +1289,8 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
         {
             newAzi = (data[2]<<8)|data[3];
             int heading = (CConfig::mStat.getShipHeadingDeg())/360.0*MAX_AZIR;
-            newAzi+= heading;
+            newAzi+= (heading+antennaHeadOffset);
+
             if(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
             //printf("\nheading:%d",heading);
             //printf(" newAzi:%d",newAzi);
@@ -1301,7 +1306,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
                 //CConfig::shipHeadingDeg = heading/double(MAX_AZIR)*180.0;
 
                 newAzi = ssiDecode(newAzi);
-                newAzi += heading;
+                newAzi += (heading+antennaHeadOffset);
                 if(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
             }
             else
@@ -1311,7 +1316,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
                 newAzi>>=3;
                 newAzi&=0xffff;
                 newAzi = ssiDecode(newAzi);
-                newAzi+= heading;
+                newAzi+= (heading+antennaHeadOffset);
                 if(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
             }
 
@@ -1630,6 +1635,7 @@ void C_radar_data::LeastSquareFit(C_primary_track* track)
 ushort processing_azi_count = 0;
 void C_radar_data::UpdateData()
 {
+    mUpdateTime = clock();
     int nowAzir =curAzir ;
     int diff = nowAzir-currProcessAzi;
     if(!diff)return;
@@ -1657,9 +1663,9 @@ void C_radar_data::UpdateData()
         lastProcessAzi = currProcessAzi;
         drawAzi(currProcessAzi);
         processing_azi_count++;
-        if(!(((unsigned char)processing_azi_count)<<3))//xu ly moi 32 chu ky
+        if(!(processing_azi_count%16))//xu ly moi 16 chu ky
         {
-            now_ms = (QDateTime::currentMSecsSinceEpoch());//QDateTime::currentMSecsSinceEpoch();
+            CConfig::time_now_ms = (QDateTime::currentMSecsSinceEpoch());//QDateTime::currentMSecsSinceEpoch();
             //ProcessObjects();
             ProcessTracks();
             if(!(processing_azi_count%512))//xu ly moi 512 chu ky
@@ -1777,7 +1783,7 @@ void C_radar_data::procPLot(plot_t* mPlot)
     }
 
     object_t newobject;
-    newobject.timeMs = now_ms;
+    newobject.timeMs = CConfig::time_now_ms;
     newobject.isRemoved = false;
     newobject.dazi = dAz;
     newobject.period = CConfig::mStat.mFrameCount;
@@ -1796,7 +1802,7 @@ void C_radar_data::procPLot(plot_t* mPlot)
     }
     newobject.dopler = mPlot->dopler;
     //newobject.terrain = data_mem.terrain[short(ctA)][short(ctR)];
-    newobject.azRad   = ctA/float(MAX_AZIR/PI_NHAN2)+aziOffsetRad;
+    newobject.azRad   = ctA/float(MAX_AZIR/PI_NHAN2);
     if(newobject.azRad>PI_NHAN2)newobject.azRad-=PI_NHAN2;
     newobject.rg   = ctR;
     newobject.rgKm =  ctR*sn_scale;
@@ -1868,7 +1874,7 @@ void C_radar_data::drawRamp(double azi)
     img_RAmp->fill(Qt::black);
     //newobject.az   = ctA/MAX_AZIR*PI_NHAN2+trueN;
     azi/=DEG_RAD;
-    azi-=aziOffsetRad;
+    azi-=aziViewOffsetRad;
     if(azi<0)azi+=PI_NHAN2;
     int az = azi/PI_NHAN2*MAX_AZIR;
     for (short r_pos = 0;r_pos<range_max;r_pos++)
@@ -2138,7 +2144,7 @@ void C_radar_data::setZoomRectAR(float ctx, float cty,double sizeKM,double sizeD
         if(ctx>0)cta = PI_CHIA2;
         else cta = -PI_CHIA2;
     }
-    else cta = atan(ctx/cty)-aziOffsetRad;
+    else cta = atan(ctx/cty)-aziViewOffsetRad;
     if(cty<0)cta+=PI;
     if(cta<0)cta += PI_NHAN2;
     if(cta>PI_NHAN2)cta-=PI_NHAN2;
@@ -2201,7 +2207,7 @@ void C_radar_data::setAutorgs(bool aut)
 }
 void C_radar_data::raw_map_init()
 {
-    double theta=aziOffsetRad;
+    double theta=0;
     double dTheta = 2*PI/MAX_AZIR_DRAW;
     for(short azir = 0; azir < MAX_AZIR_DRAW; azir++)
     {
@@ -2223,7 +2229,7 @@ void C_radar_data::raw_map_init()
 void C_radar_data::raw_map_init_zoom()
 {
     img_zoom_ppi->fill(Qt::black);
-    float theta=aziOffsetRad;
+    float theta=0;
     float dTheta = 2*PI/MAX_AZIR_DRAW;
     for(short azir = 0; azir < MAX_AZIR_DRAW; azir++)
     {
@@ -2568,7 +2574,7 @@ void C_radar_data::CreateTrack(object_t* obj1,object_t* obj2)
     {
         DetectionWindow *dw = &mDetectZonesList[i];
         if(!dw->trackCount)continue;
-        if((now_ms-dw->timeStart>80000)){dw->trackCount=0;continue;}
+        if((CConfig::time_now_ms-dw->timeStart>80000)){dw->trackCount=0;continue;}
         if((abs(degrees(obj2->azRad)-dw->aziDeg))<dw->maxDazDeg
             &&(abs(obj2->rgKm-dw->rg)<dw->maxDrg)
                 )
