@@ -262,7 +262,8 @@ public:
     ~C_radar_data();
 //    float k_vet;// !!!!
 
-    short                       rotDir;
+    bool                       isInverseRotation;
+    double                      mInverseRotAziCorrection;
     double                      rotation_per_min ;
     double                      azi_er_rad;
     std::vector<C_primary_track>        mTrackList;
@@ -372,7 +373,7 @@ private:
 
     int mFalsePositiveCount;
     float hsTap ;
-    std::queue<int>  aziToProcess;//hàng chờ các frame cần xử lý
+//    std::queue<int>  aziToProcess;//hàng chờ các frame cần xử lý
     //QVector<QRgb> colorTable;
     double      selfRotationDazi,selfRotationRate;
     double      selfRotationAzi;

@@ -22,8 +22,9 @@
 static  FILE *logfile;
 int C_primary_track::IDCounter =1;
 static int sumvar = 0;
-static int nNoiseCalculator = 0;
+static int nNoiseFrameCount = 0;
 static short lastProcessAzi = 0;
+static short currProcessAzi = 0;
 static short curIdCount = 1;
 static qint64 cur_rot_timeMSecs ;//= QDateTime::currentMSecsSinceEpoch();
 
@@ -519,6 +520,7 @@ double xsum=0,x2sum=0,ysum=0,xysum=0;
 
 C_radar_data::C_radar_data()
 {
+    mInverseRotAziCorrection = CConfig::getDouble("mInverseRotAziCorrection",0)/360.0*MAX_AZIR;
     mRealAziRate = 0;
     mUpdateTime = clock();
     aziRotCorrection = CConfig::getDouble("aziRotCorrection");
@@ -533,7 +535,7 @@ C_radar_data::C_radar_data()
     now_ms = QDateTime::currentMSecsSinceEpoch();
     mFalsePositiveCount = 0;
     mSledValue = 180;
-    rotDir = 0;
+    isInverseRotation = 0;
     logfile = fopen("logfile.dat", "wt");
     isMarineMode = true;
     range_max = RADAR_RESOLUTION;
@@ -768,7 +770,7 @@ void C_radar_data::drawBlackAzi(short azi_draw)
 void C_radar_data::drawAzi(short azi)
 {
 
-    int leftAzi = azi-1;if(leftAzi<0)leftAzi+=MAX_AZIR;
+    /*int leftAzi = azi-1;if(leftAzi<0)leftAzi+=MAX_AZIR;
     int rightAzi = azi +1; if(rightAzi>=MAX_AZIR)rightAzi-=MAX_AZIR;
     if(lastProcessAzi==leftAzi)
     {
@@ -785,10 +787,10 @@ void C_radar_data::drawAzi(short azi)
             rotDir++;
             if(rotDir==0)init_time+=2;
         }
-    }
+    }*/
 
 
-    if(rotDir<0)
+    if(isInverseRotation)
     {
         //reset the display masks
         short prev_azi = azi - 20;
@@ -926,11 +928,11 @@ void  C_radar_data::getNoiseLevel()
 {
 
 
-    if(nNoiseCalculator<50)return;
+    if(nNoiseFrameCount<50)return;
 
     short histogram_max_val=1;
     short histogram_max_pos=0;
-    noiseVar+=(sumvar/float(nNoiseCalculator)-noiseVar)/2.0f;
+    noiseVar+=(sumvar/float(nNoiseFrameCount)-noiseVar)/2.0f;
     if(noiseVar<7)noiseVar = 7;
     for(short i = 0;i<256;i++)
     {
@@ -964,7 +966,7 @@ void  C_radar_data::getNoiseLevel()
         if(j>50)img_histogram->setPixel(thresh,j,1);
     }
     //printf("\ntrung binh tap:%f, var:%f",noiseAverage,noiseVar);
-    nNoiseCalculator=0;
+    nNoiseFrameCount=0;
     memset(histogram,0,256);
     sumvar = 0;
 
@@ -1156,7 +1158,7 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
 void C_radar_data::ProcessEach90Deg()
 {
     //DetectTracks();
-    getNoiseLevel();
+
     //remove old points
     int nObj = 0;
     for (uint i=0;i<mFreeObjList.size();i++)
@@ -1186,26 +1188,21 @@ void C_radar_data::ProcessEach90Deg()
     mFalsePositiveCount = 0;
 
     //calculate rotation speed
-    if(cur_rot_timeMSecs)
+
+    qint64 newtime = now_ms;
+    qint64 dtime = newtime - cur_rot_timeMSecs;
+    if(dtime<60000&&dtime>0)
     {
-        qint64 newtime = now_ms;
-        qint64 dtime = newtime - cur_rot_timeMSecs;
-        if(dtime<50000&&dtime>0)
+        rot_period_sec = (dtime/15000.0);// *4/60
+        rotation_per_min =1/rot_period_sec;
+
+        if(isSelfRotation)
         {
-            rot_period_sec = (dtime/1000.0);
-            rotation_per_min += (15.0/rot_period_sec-rotation_per_min)/2.0;
-            cur_rot_timeMSecs = newtime;
-            if(isSelfRotation)
-            {
-                double rateError = rotation_per_min/selfRotationRate;
-                selfRotationDazi/=rateError;
-            }
+            double rateError = rotation_per_min/selfRotationRate;
+            selfRotationDazi/=rateError;
         }
     }
-    else
-    {
-        cur_rot_timeMSecs = now_ms;
-    }
+    cur_rot_timeMSecs = newtime;
 
 
 }
@@ -1319,8 +1316,6 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
             }
 
         }
-
-
     }
     newAzi&=0x07ff;
     if(data[0]==4)// du lieu may hoi
@@ -1328,38 +1323,57 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
         ProcessGOData(data, len,newAzi);
         return;
     }
-    if(curAzir==newAzi)return;
+    //if(curAzir==newAzi)return;
 
     //if(newAzi==0)dir= !dir;
     double dazi = newAzi-mRealAzi;
-    if(dazi>MAX_AZIR/2)dazi = dazi-MAX_AZIR;
-    if(abs(dazi)>10)
+    if(dazi>MAX_AZIR/2)dazi = dazi-MAX_AZIR;else if(dazi<(-MAX_AZIR/2))dazi = dazi+MAX_AZIR;
+//    if(true)
+//    {
+//        printf("\n newAzi:%4d dazi:%2.2f",newAzi,dazi);
+//        printf("   mRealAzi:%4.2f mRealAziRate:%2.2f",mRealAzi,mRealAziRate);
+//        printf("   curAzir:%d",curAzir);
+//    }
+    if((abs(dazi)>10))
     {
         mRealAziRate=0.5;
         mRealAzi=newAzi;
+        init_time+=2;
+        //printf("\n newAzi:%4d init_time:%d",newAzi,init_time);
     }
     else
     {
         mRealAziRate+=(dazi-mRealAziRate)/10.0;
+        if(mRealAziRate>10)mRealAziRate=10;
+        else if(mRealAziRate<-10)mRealAziRate=-10;
         mRealAzi+=mRealAziRate;
     }
-
-
-    int intAzi=int(mRealAzi);
-    printf("\nmRealAzi:%f mRealAziRate:%f",mRealAzi,mRealAziRate);
-    curAzir = intAzi;
-    memcpy(&data_mem.level[curAzir][0],data+FRAME_HEADER_SIZE,range_max);
-    memcpy(&data_mem.dopler[curAzir][0],data+FRAME_HEADER_SIZE+range_max,range_max);
-    aziToProcess.push(curAzir);
-    return;
-    if(abs(dazi)>10&&((MAX_AZIR -abs(dazi))>10))//skip big amount
+    int intAzi;
+    if(mRealAziRate<0)intAzi=int(mRealAzi+mInverseRotAziCorrection+0.5);
+    else intAzi=int(mRealAzi+0.5);
+    if(intAzi>=MAX_AZIR){mRealAzi-=MAX_AZIR;intAzi-=MAX_AZIR;}
+    else if(intAzi<=0)  {mRealAzi+=MAX_AZIR;intAzi+=MAX_AZIR;}
+    if(curAzir==intAzi)return;
+    int diff = intAzi -curAzir;
+    if(diff>MAX_AZIR/2)diff = diff-MAX_AZIR;else if(diff<(-MAX_AZIR/2))diff = diff+MAX_AZIR;
+    while (curAzir != intAzi)
     {
+        if(abs(diff)>10)curAzir = intAzi;
+        else if(diff>0)  {curAzir++;if(curAzir>=MAX_AZIR)curAzir-=MAX_AZIR;}
+        else        {curAzir--;if(curAzir<0)        curAzir+=MAX_AZIR;}
+        memcpy(&data_mem.level[curAzir][0],data+FRAME_HEADER_SIZE,range_max);
+        memcpy(&data_mem.dopler[curAzir][0],data+FRAME_HEADER_SIZE+range_max,range_max);
+        //aziToProcess.push(curAzir);
 
+    }
+
+    return;
+    /*if(abs(dazi)>10&&((MAX_AZIR -abs(dazi))>10))//skip big amount
+    {
         init_time+=2;
         mRealAzi = newAzi;
         mRealAziRate = 0;
         curAzir =   int(mRealAzi);
-
     }
     else if(dazi<0&&(-dazi)<MAX_AZIR/2)//quay nguoc small amount
     {
@@ -1408,7 +1422,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     }
 
 
-    return;
+    return;*/
 }
 void C_radar_data::SelfRotationOn( double rate)
 {
@@ -1613,38 +1627,53 @@ void C_radar_data::LeastSquareFit(C_primary_track* track)
 //    delete[] a;
 */
 }
-ushort mulOf16Azi = 0;
+ushort processing_azi_count = 0;
 void C_radar_data::UpdateData()
 {
-    while(aziToProcess.size()>5)
+    int nowAzir =curAzir ;
+    int diff = nowAzir-currProcessAzi;
+    if(!diff)return;
+    if(diff>MAX_AZIR/2)diff = diff-MAX_AZIR;else if(diff<(-MAX_AZIR/2))diff = diff+MAX_AZIR;
+    if(abs(diff)>100){currProcessAzi =  nowAzir;init_time++;return;}
+    while (nowAzir != currProcessAzi)
     {
-        int azi = aziToProcess.front();
-        aziToProcess.pop();
-        if(azi==lastProcessAzi)
+        if(diff>0)
+        {
+            currProcessAzi++;
+            if(currProcessAzi>=MAX_AZIR)currProcessAzi-=MAX_AZIR;
+            isInverseRotation = false;
+        }
+        else
+        {
+            currProcessAzi--;
+            if(currProcessAzi<0)currProcessAzi+=MAX_AZIR;
+            isInverseRotation = true;
+        }
+        if(currProcessAzi==lastProcessAzi)
         {
             continue;
         }
-        ProcessData(azi,lastProcessAzi);
-
-        drawAzi(azi);
-        if(!(((unsigned char)azi)<<3))//xu ly moi 32 chu ky
+        ProcessData(currProcessAzi,lastProcessAzi);
+        lastProcessAzi = currProcessAzi;
+        drawAzi(currProcessAzi);
+        processing_azi_count++;
+        if(!(((unsigned char)processing_azi_count)<<3))//xu ly moi 32 chu ky
         {
             now_ms = (QDateTime::currentMSecsSinceEpoch());//QDateTime::currentMSecsSinceEpoch();
             //ProcessObjects();
             ProcessTracks();
-            mulOf16Azi++;
-            if(mulOf16Azi>16)// 1/4 vong quet
+            if(!(processing_azi_count%512))//xu ly moi 512 chu ky
             {
-                mulOf16Azi=0;
                 ProcessEach90Deg();
+                getNoiseLevel();
             }
-            if(init_time>20)init_time=20;
+            if(init_time>5)init_time=5;
             if(init_time)init_time--;
             for(unsigned short i = 0;i<plot_list.size();++i)
             {
                 if(plot_list.at(i).isUsed)
                 {
-                    if((plot_list.at(i).lastA!=lastProcessAzi)&&(plot_list.at(i).lastA!=azi))
+                    if((plot_list.at(i).lastA!=lastProcessAzi)&&(plot_list.at(i).lastA!=currProcessAzi))
                     {
                         procPLot(&plot_list.at(i));
                         plot_list.at(i).isUsed = false;
@@ -1654,9 +1683,9 @@ void C_radar_data::UpdateData()
             }
         }
         // update histogram
-        nNoiseCalculator++;
-        sumvar+= abs(data_mem.level[azi][range_max-200]-data_mem.level[azi][range_max-205]);;
-        unsigned char value = data_mem.level[azi][range_max-200];
+        nNoiseFrameCount++;
+        sumvar+= abs(data_mem.level[currProcessAzi][range_max-200]-data_mem.level[currProcessAzi][range_max-205]);;
+        unsigned char value = data_mem.level[currProcessAzi][range_max-200];
         if(value>5&&value<200)
         {
             histogram[value-3]+=1;
@@ -1668,7 +1697,6 @@ void C_radar_data::UpdateData()
             histogram[value+3]+=1;
         }//
 
-        lastProcessAzi = azi;
 //        aziToProcess.pop();
     }
 
@@ -2257,8 +2285,8 @@ void C_radar_data::resetData()
     memset(data_mem.plotIndex,  0,dataLen);
     memset(data_mem.hot,        0,dataLen);
     memset(data_mem.may_hoi,    0,dataLen);
-    std::queue<int> empty;
-    std::swap( aziToProcess, empty );
+//    std::queue<int> empty;
+//    std::swap( aziToProcess, empty );
     //memset(data_mem.terrain,    TERRAIN_INIT,dataLen);
     //memset(data_mem.rainLevel,  0,dataLen);
     //noiseAverage = 30;

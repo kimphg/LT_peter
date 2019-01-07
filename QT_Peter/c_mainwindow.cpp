@@ -1933,7 +1933,7 @@ void Mainwindow::Update100ms()
 
     if(pRadar->init_time)
     {
-
+        ui->label_azi_antenna_head_true->setText(QString::number(int(CConfig::mStat.antennaAziDeg)));
     }
     else
     {
@@ -1976,6 +1976,7 @@ void Mainwindow::Update100ms()
     {
         QApplication::setOverrideCursor(Qt::ArrowCursor);
     }
+    repaint();
 }
 void Mainwindow::InitNetwork()
 {
@@ -2032,77 +2033,6 @@ void Mainwindow::processARPA()
 
 
 
-
-
-//void MainWindow::on_pauseButton_clicked()
-//{
-//    if(playbackTimer.isActive()){
-//        playbackTimer.stop();
-//        //ui->pauseButton->setText("Start");
-//    }else
-//    {
-//        playbackTimer.start(10);
-//        //ui->pauseButton->setText("Stop");
-//    }
-//}
-
-
-
-//void MainWindow::on_comboBoxViewMode_currentIndexChanged(int index)
-//{
-//    viewMode=index;
-//}
-/*
-void MainWindow::CameraControl(int x,int y, int zoom)
-{
-    char* sendBuff = new char[25];
-    sprintf(sendBuff,"PTZSET %05d %05d %05d", x, y, zoom);
-    udpSocket->writeDatagram(sendBuff,24,QHostAddress("127.0.0.1"),1989);
-    delete[] sendBuff;
-}
-void MainWindow::CameraControl(int direction)
-{
-    char* sendBuff = new char[12];
-    switch(direction)
-    {
-    case 1:
-
-        sprintf(sendBuff,"PTZMOV IN  ");
-        udpSocket->writeDatagram(sendBuff,11,QHostAddress("127.0.0.1"),1989);
-
-        break;
-    case 2:
-        sprintf(sendBuff,"PTZMOV OUT ");
-        udpSocket->writeDatagram(sendBuff,11,QHostAddress("127.0.0.1"),1989);
-        break;
-    case 3:
-        sprintf(sendBuff,"PTZMOV LEFT");
-        udpSocket->writeDatagram(sendBuff,11,QHostAddress("127.0.0.1"),1989);
-        break;
-    case 4:
-        sprintf(sendBuff,"PTZMOV RGHT");
-        udpSocket->writeDatagram(sendBuff,11,QHostAddress("127.0.0.1"),1989);
-        break;
-    default:
-        break;
-    }
-    delete[] sendBuff;
-}
-*/
-
-
-/*
-void MainWindow::sendFrame(const char* hexdata,QHostAddress host,int port )
-{
-    short len = strlen(hexdata)/2+1;
-    unsigned char* sendBuff = new unsigned char[len];
-    hex2bin(hexdata,sendBuff);
-    udpSendSocket->writeDatagram((char*)sendBuff,len-1,host,port);
-    delete[] sendBuff;
-}
-*/
-//void Mainwindow::on_actionExit_triggered()
-//{
 
 //}
 void Mainwindow::ShutDown()
@@ -4583,7 +4513,7 @@ void Mainwindow::on_toolButton_start_simulation_start_clicked(bool checked)
     if(checked)
     {
         simulator->play();//todo: stop receving signal
-        processing->isPaused = true;
+        processing->isSimulationMode = true;
     }
 }
 
@@ -4848,7 +4778,7 @@ void Mainwindow::on_toolButton_start_simulation_stop_clicked(bool checked)
     if(checked)
     {
         simulator->pause();
-        processing->isPaused = false;
+        processing->isSimulationMode = false;
     }
 }
 

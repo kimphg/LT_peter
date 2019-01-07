@@ -7,6 +7,7 @@ DialogConfig::DialogConfig(QWidget *parent) :
 {
     ui->setupUi(this);
     Reload();
+    ui->pushButton_save->setEnabled(false);
 }
 
 DialogConfig::~DialogConfig()
@@ -48,5 +49,11 @@ void DialogConfig::on_pushButton_load_clicked()
 
 void DialogConfig::on_pushButton_save_clicked()
 {
+
     SaveConfig();
+}
+
+void DialogConfig::on_lineEdit_textChanged(const QString &arg1)
+{
+    if(ui->lineEdit->text()=="cndt3108")ui->pushButton_save->setEnabled(true);
 }

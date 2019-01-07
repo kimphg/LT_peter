@@ -24,7 +24,7 @@ void dataProcessingThread::ReadDataBuffer()
     short nread = 0;
     if(iRec!=iRead)
     {
-        if(isPaused)return;
+        if(isSimulationMode)return;
         CConfig::mStat.c21UpdateTime = clock();
     }
     while(iRec!=iRead)
@@ -85,7 +85,7 @@ double dataProcessingThread::getSelsynAzi() const
 dataProcessingThread::dataProcessingThread()
 {
     mFramesPerSec=0;
-    isPaused = false;
+    isSimulationMode = false;
     mRadMode = ModeComplexSignal;
     mAntennaAzi = 0;
     failureCount = 0;
@@ -146,6 +146,7 @@ void dataProcessingThread::ReadNavData()
 void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
 {
     if(len<7)return;
+    if(isSimulationMode)return;
     if(mReceiveBuff[0]==0xaa&&mReceiveBuff[1]==0x55)//system messages
     {
         if(mReceiveBuff[2]==0x65)// trang thai may 2-2

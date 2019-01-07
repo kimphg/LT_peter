@@ -22,6 +22,8 @@ private slots:
 
     void on_pushButton_save_clicked();
 
+    void on_lineEdit_textChanged(const QString &arg1);
+
 private:
     Ui::DialogConfig *ui;
 };
