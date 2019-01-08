@@ -112,8 +112,8 @@ bool CMap::setScaleRatio(int scale)
 void CMap::setImgSize(int width, int height)
 {
     if(mapImage)delete mapImage;
-    mMapWidth = width*1.25;
-    mMapHeight = height*1.25;
+    mMapWidth = width*1.2;
+    mMapHeight = height*1.2;
     // why 1.25??? - mapImage will be rescaled before sending to user
     //with scale ratio from 0.8 to 1.6 original size
     mapImage = new QPixmap(mMapWidth,mMapHeight);

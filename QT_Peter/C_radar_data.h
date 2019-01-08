@@ -299,7 +299,7 @@ public:
     void setAutorgs( bool aut);
     void                    clearPPI();
     unsigned char           moduleVal;
-    double                  aziViewOffsetRad;
+    int                  aziViewOffset;
     double                  aziRotCorrection;
     DataOverLay             dataOver;
     //    unsigned char           noise_level[8];
@@ -327,14 +327,14 @@ public:
     //    void        addTrackManual(double x, double y);
     //    void        addTrack(object_t *mObject);
     static    void        kmxyToPolarDeg(double x, double y, double *azi, double *range);
-    void        setAziOffset(double trueN_deg){
+//    void        setAziOffset(double trueN_deg){
 
-        while(trueN_deg<0)trueN_deg+=360;
-        while(trueN_deg>=360)trueN_deg-=360;
-        aziViewOffsetRad =radians(trueN_deg);
-        raw_map_init();
-        resetTrack();
-    }
+//        while(trueN_deg<0)trueN_deg+=360;
+//        while(trueN_deg>=360)trueN_deg-=360;
+//        aziViewOffsetRad =radians(trueN_deg);
+//        raw_map_init();
+//        resetTrack();
+//    }
     void        setScalePPI(float scale);
     void        setScaleZoom(float scale);
     void        resetData();
@@ -370,7 +370,9 @@ public:
     void addDetectionZone(double x, double y,double dazi,double drg);
     std::vector<DetectionWindow> mDetectZonesList;
 private:
-
+    QTransform mPPITrans;
+//    bool isShipHeadingChanged;
+    int mShipHeading;
     int mFalsePositiveCount;
     float hsTap ;
 //    std::queue<int>  aziToProcess;//hàng chờ các frame cần xử lý
@@ -430,6 +432,9 @@ public:
     //    inline static double ConvXYToRange(double x, double y);
     //    inline static double ConvXYToAziRad(double x, double y);
     void resetGain();
+//    void setShipHeading(int shipHeading);
+    void setShipHeadingDeg(double headingDeg);
+    void setAziViewOffsetDeg(double angle);
 };
 
 //extern C_radar_data radarData;

@@ -44,6 +44,14 @@ class DialogDocumentation;
 //class QPushButton;
 //class QUdpSocket;
 }
+struct ScreenPoint
+{
+    int x,y;
+};
+struct KmXYPoint
+{
+    double x,y;
+};
 class Mainwindow : public QMainWindow
 {
     Q_OBJECT
@@ -51,6 +59,7 @@ class Mainwindow : public QMainWindow
 public:
     explicit Mainwindow(QWidget *parent = nullptr);
     ~Mainwindow();
+    ScreenPoint ConvKmXYToScrPoint(double x, double y);
 protected:
     //void contextMenuEvent(QContextMenuEvent *event);
 //    void keyPressEvent(QKeyEvent *event);
@@ -658,11 +667,14 @@ private:
     void UpdateMay22Status();
     void ViewTrackInfo();
     void gotoCenter();
-    void rotateVector(double angle, short *x, short *y);
+    void rotateVector(double angle, int *x, int *y);
     void SendScaleCommand();
     void DrawDetectZones(QPainter *p);
     void updateSimTargetStatus();
     void ConvXYradar2XYscr();
+    ScreenPoint ConvWGSToScrPoint(double m_Long, double m_Lat);
+    KmXYPoint ConvScrPointToKMXY(int x, int y);
+    void rotateVector(double angle, double *x, double *y);
 };
 
 #endif // MAINWINDOW_H

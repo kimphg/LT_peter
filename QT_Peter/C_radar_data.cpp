@@ -30,6 +30,7 @@ static qint64 cur_rot_timeMSecs ;//= QDateTime::currentMSecsSinceEpoch();
 static int antennaHeadOffset;
 static float                   rot_period_min =0;
 static short histogram[256];
+
 //qint64   CConfig::time_now_ms ;
 typedef struct  {
     //processing dataaziQueue
@@ -596,7 +597,7 @@ C_radar_data::C_radar_data()
     sn_scale = SIGNAL_SCALE_0;
     raw_map_init();
     raw_map_init_zoom();
-    setAziOffset(0);
+//    setAziOffset(0);
     setScalePPI(1);
     resetData();
     setScaleZoom(4);
@@ -646,7 +647,17 @@ void C_radar_data::addDetectionZone(double x, double y, double dazi, double drg)
     }
     mDetectZonesList.push_back(dw);
 }
-
+/*
+void C_radar_data::setShipHeading(int shipHeading)
+{
+    double headingDegOld = mShipHeading*360.0/MAX_AZIR;
+    mShipHeading = shipHeading;
+    double headingDeg = mShipHeading*360.0/MAX_AZIR;
+    mPPITrans.reset();
+    mPPITrans = mPPITrans.rotate((headingDegOld-headingDeg));
+    isShipHeadingChanged = true;
+}
+*/
 double C_radar_data::getSelfRotationAzi() const
 {
     return selfRotationAzi;
@@ -1233,6 +1244,14 @@ int C_radar_data::ssiDecode(ushort nAzi)
     mEncoderVal = nAzi;
     return nAzi>>1;
 }
+void C_radar_data::setShipHeadingDeg(double headingDeg)
+{
+    //double headingDegOld = mShipHeading*360.0/MAX_AZIR;
+    mShipHeading = (headingDeg)/360.0*MAX_AZIR;
+    //mPPITrans.reset();
+    //mPPITrans = mPPITrans.rotate((headingDegOld-headingDeg));
+//    isShipHeadingChanged = true;
+}
 void C_radar_data::ProcessGOData(unsigned char* data,short len, int azi)
 {
     if(len<300)return;
@@ -1288,9 +1307,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
         if(data[0]==0x55)//TH tao gia
         {
             newAzi = (data[2]<<8)|data[3];
-            int heading = (CConfig::mStat.getShipHeadingDeg())/360.0*MAX_AZIR;
-            newAzi+= (heading+antennaHeadOffset);
-
+            newAzi+= (mShipHeading+antennaHeadOffset);
             if(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
             //printf("\nheading:%d",heading);
             //printf(" newAzi:%d",newAzi);
@@ -1302,21 +1319,22 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
                 newAzi = (data[9]<<24)|(data[10]<<16)|(data[11]<<8)|(data[12]);
                 newAzi>>=3;
                 newAzi&=    0xffff;
-                int heading = ((data[15]<<8)|data[16])>>5;
+                mShipHeading = ((data[15]<<8)|data[16])>>5;
+                //if(newShipHeading!=mShipHeading)setShipHeading(newShipHeading);
                 //CConfig::shipHeadingDeg = heading/double(MAX_AZIR)*180.0;
 
                 newAzi = ssiDecode(newAzi);
-                newAzi += (heading+antennaHeadOffset);
+                newAzi += (mShipHeading+antennaHeadOffset);
                 if(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
             }
             else
             {
-                int heading = (CConfig::mStat.getShipHeadingDeg())/360.0*MAX_AZIR;
+                //int heading = (CConfig::mStat.getShipHeadingDeg())/360.0*MAX_AZIR;
                 newAzi = (data[9]<<24)|(data[10]<<16)|(data[11]<<8)|(data[12]);
                 newAzi>>=3;
                 newAzi&=0xffff;
                 newAzi = ssiDecode(newAzi);
-                newAzi+= (heading+antennaHeadOffset);
+                newAzi+= (mShipHeading+antennaHeadOffset);
                 if(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
             }
 
@@ -1632,6 +1650,11 @@ void C_radar_data::LeastSquareFit(C_primary_track* track)
 //    delete[] a;
 */
 }
+void C_radar_data::setAziViewOffsetDeg(double angle)
+{
+    aziViewOffset = angle/360.0*MAX_AZIR;
+    raw_map_init();
+}
 ushort processing_azi_count = 0;
 void C_radar_data::UpdateData()
 {
@@ -1668,10 +1691,14 @@ void C_radar_data::UpdateData()
             CConfig::time_now_ms = (QDateTime::currentMSecsSinceEpoch());//QDateTime::currentMSecsSinceEpoch();
             //ProcessObjects();
             ProcessTracks();
-            if(!(processing_azi_count%512))//xu ly moi 512 chu ky
+            if(!(processing_azi_count%64))//xu ly moi 64 chu ky
             {
-                ProcessEach90Deg();
-                getNoiseLevel();
+                if(!(processing_azi_count%512))//xu ly moi 512 chu ky
+                {
+                    ProcessEach90Deg();
+                    getNoiseLevel();
+                }
+
             }
             if(init_time>5)init_time=5;
             if(init_time)init_time--;
@@ -1874,7 +1901,7 @@ void C_radar_data::drawRamp(double azi)
     img_RAmp->fill(Qt::black);
     //newobject.az   = ctA/MAX_AZIR*PI_NHAN2+trueN;
     azi/=DEG_RAD;
-    azi-=aziViewOffsetRad;
+    azi-=(aziViewOffset*360.0/MAX_AZIR);
     if(azi<0)azi+=PI_NHAN2;
     int az = azi/PI_NHAN2*MAX_AZIR;
     for (short r_pos = 0;r_pos<range_max;r_pos++)
@@ -2144,11 +2171,11 @@ void C_radar_data::setZoomRectAR(float ctx, float cty,double sizeKM,double sizeD
         if(ctx>0)cta = PI_CHIA2;
         else cta = -PI_CHIA2;
     }
-    else cta = atan(ctx/cty)-aziViewOffsetRad;
+    else cta = atan(ctx/cty);
     if(cty<0)cta+=PI;
     if(cta<0)cta += PI_NHAN2;
     if(cta>PI_NHAN2)cta-=PI_NHAN2;
-    cta=cta/PI_NHAN2*MAX_AZIR;
+    cta=cta/PI_NHAN2*MAX_AZIR-aziViewOffset;
     ctr/=sn_scale;
     zoom_ar_size_a = MAX_AZIR/360.0*sizeDeg;
     zoom_ar_size_r = sizeKM/sn_scale;
@@ -2207,7 +2234,7 @@ void C_radar_data::setAutorgs(bool aut)
 }
 void C_radar_data::raw_map_init()
 {
-    double theta=0;
+    double theta=aziViewOffset;
     double dTheta = 2*PI/MAX_AZIR_DRAW;
     for(short azir = 0; azir < MAX_AZIR_DRAW; azir++)
     {

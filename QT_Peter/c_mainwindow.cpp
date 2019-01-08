@@ -66,6 +66,7 @@ static unsigned char commandMay22[]={0xaa,0x55,0x02,0x0c,0x00,0x00,0x00,0x00,0x0
 static enum TargetType{
     RADAR,AIS,NOTARGET
 }selectedTargetType  = NOTARGET;
+
 //short config.getRangeView() = 1;
 static double ringStep = 1;
 static double curAziRad = 3;
@@ -103,54 +104,16 @@ void Mainwindow::ConvXYradar2XYscr()
 }
 void Mainwindow::mouseDoubleClickEvent( QMouseEvent * e )
 {
-    if ( e->button() == Qt::RightButton )
-    {
-
-
-    }
-    else
+    if ( e->button() == Qt::LeftButton )
     {
         mMousex=this->mapFromGlobal(QCursor::pos()).x();
         mMousey=this->mapFromGlobal(QCursor::pos()).y();
         if(isInsideViewZone(mMousex,mMousey))
         {
-            double xrad,yrad;//todo:write a function to convert
-            xrad = (mMousex-radCtX)/mScale;
-            yrad = -(mMousey-radCtY)/mScale;
-            pRadar->addDetectionZone(xrad,yrad,2,7.0/mScale);
+            KmXYPoint point = ConvScrPointToKMXY(mMousex,mMousey);
+            pRadar->addDetectionZone(point.x,point.y,2,7.0/mScale);
             //select radar target
-            /*int minDistanceToCursor = 10;
-            //unsigned long long trackMin = 0;
-            track_t* trackSel = nullptr;
-            for (uint i = 0;i<pRadar->mTrackList.size();i++)
-            {
-                track_t* track = &(pRadar->mTrackList[i]);
-                if(track->isRemoved())continue;
-                short sx = track->xkm*mScale ;
-                short sy = -track->ykm*mScale ;
-                rotateVector(trueShiftDeg,&sx,&sy);
-                sx   = abs(sx+ radCtX - mMousex);
-                sy   = abs(sy+ radCtY - mMousey);
-                if(sx+sy<minDistanceToCursor)
-                {
-                    minDistanceToCursor = sx+sy;
-                    //trackMin = track->uniqId;
-                    trackSel = track;
-
-                    //                tracktime = track->time;
-                }
-
-            }
-            if(trackSel!=nullptr)
-            {
-                if(trackSel->uniqId<=0)
-                mTargetMan.addTrack(trackSel);
-
-            }*/
-
             //select ais target
-
-
         }
         //ui->toolButton_manual_track->setChecked(false);
 
@@ -200,13 +163,13 @@ void Mainwindow::drawAisTarget(QPainter *p)
         iter++;
 
         if(aisObj.mUpdateTime>300000)continue;
-        double fx,fy;
+        /*double fx,fy;
         ConvWGSToKm(&fx,&fy,aisObj.mLong,aisObj.mLat);
         short x = (fx*mScale);//+;
         short y = (fy*mScale);//+radCtY;
-        rotateVector(trueShiftDeg,&x,&y);
-        x+=radCtX;
-        y+=radCtY;
+        rotateVector(trueShiftDeg,&x,&y);*/
+        ScreenPoint s = ConvWGSToScrPoint(aisObj.mLong,aisObj.mLat);
+
         if((aisObj.mType/10)==3)continue;
         if(aisObj.isNewest)
         {
@@ -215,20 +178,20 @@ void Mainwindow::drawAisTarget(QPainter *p)
             QPolygon poly;
             QPoint point;
             float head = aisObj.mCog*PI_NHAN2/360.0;
-            point.setX(x+8*sinFast(head));
-            point.setY(y-8*cosFast(head));
+            point.setX(s.x+8*sinFast(head));
+            point.setY(s.y-8*cosFast(head));
             poly<<point;
-            point.setX(x+8*sinFast(head+2.3562f));
-            point.setY(y-8*cosFast(head+2.3562f));
+            point.setX(s.x+8*sinFast(head+2.3562f));
+            point.setY(s.y-8*cosFast(head+2.3562f));
             poly<<point;
-            point.setX(x+8*sinFast(head-2.3562f));
-            point.setY(y-8*cosFast(head-2.3562f));
+            point.setX(s.x+8*sinFast(head-2.3562f));
+            point.setY(s.y-8*cosFast(head-2.3562f));
             poly<<point;
-            point.setX(x+8*sinFast(head));
-            point.setY(y-8*cosFast(head));
+            point.setX(s.x+8*sinFast(head));
+            point.setY(s.y-8*cosFast(head));
             poly<<point;
-            point.setX(x+16*sinFast(head));
-            point.setY(y-16*cosFast(head));
+            point.setX(s.x+16*sinFast(head));
+            point.setY(s.y-16*cosFast(head));
             poly<<point;
             if(aisObj.isSelected)
             {
@@ -240,14 +203,14 @@ void Mainwindow::drawAisTarget(QPainter *p)
                 p->setPen(penTarget);
                 p->drawPolygon(poly);
                 if(ui->toolButton_ais_name->isChecked())
-                    p->drawText(x,y,100,20,0,aisObj.mName);
+                    p->drawText(s.x,s.y,100,20,0,aisObj.mName);
             }
 
 
         }
         else
         {
-            p->drawPoint(x,y);
+            p->drawPoint(s.x,s.y);
         }
     }
 
@@ -510,14 +473,13 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
             {
                 TrackPointer* ptrack = mTargetMan.getTrackAt(i);
                 if(ptrack==nullptr)continue;
-                short sx = ptrack->track->xkm*mScale ;
-                short sy = -ptrack->track->ykm*mScale ;
-                rotateVector(trueShiftDeg,&sx,&sy);
-                sx   = abs(sx+ radCtX - mMousex);
-                sy   = abs(sy+ radCtY - mMousey);
-                if(sx+sy<minDistanceToCursor)
+                ScreenPoint s = ConvKmXYToScrPoint(ptrack->track->xkm,ptrack->track->ykm);
+
+                int dsx   = abs(s.x - mMousex);
+                int dsy   = abs(s.y - mMousey);
+                if(dsx+dsy<minDistanceToCursor)
                 {
-                    minDistanceToCursor = sx+sy;
+                    minDistanceToCursor = dsx+dsy;
                     //trackMin = track->uniqId;
                     trackSel = ptrack->track->uniqId;
 
@@ -728,6 +690,7 @@ Mainwindow::~Mainwindow()
 void Mainwindow::DrawMap()
 {
     if(!isMapOutdated)return;
+
     isMapOutdated = false;
     if(!pMap) return;
     pMap->fill(Qt::black);
@@ -854,13 +817,24 @@ void Mainwindow::initGraphicView()
 //{
 
 //}
-void Mainwindow::rotateVector(double angle,short* x,short* y)
+void Mainwindow::rotateVector(double angle,int* x,int* y)
 {
+    if(abs(angle)<0.1)return;
     double theta = radians(angle);
-
     double cs = cos(theta);
     double sn = sin(theta);
 
+    double px = (*x) * cs - (*y) * sn;
+    double py = (*x) * sn + (*y) * cs;
+    (*x) = px;
+    (*y) = py;
+}
+void Mainwindow::rotateVector(double angle,double* x,double* y)
+{
+    if(abs(angle)<0.1)return;
+    double theta = radians(angle);
+    double cs = cos(theta);
+    double sn = sin(theta);
     double px = (*x) * cs - (*y) * sn;
     double py = (*x) * sn + (*y) * cs;
     (*x) = px;
@@ -912,8 +886,8 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
     //QPen penARPATrack(Qt::darkYellow);
     //draw radar targets
     //float x,y;
-    short sx,sy;
-    short sx1=0,sy1=0;
+//    short sx,sy;
+//    short sx1=0,sy1=0;
     //float scale_ppi = pRadar->scale_ppi;
     //short targetId = 0;
     //    std::vector<object_t>* pObjList = &(pRadar->mFreeObjList);
@@ -927,43 +901,31 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
         TrackPointer* trackPt = mTargetMan.getTargetAt(i);
         if(!trackPt)continue;
         C_primary_track* track = trackPt->track;
-        sx1 = track->xkm*mScale ;
-        sy1 = -track->ykm*mScale ;
-        rotateVector(trueShiftDeg,&sx1,&sy1);
-        sx1   += radCtX;
-        sy1   += radCtY;
-        p->drawLine(sx1-20,sy1,sx1-10,sy1);
-        p->drawLine(sx1+20,sy1,sx1+10,sy1);
-        p->drawLine(sx1,sy1-20,sx1,sy1-10);
-        p->drawLine(sx1,sy1+20,sx1,sy1+10);
+        ScreenPoint s = ConvKmXYToScrPoint(track->xkm,track->ykm);
+        p->drawLine(s.x-20,s.y,s.x-10,s.y);
+        p->drawLine(s.x+20,s.y,s.x+10,s.y);
+        p->drawLine(s.x,s.y-20,s.x,s.y-10);
+        p->drawLine(s.x,s.y+20,s.x,s.y+10);
     }
     //draw all tracks
     for (uint i = 0;i<TRACK_TABLE_SIZE;i++)
     {
         TrackPointer* trackPt = mTargetMan.getTrackAt(i);
         if(!trackPt)continue;
+
         C_primary_track* track = trackPt->track;
+        ScreenPoint sTrack = ConvKmXYToScrPoint(track->xkm,track->ykm);
         if(trackPt->selected)//selected
         {
-            // draw history
+            // draw track history
             p->setPen(penTargetHistory);
-            //if(trackPt->flag>=0)p->setPen(penTargetEnemySelected);
-            //else  p->setPen(penTargetFriendSelected);
             for (int j = 0;j<track->objectHistory.size()-1;j++)
             {
                 object_t* obj1 = &(track->objectHistory[j]);
                 object_t* obj2 = &(track->objectHistory[j+1]);
-                sx = obj1->xkm*mScale ;
-                sy = -obj1->ykm*mScale;
-                rotateVector(trueShiftDeg,&sx,&sy);
-                sx   += radCtX;
-                sy   += radCtY;
-                sx1 = obj2->xkm*mScale ;
-                sy1 = -obj2->ykm*mScale ;
-                rotateVector(trueShiftDeg,&sx1,&sy1);
-                sx1   += radCtX;
-                sy1   += radCtY;
-                p->drawLine(sx,sy,sx1,sy1);
+                ScreenPoint s = ConvKmXYToScrPoint(obj1->xkm,obj1->ykm);
+                ScreenPoint s1 = ConvKmXYToScrPoint(obj2->xkm,obj2->ykm);
+                p->drawLine(s1.x,s1.y,s.x,s.y);
             }
             if(trackPt->flag>=0)p->setPen(penTargetEnemySelected);
             else  p->setPen(penTargetFriendSelected);
@@ -976,133 +938,41 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
         }
         if(track->isLost())
         {
-            sx = track->xkm*mScale ;
-            sy = -track->ykm*mScale ;
-            rotateVector(trueShiftDeg,&sx,&sy);
-            sx   += radCtX;
-            sy   += radCtY;
+
             if(blink)
             {
-                p->drawRect(sx-5,sy-5,10,10);
-                p->drawLine(sx-7,sy-3,sx+7,sy+3);
+                p->drawRect(sTrack.x-5,sTrack.y-5,10,10);
+                p->drawLine(sTrack.x-7,sTrack.y-3,sTrack.x+7,sTrack.y+3);
 
             }
-            p->drawText(sx+6,sy+6,100,50,0,QString::number(track->uniqId));
+            p->drawText(sTrack.x+6,sTrack.y+6,100,50,0,QString::number(track->uniqId));
             continue;
         }
         //nornal targets
         else
         {
-            //object_t* obj1 = &(track->objectList.back());
-            sx1 = track->xkm*mScale ;
-            sy1 = -track->ykm*mScale ;
-            rotateVector(trueShiftDeg,&sx1,&sy1);
-            sx1   += radCtX;
-            sy1   += radCtY;
+
             int size = 18000.0/(CConfig::time_now_ms - track->lastTimeMs+400);
             if(size<TARG_SIZE)size=TARG_SIZE;//rect size depend to time
             if(track->objectList.size()>3)
             {
 
-                p->drawEllipse(sx1-size/2,sy1-size/2,size,size);
+                p->drawEllipse(sTrack.x-size/2,sTrack.y-size/2,size,size);
                 if(track->mSpeedkmhFit>10){
-                    sx = sx1+short(10*sinFast(track->courseRadFit));
-                    sy = sy1-short(10*cosFast(track->courseRadFit));
-                    p->drawLine(sx,sy,sx1,sy1);
+                    int sx = sTrack.x+short(10*sinFast(track->courseRadFit));
+                    int sy = sTrack.y-short(10*cosFast(track->courseRadFit));
+                    p->drawLine(sx,sy,sTrack.x,sTrack.y);
                 }
 
             }
             else {
                 //p->setPen(penSelTarget);
-                p->drawRect(sx1-size/2,sy1-size/2,size,size);
+                p->drawRect(sTrack.x-size/2,sTrack.y-size/2,size,size);
             }
-            //                else
-            //                {
-            //                    obj1 = &(track->objectList.back());
-            //                    sx1 = obj1->xkm*mScale + radCtX;
-            //                    sy1 = -obj1->ykm*mScale + radCtY;
-            //                }
-
-
-
             //draw target number
-
-            p->drawText(sx1+6,sy1+6,100,50,0,QString::number(track->uniqId));
+            p->drawText(sTrack.x+6,sTrack.y+6,100,50,0,QString::number(track->uniqId));
         }
-        /*else if(mShowTracks||mmTargetMan.selectedTrackID== track->uniqId)
-        {
-            if(mmTargetMan.selectedTrackID== track->uniqId)
-            {
-                p->setPen(penSelTarget);
-                for (int j = 0;j<track->objectHistory.size()-1;j++)
-                {
-                    object_t* obj1 = &(track->objectHistory[j]);
-                    object_t* obj2 = &(track->objectHistory[j+1]);
-                    sx = obj1->xkm*mScale ;
-                    sy = -obj1->ykm*mScale ;
-                    rotateVector(trueShift,&sx,&sy);
-                    sx   += radCtX;
-                    sy   += radCtY;
-                    sx1 = obj2->xkm*mScale ;
-                    sy1 = -obj2->ykm*mScale ;
-                    rotateVector(trueShift,&sx1,&sy1);
-                    sx1   += radCtX;
-                    sy1   += radCtY;
-                    p->drawLine(sx,sy,sx1,sy1);
-                }
-                p->setPen(penTargetSelected);
-            }
-            else p->setPen(penTarget);
-            if(track->isLost())
-            {
-                if(blink)
-                {
-                    //object_t* obj1 = &(track->objectList.back());
-                    sx = track->xkm*mScale ;
-                    sy = -track->ykm*mScale ;
-                    rotateVector(trueShift,&sx,&sy);
-                    sx   += radCtX;
-                    sy   += radCtY;
-                    p->drawRect(sx-5,sy-5,10,10);
-                    p->drawLine(sx-7,sy-3,sx+7,sy+3);
-                    continue;
-                }
-            }
-            else
-            {
-                //object_t* obj1 = &(track->objectList.back());
-                sx1 = track->xkm*mScale ;
-                sy1 = -track->ykm*mScale ;
-                rotateVector(trueShift,&sx1,&sy1);
-                sx1   += radCtX;
-                sy1   += radCtY;
-                int size = 18000.0/(now_ms - track->lastTimeMs+400);
-                if(size<TARG_SIZE)size=TARG_SIZE;//rect size depend to time
-                if(track->objectList.size()>3)
-                {
 
-                    p->drawEllipse(sx1-size/2,sy1-size/2,size,size);
-                    if(track->mSpeedkmhFit>10){
-                        sx = sx1+10*sinFast(track->bearingRadFit);
-                        sy = sy1-10*cosFast(track->bearingRadFit);
-                        p->drawLine(sx,sy,sx1,sy1);
-                    }
-
-                }
-                else {
-                    //p->setPen(penSelTarget);
-                    p->drawRect(sx1-size/2,sy1-size/2,size,size);
-                }
-                //                else
-                //                {
-                //                    obj1 = &(track->objectList.back());
-                //                    sx1 = obj1->xkm*mScale + radCtX;
-                //                    sy1 = -obj1->ykm*mScale + radCtY;
-                //                }
-
-
-            }
-        }*/
     }
 
 
@@ -1115,6 +985,35 @@ void Mainwindow::ConvWGSToKm(double* x, double *y, double m_Long,double m_Lat)
     *x	= (((m_Long) - mLon) * 111.31949079327357)*cos(refLat);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
     *y	= ((mLat - (m_Lat)) * 111.132954);
     //tinh toa do xy KM so voi diem center khi biet lat-lon
+}
+ScreenPoint Mainwindow::ConvWGSToScrPoint(double m_Long,double m_Lat)
+{
+    ScreenPoint s;
+    double refLat = (mLat + (m_Lat))*0.00872664625997;//pi/360
+    s.x	= mScale*(((m_Long) - mLon) * 111.31949079327357)*cos(refLat);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
+    s.y	= mScale*((mLat - (m_Lat)) * 111.132954);
+    rotateVector(trueShiftDeg,&s.x,&s.y);
+    s.x   += radCtX;
+    s.y   += radCtY;
+    return s;
+}
+ScreenPoint Mainwindow::ConvKmXYToScrPoint(double x, double y)
+{
+    ScreenPoint s;
+    s.x = x*mScale ;
+    s.y = -y*mScale ;
+    rotateVector(trueShiftDeg,&s.x,&s.y);
+    s.x   += radCtX;
+    s.y   += radCtY;
+    return s;
+}
+KmXYPoint Mainwindow::ConvScrPointToKMXY(int x, int y)
+{
+    KmXYPoint output;
+    output.x = (x-radCtX)/mScale;
+    output.y = -(y-radCtY)/mScale;
+    rotateVector(trueShiftDeg,&output.x,&output.y);
+    return output;
 }
 void Mainwindow::ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat)
 {
@@ -1168,7 +1067,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     //draw signal
 
     QRectF screen(0,0,SCR_W,SCR_H);
-    if(isHeadUp)
+    if(false)//isHeadUp)
     {
         QImage newImg = pRadar->img_ppi->transformed(mTrans);
         QRectF signRect(newImg.width()/2-(radCtX),newImg.height()/2-(radCtY),SCR_W,SCR_H);
@@ -1487,14 +1386,14 @@ void Mainwindow::InitSetting()
     mHeadingT2 = CConfig::getDouble("mHeadingT2",0);
     mHeadingT = CConfig::getDouble("mHeadingT",0);
     mAziCorrecting = CConfig::getDouble("mAziCorrecting",0);
-    pRadar->setAziOffset(mHeadingT);
+    //pRadar->setAziOffset(mHeadingT);
     ui->textEdit_heading->setText(CConfig::getString("mHeadingT"));
     ui->textEdit_heading_2->setText(CConfig::getString("mHeadingT2"));
     mZoomSizeAz = CConfig::getDouble("mZoomSizeAz");
     ui->textEdit_size_ar_a->setText(QString::number(mZoomSizeAz));
     mZoomSizeRg = CConfig::getDouble("mZoomSizeRg");
     ui->textEdit_size_ar_r->setText(QString::number(mZoomSizeRg));
-    pRadar->setAziOffset(mHeadingT);
+
     //load map
     osmap = new CMap();
     SetGPS(CConfig::getDouble("mLat"), CConfig::getDouble("mLon"));
@@ -1917,6 +1816,7 @@ void Mainwindow::Update100ms()
     {
         trueShiftDeg = -CConfig::mStat.shipHeadingDeg;
         headShift = 0;
+        pRadar->setAziViewOffsetDeg(trueShiftDeg);
         mTrans.reset();
         mTrans = mTrans.rotate((-CConfig::mStat.shipHeadingDeg));
     }

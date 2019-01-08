@@ -146,7 +146,7 @@ void dataProcessingThread::ReadNavData()
 void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
 {
     if(len<7)return;
-    if(isSimulationMode)return;
+    //if(isSimulationMode)return;
     if(mReceiveBuff[0]==0xaa&&mReceiveBuff[1]==0x55)//system messages
     {
         if(mReceiveBuff[2]==0x65)// trang thai may 2-2
