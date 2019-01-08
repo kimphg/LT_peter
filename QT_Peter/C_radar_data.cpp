@@ -521,6 +521,7 @@ double xsum=0,x2sum=0,ysum=0,xysum=0;
 
 C_radar_data::C_radar_data()
 {
+    aziViewOffset = 0;
     antennaHeadOffset=CConfig::getInt("antennaHeadOffset",0);
     while((antennaHeadOffset)>=MAX_AZIR)antennaHeadOffset-=MAX_AZIR;
     while((antennaHeadOffset)<=0)antennaHeadOffset+=MAX_AZIR;
@@ -1238,7 +1239,6 @@ int C_radar_data::ssiDecode(ushort nAzi)
     if(inverseBit==3)isInverseSSI = false;
     if(inverseBit==0)isInverseSSI = true;
     nAzi&=0x1fff;
-
     nAzi>>=1;
     if(isInverseSSI)nAzi = 4096-nAzi;
     mEncoderVal = nAzi;
@@ -1308,7 +1308,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
         {
             newAzi = (data[2]<<8)|data[3];
             newAzi+= (mShipHeading+antennaHeadOffset);
-            if(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
+            while(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
             //printf("\nheading:%d",heading);
             //printf(" newAzi:%d",newAzi);
         }
@@ -1325,7 +1325,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
 
                 newAzi = ssiDecode(newAzi);
                 newAzi += (mShipHeading+antennaHeadOffset);
-                if(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
+                while(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
             }
             else
             {
@@ -1335,7 +1335,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
                 newAzi&=0xffff;
                 newAzi = ssiDecode(newAzi);
                 newAzi+= (mShipHeading+antennaHeadOffset);
-                if(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
+                while(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
             }
 
         }
@@ -1652,18 +1652,22 @@ void C_radar_data::LeastSquareFit(C_primary_track* track)
 }
 void C_radar_data::setAziViewOffsetDeg(double angle)
 {
-    aziViewOffset = angle/360.0*MAX_AZIR;
-    raw_map_init();
+    //printf("\ncurAzir:%d",curAzir);
+    aziViewOffset = (angle*MAX_AZIR)/360;
+    while(aziViewOffset<0)aziViewOffset+=MAX_AZIR;
+    while(aziViewOffset>=MAX_AZIR)aziViewOffset-=MAX_AZIR;
+//    raw_map_init();
 }
 ushort processing_azi_count = 0;
-void C_radar_data::UpdateData()
+bool C_radar_data::UpdateData()
 {
+    //printf("\ncurAzir:%d",curAzir);
     mUpdateTime = clock();
     int nowAzir =curAzir ;
     int diff = nowAzir-currProcessAzi;
-    if(!diff)return;
+    if(!diff)return false;
     if(diff>MAX_AZIR/2)diff = diff-MAX_AZIR;else if(diff<(-MAX_AZIR/2))diff = diff+MAX_AZIR;
-    if(abs(diff)>100){currProcessAzi =  nowAzir;init_time++;return;}
+    if(abs(diff)>100){currProcessAzi =  nowAzir;init_time++;return true;}
     while (nowAzir != currProcessAzi)
     {
         if(diff>0)
@@ -1732,7 +1736,7 @@ void C_radar_data::UpdateData()
 
 //        aziToProcess.pop();
     }
-
+    return true;
 }
 
 static  unsigned int doplerHistogram[256];
@@ -1901,7 +1905,7 @@ void C_radar_data::drawRamp(double azi)
     img_RAmp->fill(Qt::black);
     //newobject.az   = ctA/MAX_AZIR*PI_NHAN2+trueN;
     azi/=DEG_RAD;
-    azi-=(aziViewOffset*360.0/MAX_AZIR);
+    azi-=aziViewOffset;
     if(azi<0)azi+=PI_NHAN2;
     int az = azi/PI_NHAN2*MAX_AZIR;
     for (short r_pos = 0;r_pos<range_max;r_pos++)
@@ -2234,7 +2238,8 @@ void C_radar_data::setAutorgs(bool aut)
 }
 void C_radar_data::raw_map_init()
 {
-    double theta=aziViewOffset;
+    double theta=0;
+//    printf("\naziViewOffset:%d",aziViewOffsetRad);
     double dTheta = 2*PI/MAX_AZIR_DRAW;
     for(short azir = 0; azir < MAX_AZIR_DRAW; azir++)
     {

@@ -315,7 +315,7 @@ public:
 
     //______________________________________//
     //    void        assembleDataFrame(unsigned char *data, unsigned short dataLen);
-    void        UpdateData();
+    bool UpdateData();
     void        ProcessDataFrame();
     void        ProcessData(unsigned short azi, unsigned short lastAzi);
     void        raw_map_init();

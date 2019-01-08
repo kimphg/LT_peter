@@ -1050,7 +1050,8 @@ void Mainwindow::UpdateMouseStat(QPainter *p)
         p->drawLine(mMousex,selZone_y1,mMousex,mMousey);
     }
 }
-
+bool fisrtTime = true;
+QRectF signRectTemp;
 void Mainwindow::paintEvent(QPaintEvent *event)
 {
     CConfig::time_now_ms  = QDateTime::currentMSecsSinceEpoch();
@@ -1067,11 +1068,20 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     //draw signal
 
     QRectF screen(0,0,SCR_W,SCR_H);
-    if(false)//isHeadUp)
+    if(isHeadUp)//isHeadUp)
     {
-        QImage newImg = pRadar->img_ppi->transformed(mTrans);
-        QRectF signRect(newImg.width()/2-(radCtX),newImg.height()/2-(radCtY),SCR_W,SCR_H);
-        p.drawImage(screen,newImg,signRect,Qt::AutoColor);
+        if(fisrtTime)
+        {
+            //fisrtTime = false;
+            QImage newImg = pRadar->img_ppi->transformed(mTrans);
+            signRectTemp = QRectF(newImg.width()/2-(radCtX),newImg.height()/2-(radCtY),SCR_W,SCR_H);
+            p.drawImage(screen,newImg,signRectTemp,Qt::AutoColor);
+        }
+        else
+        {
+            p.drawImage(screen,pRadar->img_ppi->transformed(mTrans),signRectTemp,Qt::AutoColor);
+        }
+
         //        pMapPainter.drawPixmap((-pix.width()/2+pMap->width()/2),
         //                     (-pix.height()/2+pMap->height()/2),pix.width(),pix.height(),pix
         //                     );
@@ -1727,7 +1737,7 @@ void Mainwindow::UpdateVideo()
 {
 
     //clock_t ageVideo = clock()-pRadar->mUpdateTime;
-    if(!processing->getIsDrawn())
+    if(pRadar->UpdateData())
     {
         if(pRadar->isClkAdcChanged)
         {
@@ -1738,7 +1748,7 @@ void Mainwindow::UpdateVideo()
             //            printf("\nsetScale:%d",pRadar->clk_adc);
             pRadar->isClkAdcChanged = false;
         }
-        pRadar->UpdateData();
+
         repaint();
     }
 
@@ -1816,7 +1826,7 @@ void Mainwindow::Update100ms()
     {
         trueShiftDeg = -CConfig::mStat.shipHeadingDeg;
         headShift = 0;
-        pRadar->setAziViewOffsetDeg(trueShiftDeg);
+//        pRadar->setAziViewOffsetDeg(trueShiftDeg);
         mTrans.reset();
         mTrans = mTrans.rotate((-CConfig::mStat.shipHeadingDeg));
     }
@@ -3231,16 +3241,16 @@ void Mainwindow::SetGPS(double lat,double lon)
 
 //}
 
-void Mainwindow::on_toolButton_set_heading_clicked()
-{
+//void Mainwindow::on_toolButton_set_heading_clicked()
+//{
 
-    mHeadingT = ui->textEdit_heading->text().toFloat();
-    mHeadingT2 = ui->textEdit_heading_2->text().toFloat();
-    CConfig::setValue("mHeadingT",mHeadingT);
-    CConfig::setValue("mHeadingT2",mHeadingT2);
-    pRadar->setAziOffset(mHeadingT);
+//    mHeadingT = ui->textEdit_heading->text().toFloat();
+//    mHeadingT2 = ui->textEdit_heading_2->text().toFloat();
+//    CConfig::setValue("mHeadingT",mHeadingT);
+//    CConfig::setValue("mHeadingT2",mHeadingT2);
+//    pRadar->setAziOffset(mHeadingT);
 
-}
+//}
 
 void Mainwindow::on_toolButton_gps_update_clicked()
 {

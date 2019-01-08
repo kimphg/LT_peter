@@ -146,7 +146,7 @@ void dataProcessingThread::ReadNavData()
 void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
 {
     if(len<7)return;
-    //if(isSimulationMode)return;
+    if(isSimulationMode)return;
     if(mReceiveBuff[0]==0xaa&&mReceiveBuff[1]==0x55)//system messages
     {
         if(mReceiveBuff[2]==0x65)// trang thai may 2-2
@@ -206,6 +206,7 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
         if(headingRate>32768.0)headingRate=headingRate-65536.0;
         headingRate/=32768.0;
         CConfig::mStat.inputGyro(heading,degrees(headingRate));
+        mRadarData->setShipHeadingDeg(heading);
         //int vy = (((mReceiveBuff[18])<<8)|mReceiveBuff[19]);
         //int vx = (((mReceiveBuff[20])<<8)|mReceiveBuff[21]);
         //CConfig::mStat.sh = sqrt(vy*vy+vx*vx)*0.00388768898488120950323974082073;//*2/1000000/CONST_NM*36000; kn

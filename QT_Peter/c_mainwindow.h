@@ -229,7 +229,7 @@ private slots:
 
 //    void on_dial_valueChanged(int value);
 
-    void on_toolButton_set_heading_clicked();
+//    void on_toolButton_set_heading_clicked();
 
     void on_toolButton_gps_update_clicked();
 
