@@ -9,9 +9,9 @@
 #ifdef THEON
 #define SCR_W 1920
 #define SCR_H 1200
-#define SCR_LEFT_MARGIN 200
+#define SCR_LEFT_MARGIN 150
 #define SCR_TOP_MARGIN 0
-#define SCR_BORDER_SIZE 120
+#define SCR_BORDER_SIZE 48
 #else
 #define SCR_W 1280
 #define SCR_H 1024
@@ -36,7 +36,7 @@
 #include "dialoginputvalue.h"
 #include <c_radar_thread.h>
 #include <QDesktopWidget>
-#include "c_radar_data.h"
+#include "C_radar_data.h"
 #include <QFileDialog>
 #include <QImage>
 #include <QHostAddress>
@@ -86,7 +86,7 @@ private:
     void DrawGrid(QPainter* p,short centerX,short centerY);
     void CameraControl(int x,int y, int zoom);
     void CameraControl(int direction);
-    void detectZone();
+//    void detectZone();
     void InitSetting();
     void sendToRadarHS(const char *hexdata);
     void sendToRadar(unsigned char* hexdata);
@@ -500,7 +500,7 @@ private slots:
 
 //    void on_toolButton_sled_reset_3_clicked(bool checked);
 
-    void on_toolButton_sled_reset_4_clicked(bool checked);
+//    void on_toolButton_sled_reset_4_clicked(bool checked);
 
 //    void on_toolButton_sled_reset_3_toggled(bool checked);
 
@@ -651,7 +651,7 @@ private slots:
 private:
 
 //    bool mShowobjects,
-    bool mShowTracks;
+//    bool mShowTracks;
     double trueShiftDeg,headShift;
 //    unsigned long long mSelectedTrackId;
 //    uint mSelectedTrackTime;
@@ -684,6 +684,7 @@ private:
     ScreenPoint ConvWGSToScrPoint(double m_Long, double m_Lat);
     KmXYPoint ConvScrPointToKMXY(int x, int y);
     void rotateVector(double angle, double *x, double *y);
+    void SetUpTheonGUILayout();
 };
 
 #endif // MAINWINDOW_H
