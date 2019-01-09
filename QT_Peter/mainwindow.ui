@@ -18705,6 +18705,9 @@
       <property name="horizontalScrollBarPolicy">
        <enum>Qt::ScrollBarAlwaysOff</enum>
       </property>
+      <property name="autoScroll">
+       <bool>false</bool>
+      </property>
       <property name="showGrid">
        <bool>true</bool>
       </property>
@@ -18712,7 +18715,10 @@
        <enum>Qt::NoPen</enum>
       </property>
       <property name="cornerButtonEnabled">
-       <bool>true</bool>
+       <bool>false</bool>
+      </property>
+      <property name="rowCount">
+       <number>1</number>
       </property>
       <attribute name="horizontalHeaderDefaultSectionSize">
        <number>55</number>
@@ -18721,7 +18727,7 @@
        <bool>true</bool>
       </attribute>
       <attribute name="verticalHeaderVisible">
-       <bool>true</bool>
+       <bool>false</bool>
       </attribute>
       <attribute name="verticalHeaderDefaultSectionSize">
        <number>23</number>
@@ -18730,126 +18736,11 @@
        <number>15</number>
       </attribute>
       <attribute name="verticalHeaderStretchLastSection">
-       <bool>true</bool>
+       <bool>false</bool>
       </attribute>
       <row>
        <property name="text">
         <string>1</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>2</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>3</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>4</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>5</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>6</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>7</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>8</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>9</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>10</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>11</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>12</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>13</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>14</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>15</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>16</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>17</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>18</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>19</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>20</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>21</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>22</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>23</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>24</string>
        </property>
       </row>
       <column>
