@@ -39,7 +39,7 @@
 #define MAX_AZIR_DRAW               6144
 //#define RAD_M_PULSE_RES             1536
 #define RAD_S_PULSE_RES             256
-#define RAD_DISPLAY_RES             600//768
+#define RAD_DISPLAY_RES             650//768
 #define RAD_FULL_RES                1792
 #define SIGNAL_SCALE_7              0.24113 //215.38461538461538461538461538461
 #define SIGNAL_SCALE_6              0.24113//184.61538461538461538461538461538

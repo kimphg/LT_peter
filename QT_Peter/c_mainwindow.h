@@ -15,7 +15,7 @@
 #else
 #define SCR_W 1280
 #define SCR_H 1024
-#define SCR_LEFT_MARGIN -27
+#define SCR_LEFT_MARGIN -29
 #define SCR_TOP_MARGIN 25
 #define SCR_BORDER_SIZE 120
 #endif
@@ -532,7 +532,7 @@ private slots:
 
     void on_bt_rg_4_toggled(bool checked);
 
-    void on_bt_rg_5_toggled(bool checked);
+//    void on_bt_rg_5_toggled(bool checked);
 
     void on_bt_rg_6_toggled(bool checked);
 
@@ -647,6 +647,8 @@ private slots:
     void on_toolButton_chong_nhieu_ppy_clicked(bool checked);
 
     void on_toolButton_record_clicked(bool checked);
+
+    void on_bt_rg_5_clicked(bool checked);
 
 private:
 

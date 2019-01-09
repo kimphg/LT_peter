@@ -11,8 +11,19 @@ static QPen penTargetEnemy(QBrush(Qt::darkMagenta),2);
 static QPen penTargetFriend(QBrush(QColor(0,200,200 ,255)),2);
 static QPen penTargetEnemySelected(QBrush(Qt::magenta),3);
 static QPen penTargetFriendSelected(QBrush(QColor(50,255,255 ,255)),3);
-static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),224+SCR_BORDER_SIZE);
+
 static QPen penCyan(QBrush(QColor(50,255,255 ,255)),1);//xoay mui tau
+QRect ppiRect(SCR_LEFT_MARGIN+SCR_BORDER_SIZE/2,
+              SCR_TOP_MARGIN+SCR_BORDER_SIZE/2,
+              SCR_H -SCR_BORDER_SIZE,
+              SCR_H -SCR_BORDER_SIZE);
+#ifdef THEON
+static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),224+SCR_BORDER_SIZE);
+QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
+#else
+static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),150+SCR_BORDER_SIZE);
+QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
+#endif
 static QPen penYellow(QBrush(QColor(255,255,50 ,255)),1);
 static QPen mGridViewPen1(QBrush(QColor(150,150,150,255)),1);
 static clock_t clkBegin = clock();
@@ -110,7 +121,8 @@ void Mainwindow::mouseDoubleClickEvent( QMouseEvent * e )
         if(isInsideViewZone(mMousex,mMousey))
         {
             KmXYPoint point = ConvScrPointToKMXY(mMousex,mMousey);
-            pRadar->addDetectionZone(point.x,point.y,2,7.0/mScale);
+            double rgKM = sqrt((point.x*point.x)+(point.y*point.y));
+            pRadar->addDetectionZone(point.x,point.y,(mRangeIndex+1)*3/rgKM,7.0/mScale);
             //select radar target
             //select ais target
         }
@@ -1344,6 +1356,7 @@ void Mainwindow::SetUpTheonGUILayout()
    ui->groupBox_24->setGeometry(10,10,490,40);
    ui->tabWidget_iad->setGeometry(1380,610,530,540);
    ui->tabWidget_iad->show();
+   ui->tabWidget_iad->mMoveable = false;
    ui->tabWidget_menu_2->setGeometry(1600,10,310,590);
    ui->tableWidgetTarget->setGeometry(0,0,308,560);
 }
@@ -1550,10 +1563,7 @@ bool Mainwindow::CalcAziContour(double theta, int d)
     return true;
 
 }
-QRect ppiRect(SCR_LEFT_MARGIN+SCR_BORDER_SIZE/2,
-              SCR_TOP_MARGIN+SCR_BORDER_SIZE/2,
-              SCR_H -SCR_BORDER_SIZE,
-              SCR_H -SCR_BORDER_SIZE);
+
 
 void Mainwindow::DrawViewFrame(QPainter* p)
 {
@@ -1580,11 +1590,10 @@ void Mainwindow::DrawViewFrame(QPainter* p)
     //        p->drawEllipse(-i/2+(scrCtX-scrCtY)+25,-i/2+25,SCR_H -50+i,SCR_H -50+i);
     //    }
 
-    p->drawEllipse(ppiRect.adjusted(-135,-135,135,135));
+    p->drawEllipse(circleRect);
     p->setPen(penYellow);
     p->drawEllipse(ppiRect);
     p->setFont(QFont("Times", 10));
-
     //ve vanh goc ngoai
     for(short theta=0;theta<360;theta+=10)
     {
@@ -1613,18 +1622,7 @@ void Mainwindow::DrawViewFrame(QPainter* p)
                     QString::number(value));
         }
     }
-#endif
-    //double aziDeg = rad2deg(pRadar->getCurAziRad());
-    //plot center azi
-    /*double centerAzi = processing->getSelsynAzi()+mHeadingT2 ;
-    if(centerAzi>360)centerAzi-=360;
-    if(CalcAziContour(centerAzi,&points[0],&points[2],&points[1],height()-70))
-    {
-        p->setPen(QPen(Qt::yellow,8,Qt::SolidLine,Qt::RoundCap,Qt::MiterJoin));
-        p->drawLine(points[2],points[1]);
-        //p->drawText(720,40,200,20,0,"Sector:  "+QString::number(centerAzi,'f',1));
-    }*/
-    //plot heading azi
+
     double radHeading;
     if(isHeadUp)
     {
@@ -1633,11 +1631,6 @@ void Mainwindow::DrawViewFrame(QPainter* p)
     p->setPen(QPen(Qt::cyan,1,Qt::SolidLine,Qt::RoundCap));
     if(CalcAziContour(radHeading,SCR_H-SCR_BORDER_SIZE-18))
     {
-
-//        p->drawLine(radCtX,radCtY,
-//                    points[1].x(),
-//                    points[1].y());
-        //p->setPen(QPen(Qt::magenta,2,Qt::SolidLine,Qt::RoundCap));
         QPoint p1(radCtX+23*sin(radians(radHeading)),
                   radCtY-23*cos(radians(radHeading)));
         QPoint p2(radCtX+15*sin(radians(radHeading+30)),
@@ -1679,7 +1672,7 @@ void Mainwindow::DrawViewFrame(QPainter* p)
 
     }
 
-
+#endif
 
 }
 //void Mainwindow::setScaleNM(unsigned short rangeNM)
@@ -1745,7 +1738,6 @@ void Mainwindow::UpdateVideo()
             //            printf("\nsetScale:%d",pRadar->clk_adc);
             pRadar->isClkAdcChanged = false;
         }
-
         repaint();
     }
 
@@ -2227,10 +2219,11 @@ void Mainwindow::sync1S()//period 1 second
     ViewTrackInfo();
     // update rate
     int sampleTime = 10*paintTime/7;
-    if(sampleTime<25)sampleTime=25;
+    ui->label_frame_rate->setText("SFR:"+QString::number(1000/sampleTime));
+    if(sampleTime<20)sampleTime=20;
     timerVideoUpdate.start(sampleTime);
     timerMetaUpdate.start(sampleTime*4);
-    ui->label_frame_rate->setText("SFR:"+QString::number(1000/sampleTime));
+
     ui->label_radar_fps->setText("RFR:"+QString::number(int(processing->mFramesPerSec)));
     //target manager
     if(ui->toolButton_chi_thi_mt->isChecked())mTargetMan.OutputTargetToKasu();
@@ -4148,17 +4141,7 @@ void Mainwindow::on_bt_rg_4_toggled(bool checked)
     }
 }
 
-void Mainwindow::on_bt_rg_5_toggled(bool checked)
-{
-    if(checked)
-    {
-        mRangeIndex=4;
-        CConfig::setValue("mRangeLevel",mRangeIndex);
-        UpdateScale();
-        SendScaleCommand();
-        isMapOutdated = true;
-    }
-}
+
 
 void Mainwindow::on_bt_rg_6_toggled(bool checked)
 {
@@ -4810,6 +4793,11 @@ void Mainwindow::on_toolButton_chong_nhieu_ppy_clicked(bool checked)
 }
 
 void Mainwindow::on_toolButton_record_clicked(bool checked)
+{
+
+}
+
+void Mainwindow::on_bt_rg_5_clicked(bool checked)
 {
 
 }
