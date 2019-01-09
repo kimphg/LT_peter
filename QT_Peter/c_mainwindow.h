@@ -5,7 +5,7 @@
 #define _WINSOCKAPI_
 //#define SCR_W 1920
 //#define SCR_H 1080
-#define THEON
+//#define THEON
 #ifdef THEON
 #define SCR_W 1920
 #define SCR_H 1200
