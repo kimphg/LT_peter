@@ -3,7 +3,7 @@
 #include "C_radar_data.h"
 #include "c_config.h"
 #include <QUdpSocket>
-#define TRACK_TABLE_SIZE 50
+#define TRACK_TABLE_SIZE 100
 #define TARGET_TABLE_SIZE 6
 #define KASU_DATA_SIZE 144
 

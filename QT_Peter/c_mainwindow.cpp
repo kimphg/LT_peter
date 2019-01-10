@@ -21,7 +21,6 @@ QRect ppiRect(SCR_LEFT_MARGIN+SCR_BORDER_SIZE/2,
 static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),224+SCR_BORDER_SIZE);
 QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
 #else
-PointAziRgkm AutoSelP1,AutoSelP2;
 static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),150+SCR_BORDER_SIZE);
 QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
 #endif
@@ -121,11 +120,9 @@ void Mainwindow::mouseDoubleClickEvent( QMouseEvent * e )
         mMousey=this->mapFromGlobal(QCursor::pos()).y();
         if(isInsideViewZone(mMousex,mMousey))
         {
-            PointDouble point = ConvScrPointToKMXY(mMousex,mMousey);
-            int dx = mMousex-radCtX;
-            int dy = mMousey-radCtY;
-            double rgKM = sqrt((dx*dx)+(dy*dy));
-            pRadar->addDetectionZone(point.x,point.y,200/(rgKM)+1,7.0/mScale);
+            KmXYPoint point = ConvScrPointToKMXY(mMousex,mMousey);
+            double rgKM = sqrt((point.x*point.x)+(point.y*point.y));
+            pRadar->addDetectionZone(point.x,point.y,(mRangeIndex+1)*3/rgKM,7.0/mScale);
             //select radar target
             //select ais target
         }
@@ -182,7 +179,7 @@ void Mainwindow::drawAisTarget(QPainter *p)
         short x = (fx*mScale);//+;
         short y = (fy*mScale);//+radCtY;
         rotateVector(trueShiftDeg,&x,&y);*/
-        PointInt s = ConvWGSToScrPoint(aisObj.mLong,aisObj.mLat);
+        ScreenPoint s = ConvWGSToScrPoint(aisObj.mLong,aisObj.mLat);
 
         if((aisObj.mType/10)==3)continue;
         if(aisObj.isNewest)
@@ -279,7 +276,23 @@ void Mainwindow::wheelEvent(QWheelEvent *event)
 void Mainwindow::mouseMoveEvent(QMouseEvent *event) {
 
     if((mouse_mode&MouseDrag)&&(event->buttons() & Qt::LeftButton)) {
+        /*if(ui->tabWidget_iad->isDragging)
+        {
+            ui->tabWidget_iad->move(ui->tabWidget_iad->pos().x()+event->x()-mMouseLastX,
+                    ui->tabWidget_iad->pos().y()+event->y()-mMouseLastY
+                    );
+            mMouseLastX=event->x();
+            mMouseLastY=event->y();
+        }
+        else if(ui->tabWidget_menu->isDragging)
+        {
+            ui->tabWidget_menu->move(ui->tabWidget_iad->pos().x()+event->x()-mMouseLastX,
+                    ui->tabWidget_iad->pos().y()+event->y()-mMouseLastY
+                    );
+            mMouseLastX=event->x();
+            mMouseLastY=event->y();
 
+        }else*/
         {
             short olddx = dx;
             short olddy = dy;
@@ -441,69 +454,45 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
     mMouseLastY = (event->y());
     if(!isInsideViewZone(mMouseLastX,mMouseLastY))return;
     if(event->buttons() & Qt::LeftButton) {
-
         mMousex=this->mapFromGlobal(QCursor::pos()).x();
         mMousey=this->mapFromGlobal(QCursor::pos()).y();
         if(isInsideViewZone(mMousex,mMousey))
         {
-            if(mouse_mode&MouseAutoSelect1)
+            //select radar target
+            int minDistanceToCursor = 10;
+            //unsigned long long trackMin = 0;
+            int trackSel=0;
+            for (uint i = 0;i<TRACK_TABLE_SIZE;i++)
             {
-                AutoSelP1 =  ConvScrPointToKMXY(mMousex,mMousey);
-                setMouseMode(MouseAutoSelect2,true);
-                setMouseMode(MouseAutoSelect1,false);
+                TrackPointer* ptrack = mTargetMan.getTrackAt(i);
+                if(ptrack==nullptr)continue;
+                ScreenPoint s = ConvKmXYToScrPoint(ptrack->track->xkm,ptrack->track->ykm);
+
+                int dsx   = abs(s.x - mMousex);
+                int dsy   = abs(s.y - mMousey);
+                if(dsx+dsy<minDistanceToCursor)
+                {
+                    minDistanceToCursor = dsx+dsy;
+                    //trackMin = track->uniqId;
+                    trackSel = ptrack->track->uniqId;
+
+                    //                tracktime = track->time;
+                }
+
             }
-            else if(mouse_mode&MouseAutoSelect2)
+            if(trackSel!=0)
             {
-                AutoSelP2 =  ConvScrPointToKMXY(mMousex,mMousey);
-                double dazi = abs(AutoSelP1.aziRad-AutoSelP2.aziRad);
-                double dRg =abs( AutoSelP1.rg-AutoSelP2.rg);
-                double cazi = (AutoSelP1.aziRad+AutoSelP2.aziRad)/2;
-                double cRg =( AutoSelP1.rg+AutoSelP2.rg)/2;
-                setMouseMode(MouseAutoSelect2,false);
+                mTargetMan.setSelectedTrack(trackSel);
 
-                PointDouble point = ConvScrPointToKMXY(mMousex,mMousey);
-                int dx = mMousex-radCtX;
-                int dy = mMousey-radCtY;
-                double rgKM = sqrt((dx*dx)+(dy*dy));
-                pRadar->addDetectionZone(point.x,point.y,200/(rgKM)+1,7.0/mScale);!!
-            }
-            else
-            {//select radar target
-                int minDistanceToCursor = 10;
-                //unsigned long long trackMin = 0;
-                int trackSel=0;
-                for (uint i = 0;i<TRACK_TABLE_SIZE;i++)
-                {
-                    TrackPointer* ptrack = mTargetMan.getTrackAt(i);
-                    if(ptrack==nullptr)continue;
-                    PointInt s = ConvKmXYToScrPoint(ptrack->track->xkm,ptrack->track->ykm);
-
-                    int dsx   = abs(s.x - mMousex);
-                    int dsy   = abs(s.y - mMousey);
-                    if(dsx+dsy<minDistanceToCursor)
-                    {
-                        minDistanceToCursor = dsx+dsy;
-                        //trackMin = track->uniqId;
-                        trackSel = ptrack->track->uniqId;
-
-                        //                tracktime = track->time;
-                    }
-
-                }
-                if(trackSel!=0)
-                {
-                    mTargetMan.setSelectedTrack(trackSel);
-
-                }
             }
         }
-        /*if(mouse_mode&MouseScope)
+        if(mouse_mode&MouseScope)
         {
             double azid,rg;
             C_radar_data::kmxyToPolarDeg((mMouseLastX - radCtX)/mScale,-(mMouseLastY - radCtY)/mScale,&azid,&rg);
 
             pRadar->drawRamp(azid);
-        }*/
+        }
         /*else if(ui->toolButton_create_zone->isChecked())
         {
             gz1.isActive = 1;
@@ -849,7 +838,7 @@ void Mainwindow::DrawDetectZones(QPainter* p)//draw radar target from pRadar->mT
     p->setPen((penYellow));
     for (uint i = 0;i<pRadar->mDetectZonesList.size();i++)
     {
-        DetectionWindow *dw = &pRadar->mDetectZonesList[i];
+        DetectionWindow *dw = &pRadar->mDetectZonesList[i];//todo:finish here
         if(dw->trackCount==0)continue;
 
         int dazi = dw->maxDazDeg;
@@ -905,7 +894,7 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
         TrackPointer* trackPt = mTargetMan.getTargetAt(i);
         if(!trackPt)continue;
         C_primary_track* track = trackPt->track;
-        PointInt s = ConvKmXYToScrPoint(track->xkm,track->ykm);
+        ScreenPoint s = ConvKmXYToScrPoint(track->xkm,track->ykm);
         p->drawLine(s.x-20,s.y,s.x-10,s.y);
         p->drawLine(s.x+20,s.y,s.x+10,s.y);
         p->drawLine(s.x,s.y-20,s.x,s.y-10);
@@ -918,7 +907,7 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
         if(!trackPt)continue;
 
         C_primary_track* track = trackPt->track;
-        PointInt sTrack = ConvKmXYToScrPoint(track->xkm,track->ykm);
+        ScreenPoint sTrack = ConvKmXYToScrPoint(track->xkm,track->ykm);
         if(trackPt->selected)//selected
         {
             // draw track history
@@ -927,8 +916,8 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
             {
                 object_t* obj1 = &(track->objectHistory[j]);
                 object_t* obj2 = &(track->objectHistory[j+1]);
-                PointInt s = ConvKmXYToScrPoint(obj1->xkm,obj1->ykm);
-                PointInt s1 = ConvKmXYToScrPoint(obj2->xkm,obj2->ykm);
+                ScreenPoint s = ConvKmXYToScrPoint(obj1->xkm,obj1->ykm);
+                ScreenPoint s1 = ConvKmXYToScrPoint(obj2->xkm,obj2->ykm);
                 p->drawLine(s1.x,s1.y,s.x,s.y);
             }
             if(trackPt->flag>=0)p->setPen(penTargetEnemySelected);
@@ -990,9 +979,9 @@ void Mainwindow::ConvWGSToKm(double* x, double *y, double m_Long,double m_Lat)
     *y	= ((mLat - (m_Lat)) * 111.132954);
     //tinh toa do xy KM so voi diem center khi biet lat-lon
 }
-PointInt Mainwindow::ConvWGSToScrPoint(double m_Long,double m_Lat)
+ScreenPoint Mainwindow::ConvWGSToScrPoint(double m_Long,double m_Lat)
 {
-    PointInt s;
+    ScreenPoint s;
     double refLat = (mLat + (m_Lat))*0.00872664625997;//pi/360
     s.x	= mScale*(((m_Long) - mLon) * 111.31949079327357)*cos(refLat);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
     s.y	= mScale*((mLat - (m_Lat)) * 111.132954);
@@ -1001,9 +990,9 @@ PointInt Mainwindow::ConvWGSToScrPoint(double m_Long,double m_Lat)
     s.y   += radCtY;
     return s;
 }
-PointInt Mainwindow::ConvKmXYToScrPoint(double x, double y)
+ScreenPoint Mainwindow::ConvKmXYToScrPoint(double x, double y)
 {
-    PointInt s;
+    ScreenPoint s;
     s.x = x*mScale ;
     s.y = -y*mScale ;
     rotateVector(trueShiftDeg,&s.x,&s.y);
@@ -1011,24 +1000,12 @@ PointInt Mainwindow::ConvKmXYToScrPoint(double x, double y)
     s.y   += radCtY;
     return s;
 }
-PointDouble Mainwindow::ConvScrPointToKMXY(int x, int y)
+KmXYPoint Mainwindow::ConvScrPointToKMXY(int x, int y)
 {
-    PointDouble output;
+    KmXYPoint output;
     output.x = (x-radCtX)/mScale;
     output.y = -(y-radCtY)/mScale;
     rotateVector(trueShiftDeg,&output.x,&output.y);
-    return output;
-}
-PointAziRgkm Mainwindow::ConvScrPointToAziRgkm (int x, int y)
-{
-    PointDouble p;
-    PointAziRgkm ouput;
-    p.x = (x-radCtX)/mScale;
-    p.y = -(y-radCtY)/mScale;
-    rotateVector(trueShiftDeg,&p.x,&p.y);
-
-    ouput.aziRad = ConvXYToAziRd(p.x,p.y);
-    ouput.rg = sqrt(p.x*p.x+p.y*p.y);;
     return output;
 }
 void Mainwindow::ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat)
@@ -1382,7 +1359,6 @@ void Mainwindow::SetUpTheonGUILayout()
    ui->tabWidget_iad->mMoveable = false;
    ui->tabWidget_menu_2->setGeometry(1600,10,310,590);
    ui->tableWidgetTarget->setGeometry(0,0,308,560);
-
 }
 void Mainwindow::InitSetting()
 {
@@ -1400,8 +1376,7 @@ void Mainwindow::InitSetting()
     //penTarget.setWidth(2);
     //penTargetEnemy.setWidth(3);
     //penTargetEnemy.setStyle(Qt::DashLine);
-    ui->tableWidgetTarget->setRowCount(1);
-    ui->tableWidgetTarget->setStyleSheet("QTableView{gridline-color: gray;background-color:black}"
+    ui->tableWidgetTarget->setStyleSheet("QTableView{gridline-color: gray;}"
                                          "QTableView::item{color:white; background:#000000; font-weight:900; }"
                                          "QHeaderView::section { color:white; background-color:rgb(24, 48, 64); }");
     ui->tableWidgetTarget_2->setStyleSheet("QTableView{gridline-color: gray;}"
@@ -2127,8 +2102,6 @@ void Mainwindow::ViewTrackInfo()
         TrackPointer *trackPt = mTargetMan.getTrackAt(i);
         if(trackPt)
         {
-            row++;
-            if(row>=ui->tableWidgetTarget->rowCount())ui->tableWidgetTarget->setRowCount(row+1);
             for(int col = 0;col<5;col++)
             {
                 QTableWidgetItem* item = ui->tableWidgetTarget->item(row,col);
@@ -2147,19 +2120,19 @@ void Mainwindow::ViewTrackInfo()
                 //
 
             }
+            row++;
 
         }
 
     }
-    if(row<(ui->tableWidgetTarget->rowCount()-1))ui->tableWidgetTarget->setRowCount(row+1);
-    /*for(int i=row;i<ui->tableWidgetTarget->rowCount();i++)
+    for(int i=row;i<25;i++)
     {
         for(int col = 0;col<5;col++)
         {
             QTableWidgetItem* item = ui->tableWidgetTarget->item(row,col);
             if(item)item->setText("");
         }
-    }*/
+    }
     //target table
 
     for(int i=0;i<TARGET_TABLE_SIZE;i++)
@@ -3000,6 +2973,92 @@ void Mainwindow::on_toolButton_open_record_clicked()
 }
 
 
+
+//void Mainwindow::on_toolButton_alphaView_toggled(bool checked)
+//{
+//    displayAlpha = checked;
+//    pRadar->isDisplayAlpha = checked;
+//}
+
+/*
+        void Mainwindow::updateTargets()
+        {
+            trackList* trackListPt = &pRadar->mTrackList;
+
+            for(short i = 0;i<targetDisplayList.size();i++)
+            {
+                if(!targetDisplayList.at(i)->isUsed)
+                {
+                    continue;
+
+                    targetDisplayList.at(i)->hide();
+
+                }
+                if(trackListPt->at(targetDisplayList.at(i)->trackId).isManual == 0)
+                {
+                    targetDisplayList.at(i)->isUsed = false;
+                    ui->label_status_warning->setText(QString::fromUtf8("Mất MT số:")+QString::number(i+1));
+                    warningList.append(QString::fromUtf8("Mất MT số:")+QString::number(i+1));
+                    ui->label_status_warning->setStyleSheet("background-color: rgb(255, 150, 50,255);");
+                    targetDisplayList.at(i)->hide();
+                    //targetList.at(i)->isLost=true;
+                    continue;
+                }
+                float x	= targetDisplayList.at(i)->x*mScale + radCtX ;
+                float y	= -targetDisplayList.at(i)->y*mScale + radCtY ;
+                float w = scrCtY-30;
+                float dx = x-scrCtX;
+                float dy = y-scrCtY;
+                if(dx*dx+dy*dy>(w*w))
+                {
+                    targetDisplayList.at(i)->hide();
+                }
+                else
+                {
+                    targetDisplayList.at(i)->show();
+                    targetDisplayList.at(i)->setScrPos(x,y);
+                }
+
+                if(targetDisplayList.at(i)->clicked)
+                {
+
+                    selected_target_index = i;
+                    targetDisplayList.at(i)->setSelected(true);
+                    targetDisplayList.at(i)->clicked = false;
+                }
+                if(targetDisplayList.at(i)->doubleClicked)
+                {
+
+                    selected_target_index = i;
+                    trackListPt->at((targetDisplayList.at(i)->trackId)).isManual = true;
+                    targetDisplayList.at(i)->isManual = true;
+                    targetDisplayList.at(i)->doubleClicked = false;
+                }
+                if(selected_target_index == i)
+                {
+                    float tmpazi = trackListPt->at(targetDisplayList.at(i)->trackId).estA*DEG_RAD;
+                    if(tmpazi<0)tmpazi+=360;
+                    ui->label_data_id->setText(QString::number(i+1));
+                    ui->label_data_type->setText("Radar");
+                    ui->label_data_range->setText(QString::number(trackListPt->at(targetDisplayList.at(i)->trackId).estR*pRadar->scale_ppi/mScale/1.852f,'f',2)+"Nm");
+                    ui->label_data_azi->setText( QString::number(tmpazi,'f',2)+degreeSymbol);
+                    ui->label_data_lat->setText( QString::number((short)targetDisplayList.at(i)->m_lat)+degreeSymbol+QString::number((targetDisplayList.at(i)->m_lat-(short)targetDisplayList.at(i)->m_lat)*60,'f',2)+"'N");
+                    ui->label_data_long->setText(QString::number((short)targetDisplayList.at(i)->m_lon)+degreeSymbol+QString::number((targetDisplayList.at(i)->m_lon-(short)targetDisplayList.at(i)->m_lon)*60,'f',2)+"'E");
+                    ui->label_data_speed->setText(QString::number(trackListPt->at(targetDisplayList.at(i)->trackId).speed,'f',2)+"Kn");
+                    ui->label_data_heading->setText(QString::number(trackListPt->at(targetDisplayList.at(i)->trackId).head_r*DEG_RAD)+degreeSymbol);
+                    ui->label_data_dopler->setText(QString::number(trackListPt->at(targetDisplayList.at(i)->trackId).dopler));
+                }
+                else
+                {
+                    targetDisplayList.at(i)->setSelected(false);// = false;
+                }
+                //printf("\nx:%f y:%f",x,y);
+            }
+            //ui->
+            //t1.setGeometry(400,400,20,20);
+            //targetList.append(t1);
+        }
+        */
 void Mainwindow::gotoCenter()
 {
     dx = 0;
@@ -4741,10 +4800,4 @@ void Mainwindow::on_toolButton_record_clicked(bool checked)
 void Mainwindow::on_bt_rg_5_clicked(bool checked)
 {
 
-}
-
-void Mainwindow::on_pushButton_dzs_1_clicked()
-{
-    setMouseMode(MouseAutoSelect1,true);
-    this->setCursor(Qt::ArrowCursor);
 }
