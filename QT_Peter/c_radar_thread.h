@@ -124,6 +124,7 @@ private:
     bool checkFeedback();
     void ProcessNavData(unsigned char *mReceiveBuff, int len);
     void sendAziData();
+    void sendRATTM();
 private slots:
     void ReadDataBuffer();
     void Timer200ms();

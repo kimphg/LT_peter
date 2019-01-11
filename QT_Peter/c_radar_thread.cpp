@@ -1,7 +1,7 @@
 
 #include "c_radar_thread.h"
 
-#define MAX_IREC 500
+#define MAX_IREC 2000
 //#include <QGeoCoordinate>
 //#include <QNmeaPositionInfoSource>
 DataBuff dataB[MAX_IREC];
@@ -31,7 +31,7 @@ void dataProcessingThread::ReadDataBuffer()
     {
         nread++;
 
-        if(nread>=300)
+        if(nread>=600)
         {
             mRadarData->resetData();
             break;
@@ -40,7 +40,6 @@ void dataProcessingThread::ReadDataBuffer()
         unsigned short dataLen = dataB[iRead].len;
         if(!isPlaying)
         {
-
             mRadarData->processSocketData(pData,dataLen);
             if(isRecording)
             {
@@ -292,7 +291,7 @@ void dataProcessingThread::initSerialComm()
 
 
     // baudrate at 4800 standart for low speed encoder and ais
-    serialBaud = 4800;
+    serialBaud = 38400;
     QList<QSerialPortInfo> portlist = QSerialPortInfo::availablePorts();
     for(int i = 0;i<portlist.size();i++)
     {
@@ -427,11 +426,29 @@ void dataProcessingThread::sendAziData()
     sendBuf[8]=0;
     sendCommand(&sendBuf[0],9,false);
 }
-
+void dataProcessingThread::sendRATTM()
+{
+    for(int i=0;i<mRadarData->mTrackList.size();i++)
+    {
+        C_primary_track *track = &(mRadarData->mTrackList.at(i));
+        if(track->isRemoved())continue;
+        int len = track->mTTM.size();
+        if(len)
+        {
+            for(std::vector<QSerialPort*>::iterator it = serialPorts.begin() ; it != serialPorts.end(); ++it)
+            {
+                (*it)->write(track->mTTM.toStdString().data(),len);
+            }
+        }
+        track->mTTM.clear();
+    }
+}
 void dataProcessingThread::Timer200ms()
 {
     CalculateRFR();
     sendAziData();
+    SerialDataRead();
+    sendRATTM();
     if(radarComQ.size())
     {
         if(radarComQ.front().bytes[1]==0xab)
@@ -508,7 +525,7 @@ void dataProcessingThread::playbackRadarData()
             buff.resize(len);
 
             signRepFile.read(buff.data(),len);
-            if(len>300){
+            if(len>2000){
                 //mRadarData->assembleDataFrame((unsigned char*)buff.data(),buff.size());
                 mRadarData->processSocketData((unsigned char*)buff.data(),len);
             }
@@ -648,7 +665,7 @@ void dataProcessingThread::run()
         while(radarSocket->hasPendingDatagrams())
         {
             int len = radarSocket->pendingDatagramSize();
-            if(len<1000)// system packets
+            if(len<2000)// system packets
             {
                 radarSocket->readDatagram((char*)&mReceiveBuff[0],len);
 
