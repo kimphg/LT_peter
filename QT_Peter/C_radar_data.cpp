@@ -17,7 +17,7 @@
 #define RADAR_DATA_MAX_SIZE     2688
 #define RADAR_GAIN_MIN 3.0
 #define RADAR_GAIN_MAX 9.0
-#define AZI_ERROR_STD 0.01746
+#define AZI_ERROR_STD 0.035
 #define TARGET_OBSERV_PERIOD 6500//ENVAR max periods to save object in the memory
 static  FILE *logfile;
 int C_primary_track::IDCounter =1;
@@ -305,10 +305,8 @@ double C_primary_track::estimateScore(object_t *obj1)
         return -1;
     object_t* obj2 = &(this->objectList.back());
     double dtime = int(obj1->timeMs - obj2->timeMs);
-    if(dtime<300)
-        return -1;//ENVAR min time between plots in a line(1s)
-    if(dtime>120000)
-        return -1;
+    int dPeriod =obj1->period-obj2->period;
+    if((dPeriod>MAX_AZIR*4+10)||dPeriod<300)return -1;
     dtime/=3600000.0;
     double dx = obj1->xkm - obj2->xkm;
     double dy = obj1->ykm - obj2->ykm;
@@ -364,15 +362,18 @@ void C_primary_track::update()
 {
     isUpdating = true;
     ageMs=CConfig::time_now_ms-lastTimeMs;
-    if(ageMs>180000)
+    if(ageMs>TRACK_DELETE_TIME)
         mState = TrackState::removed;
     else
-        if(ageMs>120000)
+        if(ageMs>TRACK_LOST_TIME)
             mState = TrackState::lost;
+    if(mState==TrackState::removed)return;
+    if(mState==TrackState::lost)return;
     if(possibleMaxScore>0)
     {
         if(CConfig::time_now_ms-possibleObj.timeMs>300)
         {
+
             objectList.push_back(possibleObj);
             while(objectList.size()>4)
             {
@@ -440,13 +441,41 @@ void C_primary_track::update()
                 aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
                 double sko_aziNew         = abs(aziDeg-degrees(obj1->azRad));
                 sko_aziDeg += (sko_aziNew-sko_aziDeg)/5.0;
+                if(objectList.size()>20)generateTTM();
             }
         }
 
     }
     isUpdating = false;
 }
+void C_primary_track::generateTTM()
+{
+    mTTM = "$RATTM,"+QString::number(uniqId)+","+
+            QString::number(rgKm*1.852,'f',2)+","+
+            QString::number(aziDeg,'f',1)+","+
+            +"T,"+
+            QString::number(mSpeedkmhFit*1.852,'f',1)+","+
+            QString::number(courseDeg*1.852,'f',1)+","+
+            +"T,"+
+            "0.0"+","+
+            "0.0"+","+
+            "N,,Q,,,A,";
+    uchar a = getCheckSum(mTTM);
+    char chs[] = {0,0,0};
+    bin2hex(a,&chs[0]);
+    mTTM+="*"+QString(chs)+"\r\n";
+}
 
+uchar C_primary_track::getCheckSum(QString message)
+{
+    char* data = (char*)message.toStdString().data();
+    uchar sum = 0;
+    for(int i=1;i<message.size();i++)
+    {
+        sum^=uchar(data[i]);
+    }
+    return (sum);
+}
 void C_primary_track::LinearFit()
 {
     /*
@@ -533,14 +562,14 @@ C_radar_data::C_radar_data()
     cur_rot_timeMSecs = QDateTime::currentMSecsSinceEpoch();
     C_primary_track track;
     mTrackList = std::vector<C_primary_track>(MAX_TRACKS,track);
-    giaQuayPhanCung = false;
+    giaQuayPhanCung = true;
     //    mShipHeading = 0;
     isTrueHeadingFromRadar = true;
     rgStdErr = sn_scale*pow(2,clk_adc);
     azi_er_rad = CConfig::getDouble("azi_er_rad",AZI_ERROR_STD);
     CConfig::time_now_ms = QDateTime::currentMSecsSinceEpoch();
     mFalsePositiveCount = 0;
-    mSledValue = 180;
+    mSledValue = CConfig::getInt("mSledValue",200);
     isInverseRotation = 0;
     logfile = fopen("logfile.dat", "wt");
     isMarineMode = true;
@@ -628,25 +657,46 @@ double C_radar_data::getArcMinAziRad() const
     return (result );
 }
 
-void C_radar_data::addDetectionZone(double x, double y, double dazi, double drg)
+void C_radar_data::addDetectionZoneAZ(double az, double rg, double dazi, double drg,bool isOneTime)
 {
+
     DetectionWindow dw;
-    dw.trackCount=1;
+    dw.isOneTime = false;
+    dw.isRemoved = false;
     dw.timeStart=CConfig::time_now_ms;
-    dw.xkm=x;
-    dw.ykm=y;
-    kmxyToPolarDeg(x,y,&dw.aziDeg,&dw.rg);
-    dw.maxDazDeg = (dazi);
+    dw.xkm=rg*sin((az));
+    dw.ykm=rg*cos((az));
+    dw.aziDeg = degrees(az);
+    dw.rg = (rg);
+    dw.maxDazDeg = degrees(dazi);
     dw.maxDrg = drg;
+    addDetectionZone(dw);
+}
+void C_radar_data::addDetectionZone(DetectionWindow dw)
+{
     for(uint i=0;i<mDetectZonesList.size();i++)
     {
-        if(mDetectZonesList[i].trackCount==0||(CConfig::time_now_ms-dw.timeStart>80000))
+        if(mDetectZonesList[i].isRemoved)
         {
             mDetectZonesList[i] = dw;
             return;
         }
     }
     mDetectZonesList.push_back(dw);
+}
+void C_radar_data::addDetectionZone(double x, double y, double dazi, double drg,bool isOneTime)
+{
+    DetectionWindow dw;
+    dw.isOneTime = isOneTime;
+    dw.isRemoved = false;
+    dw.timeStart=CConfig::time_now_ms;
+    dw.xkm=x;
+    dw.ykm=y;
+    kmxyToPolarDeg(x,y,&dw.aziDeg,&dw.rg);
+    dw.maxDazDeg = (dazi);
+    dw.maxDrg = drg;
+    addDetectionZone(dw);
+
 }
 /*
 void C_radar_data::setShipHeading(int shipHeading)
@@ -1093,7 +1143,7 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
         short nthresh = rainLevel + noiseVar*kgain_auto;
         threshRay[r_pos] += (nthresh-threshRay[r_pos])*0.5;
         bool underThreshold = data_mem.level[azi][r_pos]<threshRay[r_pos];
-        if(data_mem.dopler[azi][r_pos]!=data_mem.dopler[lastAzi][r_pos])underThreshold = true;
+        //if(data_mem.dopler[azi][r_pos]!=data_mem.dopler[lastAzi][r_pos])underThreshold = true;
         data_mem.detect[azi][r_pos] = (!underThreshold);
         if(!underThreshold)if(!init_time)if(r_pos>RANGE_MIN)procPix(azi,r_pos);
 
@@ -1116,7 +1166,7 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
             }
             else
             {
-                data_mem.sled[azi][r_pos] -= (data_mem.sled[azi][r_pos])/20.0f;
+                data_mem.sled[azi][r_pos] -= (data_mem.sled[azi][r_pos])/100.0f;
                 if(cut_noise)displayVal= 0;
             }
             if(data_mem.may_hoi[azi][r_pos])displayVal+=80;
@@ -1182,21 +1232,24 @@ void C_radar_data::ProcessEach90Deg()
 
         if(!mFreeObjList.at(i).isRemoved)
         {
-            if((CConfig::time_now_ms-mFreeObjList.at(i).timeMs)>80000)
+             if(CConfig::mStat.mFrameCount-mFreeObjList.at(i).period>MAX_AZIR*2)
                 mFreeObjList.at(i).isRemoved = true;
-            else nObj++;
-        }
+
+        }else nObj++;
 
     }
     //
-    if(nObj>500)
+    if(nObj>1000)
     {
-        if(kgain_auto<7.5)kgain_auto*=1.05;
-        printf("\ntoo many obj,kgain_auto:%f",kgain_auto);
+        if(kgain_auto<7.5)
+        {
+            kgain_auto*=1.05;
+            printf("\ntoo many obj,kgain_auto:%f",kgain_auto);
+        }
     }
     else if(nObj<20)
     {if(kgain_auto>4.2)kgain_auto/=1.05;}
-    if(mFalsePositiveCount>100)//ENVAR
+    if(mFalsePositiveCount>500)//ENVAR
     {
         if(kgain_auto<10)kgain_auto*=1.05;
         printf("\ntoo many false positive kgain_auto:%f",kgain_auto);
@@ -1262,7 +1315,7 @@ void C_radar_data::ProcessGOData(unsigned char* data,short len, int azi)
 }
 void C_radar_data::processSocketData(unsigned char* data,short len)
 {
-
+    CConfig::mStat.mFrameCount++;
     if(len==MAX_FRAME_SIZE)
         range_max = RADAR_RESOLUTION;
     else if(len==MAX_FRAME_SIZE_HALF)
@@ -1272,7 +1325,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     unsigned char n_clk_adc = data[4];
     sn_stat = (data[5]<<8)+data[6];
 
-    CConfig::mStat.mFrameCount++;
+
     if(clk_adc != n_clk_adc)
     {
         // clock adc
@@ -1307,8 +1360,6 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
         if(data[0]==0x55)//TH tao gia
         {
             newAzi = (data[2]<<8)|data[3];
-            newAzi+= (mShipHeading+antennaHeadOffset);
-            while(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
             //printf("\nheading:%d",heading);
             //printf(" newAzi:%d",newAzi);
         }
@@ -1324,8 +1375,6 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
                 //CConfig::shipHeadingDeg = heading/double(MAX_AZIR)*180.0;
 
                 newAzi = ssiDecode(newAzi);
-                newAzi += (mShipHeading+antennaHeadOffset);
-                while(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
             }
             else
             {
@@ -1334,18 +1383,20 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
                 newAzi>>=3;
                 newAzi&=0xffff;
                 newAzi = ssiDecode(newAzi);
-                newAzi+= (mShipHeading+antennaHeadOffset);
-                while(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
+
             }
 
         }
     }
-    newAzi&=0x07ff;
+    newAzi+= (mShipHeading+antennaHeadOffset);
+    while(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
+#ifndef THEON
     if(data[0]==4)// du lieu may hoi
     {
         ProcessGOData(data, len,newAzi);
         return;
     }
+#endif
     //if(curAzir==newAzi)return;
 
     //if(newAzi==0)dir= !dir;
@@ -1357,7 +1408,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
 //        printf("   mRealAzi:%4.2f mRealAziRate:%2.2f",mRealAzi,mRealAziRate);
 //        printf("   curAzir:%d",curAzir);
 //    }
-    if((abs(dazi)>10))
+    if((abs(dazi)>20))
     {
         mRealAziRate=0.5;
         mRealAzi=newAzi;
@@ -1366,9 +1417,9 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     }
     else
     {
-        mRealAziRate+=(dazi-mRealAziRate)/10.0;
-        if(mRealAziRate>10)mRealAziRate=10;
-        else if(mRealAziRate<-10)mRealAziRate=-10;
+        mRealAziRate+=(dazi-mRealAziRate)/20.0;
+        if(mRealAziRate>20)mRealAziRate=20;
+        else if(mRealAziRate<-20)mRealAziRate=-20;
         mRealAzi+=mRealAziRate;
     }
     int intAzi;
@@ -1667,7 +1718,7 @@ bool C_radar_data::UpdateData()
     int diff = nowAzir-currProcessAzi;
     if(!diff)return false;
     if(diff>MAX_AZIR/2)diff = diff-MAX_AZIR;else if(diff<(-MAX_AZIR/2))diff = diff+MAX_AZIR;
-    if(abs(diff)>100){currProcessAzi =  nowAzir;init_time++;return true;}
+    if(abs(diff)>600){currProcessAzi =  nowAzir;init_time+=5;return true;}
     while (nowAzir != currProcessAzi)
     {
         if(diff>0)
@@ -1745,7 +1796,7 @@ void C_radar_data::procPLot(plot_t* mPlot)
     if(init_time)
         return;
     // remove too big or too small
-    if(mPlot->sumEnergy<100)
+    if(mPlot->sumEnergy<300)
     {
         mFalsePositiveCount++;
         return;
@@ -2501,10 +2552,8 @@ void C_radar_data::ProcessTracks()
     for (ushort j=0;j<mTrackList.size();j++)
     {
         C_primary_track* track = &(mTrackList[j]);
-        if(track->mState==TrackState::removed)continue;
-        if(track->mState==TrackState::lost)continue;
-        track->update();
 
+        track->update();
 
     }
 }
@@ -2548,8 +2597,10 @@ bool C_radar_data::checkBelongToTrack(object_t *obj1)
 
         if(track->mState==TrackState::removed||
                 track->mState==TrackState::lost)continue;
+
         if(track->isUpdating)
         {
+
             continue;
         }
         //object_t *obj2 = &(track->objectList.back());
@@ -2605,14 +2656,15 @@ void C_radar_data::CreateTrack(object_t* obj1,object_t* obj2)
     for(uint i=0;i<mDetectZonesList.size();i++)
     {
         DetectionWindow *dw = &mDetectZonesList[i];
-        if(!dw->trackCount)continue;
-        if((CConfig::time_now_ms-dw->timeStart>80000)){dw->trackCount=0;continue;}
+        if(dw->isRemoved)continue;
+        if(dw->isOneTime)if((CConfig::time_now_ms-dw->timeStart>80000)){dw->isRemoved=true;continue;}
         if((abs(degrees(obj2->azRad)-dw->aziDeg))<dw->maxDazDeg
             &&(abs(obj2->rgKm-dw->rg)<dw->maxDrg)
                 )
         {
             detectConfirmed = true;
-            if(dw->trackCount>0)dw->trackCount--;
+            if(dw->isOneTime)dw->isRemoved=true;
+            break;
         }
     }
     if(!detectConfirmed)return;
@@ -2650,11 +2702,11 @@ bool C_radar_data::checkBelongToObj(object_t* obj1)
         if(obj2->isRemoved)continue;
         //        uint dtime = (obj1->timeMs - obj2->timeMs);
         uint dperiod = (obj1->period-obj2->period);
-        if(dperiod<300)
+        if(dperiod<200)
         {
             continue;
         }
-        if(dperiod>MAX_AZIR*1.5)
+        if(dperiod>(MAX_AZIR*1.5))
         {
             obj2->isRemoved = true;
             continue;

@@ -31,7 +31,7 @@ void dataProcessingThread::ReadDataBuffer()
     {
         nread++;
 
-        if(nread>=300)
+        if(nread>=600)
         {
             mRadarData->resetData();
             break;
@@ -292,7 +292,7 @@ void dataProcessingThread::initSerialComm()
 
 
     // baudrate at 4800 standart for low speed encoder and ais
-    serialBaud = 4800;
+    serialBaud = 38400;
     QList<QSerialPortInfo> portlist = QSerialPortInfo::availablePorts();
     for(int i = 0;i<portlist.size();i++)
     {
@@ -427,11 +427,29 @@ void dataProcessingThread::sendAziData()
     sendBuf[8]=0;
     sendCommand(&sendBuf[0],9,false);
 }
-
+void dataProcessingThread::sendRATTM()
+{
+    for(int i=0;i<mRadarData->mTrackList.size();i++)
+    {
+        C_primary_track *track = &(mRadarData->mTrackList.at(i));
+        if(track->isRemoved())continue;
+        int len = track->mTTM.size();
+        if(len)
+        {
+            for(std::vector<QSerialPort*>::iterator it = serialPorts.begin() ; it != serialPorts.end(); ++it)
+            {
+                (*it)->write(track->mTTM.toStdString().data(),len);
+            }
+        }
+        track->mTTM.clear();
+    }
+}
 void dataProcessingThread::Timer200ms()
 {
     CalculateRFR();
     sendAziData();
+    SerialDataRead();
+    sendRATTM();
     if(radarComQ.size())
     {
         if(radarComQ.front().bytes[1]==0xab)
