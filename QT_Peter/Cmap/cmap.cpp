@@ -248,7 +248,7 @@ QPixmap CMap::getImage(double scale)
 
     }
     // repaint, rescale and return mapImage
-    if(!mapImage)
+    if(mapImage->isNull())
     {
         printf("\nMap image size have not set.");
         return m_emptyTile;

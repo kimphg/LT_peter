@@ -27,6 +27,8 @@ SOURCES += main.cpp\
     qcustomgroupbox.cpp \
     qcustomtabwidget.cpp \
 #    ctarget.cpp \
+    jtarget.cpp \
+    jgraphictarget.cpp \
     Cmap/cmap.cpp\
     c_config.cpp \
     c_radar_data.cpp \
@@ -54,6 +56,8 @@ HEADERS  += \
     qcustomgroupbox.h \
     qcustomtabwidget.h \
     pkp.h \
+    jtarget.h \
+    jgraphictarget.h \
     Cmap/cmap.h\
     c_config.h \
     c_radar_data.h \

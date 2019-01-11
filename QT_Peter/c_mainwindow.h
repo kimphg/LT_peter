@@ -5,8 +5,20 @@
 #define _WINSOCKAPI_
 //#define SCR_W 1920
 //#define SCR_H 1080
-
-
+//#define THEON
+#ifdef THEON
+#define SCR_W 1920
+#define SCR_H 1200
+#define SCR_LEFT_MARGIN 150
+#define SCR_TOP_MARGIN 0
+#define SCR_BORDER_SIZE 48
+#else
+#define SCR_W 1280
+#define SCR_H 1024
+#define SCR_LEFT_MARGIN -29
+#define SCR_TOP_MARGIN 25
+#define SCR_BORDER_SIZE 120
+#endif
 #define HR_FILE_EXTENSION ".r2d"
 //#include <qse>
 #include <c_config.h>
@@ -33,19 +45,7 @@
 #include "Cmap/cmap.h"
 #include "dialogcommandlog.h"
 #include "dialogconfig.h"
-#ifdef THEON
-#define SCR_W 1920
-#define SCR_H 1200
-#define SCR_LEFT_MARGIN 150
-#define SCR_TOP_MARGIN 0
-#define SCR_BORDER_SIZE 48
-#else
-#define SCR_W 1280
-#define SCR_H 1024
-#define SCR_LEFT_MARGIN -29
-#define SCR_TOP_MARGIN 25
-#define SCR_BORDER_SIZE 120
-#endif
+
 namespace Ui {
 class MainWindow;
 class DialogDocumentation;
@@ -53,17 +53,13 @@ class DialogDocumentation;
 //class QPushButton;
 //class QUdpSocket;
 }
-struct PointInt
+struct ScreenPoint
 {
     int x,y;
 };
-struct PointDouble
+struct KmXYPoint
 {
     double x,y;
-};
-struct PointAziRgkm
-{
-    double aziRad,rg;
 };
 class Mainwindow : public QMainWindow
 {
@@ -72,7 +68,7 @@ class Mainwindow : public QMainWindow
 public:
     explicit Mainwindow(QWidget *parent = nullptr);
     ~Mainwindow();
-    PointInt ConvKmXYToScrPoint(double x, double y);
+    ScreenPoint ConvKmXYToScrPoint(double x, double y);
 protected:
     //void contextMenuEvent(QContextMenuEvent *event);
 //    void keyPressEvent(QKeyEvent *event);
@@ -80,7 +76,6 @@ protected:
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
-    void mouseClickEvent(QMouseEvent *event);
     void wheelEvent(QWheelEvent *event);
     void keyPressEvent(QKeyEvent *event);
     void mouseDoubleClickEvent( QMouseEvent * e );
@@ -655,16 +650,6 @@ private slots:
 
     void on_bt_rg_5_clicked(bool checked);
 
-//    void on_pushButton_dzs_1_clicked();
-
-//    void on_pushButton_dzs_1_clicked(bool checked);
-
-    void on_toolButton_dzs_1_clicked(bool checked);
-
-    void on_toolButton_dzs_2_clicked();
-
-    void on_toolButton_hdsd_clicked();
-
 private:
 
 //    bool mShowobjects,
@@ -698,11 +683,10 @@ private:
     void DrawDetectZones(QPainter *p);
     void updateSimTargetStatus();
     void ConvXYradar2XYscr();
-    PointInt ConvWGSToScrPoint(double m_Long, double m_Lat);
-    PointDouble ConvScrPointToKMXY(int x, int y);
+    ScreenPoint ConvWGSToScrPoint(double m_Long, double m_Lat);
+    KmXYPoint ConvScrPointToKMXY(int x, int y);
     void rotateVector(double angle, double *x, double *y);
     void SetUpTheonGUILayout();
-    PointAziRgkm ConvScrPointToAziRgkm(int x, int y);
 };
 
 #endif // MAINWINDOW_H

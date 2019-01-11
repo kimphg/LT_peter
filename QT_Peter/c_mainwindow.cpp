@@ -20,13 +20,11 @@ QRect ppiRect(SCR_LEFT_MARGIN+SCR_BORDER_SIZE/2,
 #ifdef THEON
 static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),224+SCR_BORDER_SIZE);
 QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
-PointAziRgkm AutoSelP1,AutoSelP2;
 #else
-
+PointAziRgkm AutoSelP1,AutoSelP2;
 static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),150+SCR_BORDER_SIZE);
 QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
 #endif
-static QRect mIADrect;
 static QPen penYellow(QBrush(QColor(255,255,50 ,255)),1);
 static QPen mGridViewPen1(QBrush(QColor(150,150,150,255)),1);
 static clock_t clkBegin = clock();
@@ -127,7 +125,7 @@ void Mainwindow::mouseDoubleClickEvent( QMouseEvent * e )
             int dx = mMousex-radCtX;
             int dy = mMousey-radCtY;
             double rgKM = sqrt((dx*dx)+(dy*dy));
-            pRadar->addDetectionZone(point.x,point.y,200/(rgKM)+1,7.0/mScale,true);
+            pRadar->addDetectionZone(point.x,point.y,200/(rgKM)+1,7.0/mScale);
             //select radar target
             //select ais target
         }
@@ -177,6 +175,7 @@ void Mainwindow::drawAisTarget(QPainter *p)
     {
         AIS_object_t aisObj = *iter;
         iter++;
+
         if(aisObj.mUpdateTime>300000)continue;
         /*double fx,fy;
         ConvWGSToKm(&fx,&fy,aisObj.mLong,aisObj.mLat);
@@ -212,13 +211,13 @@ void Mainwindow::drawAisTarget(QPainter *p)
             {
                 p->setPen(penSelectedtarget);
                 p->drawPolygon(poly);
-                p->drawText(s.x,s.y,100,20,0,aisObj.mName);
             }
             else
             {
                 p->setPen(penTarget);
                 p->drawPolygon(poly);
-                p->drawText(s.x,s.y,100,20,0,aisObj.mName);
+                if(ui->toolButton_ais_name->isChecked())
+                    p->drawText(s.x,s.y,100,20,0,aisObj.mName);
             }
 
 
@@ -353,7 +352,6 @@ void Mainwindow::keyPressEvent(QKeyEvent *event)
     {
         mMousex=this->mapFromGlobal(QCursor::pos()).x();
         mMousey=this->mapFromGlobal(QCursor::pos()).y();
-#ifndef THEON
         if(!isInsideViewZone(mMousex,mMousey))return;
         double azid,rg;
         C_radar_data::kmxyToPolarDeg((mMousex - radCtX)/mScale,-(mMousey - radCtY)/mScale,&azid,&rg);
@@ -363,7 +361,6 @@ void Mainwindow::keyPressEvent(QKeyEvent *event)
                                  static_cast<unsigned char>(aziBinary),
                                  0x00,0x00,0x00,0x00,0x00,0x00};
         processing->sendCommand(command,9,false);
-#endif
         mZoomCenterx = mMousex;
         mZoomCentery = mMousey;
 
@@ -449,28 +446,26 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
         mMousey=this->mapFromGlobal(QCursor::pos()).y();
         if(isInsideViewZone(mMousex,mMousey))
         {
-            if(!isHeadUp)setMouseMode(MouseDrag,true);
             if(mouse_mode&MouseAutoSelect1)
             {
-                AutoSelP1 =  ConvScrPointToAziRgkm(mMousex,mMousey);
+                AutoSelP1 =  ConvScrPointToKMXY(mMousex,mMousey);
                 setMouseMode(MouseAutoSelect2,true);
                 setMouseMode(MouseAutoSelect1,false);
             }
             else if(mouse_mode&MouseAutoSelect2)
             {
-                ui->toolButton_dzs_1->setChecked(false);
-                AutoSelP2 =  ConvScrPointToAziRgkm(mMousex,mMousey);
-                double dazi = abs(AutoSelP1.aziRad-AutoSelP2.aziRad)/2.0;
-                double dRg = abs( AutoSelP1.rg-AutoSelP2.rg)/2.0;
+                AutoSelP2 =  ConvScrPointToKMXY(mMousex,mMousey);
+                double dazi = abs(AutoSelP1.aziRad-AutoSelP2.aziRad);
+                double dRg =abs( AutoSelP1.rg-AutoSelP2.rg);
                 double cazi = (AutoSelP1.aziRad+AutoSelP2.aziRad)/2;
                 double cRg =( AutoSelP1.rg+AutoSelP2.rg)/2;
                 setMouseMode(MouseAutoSelect2,false);
 
-                //PointDouble point = ConvScrPointToKMXY(mMousex,mMousey);
-                //int dx = mMousex-radCtX;
-                //int dy = mMousey-radCtY;
-                //double rgKM = sqrt((dx*dx)+(dy*dy));
-                pRadar->addDetectionZoneAZ(cazi,cRg,dazi,dRg,false);
+                PointDouble point = ConvScrPointToKMXY(mMousex,mMousey);
+                int dx = mMousex-radCtX;
+                int dy = mMousey-radCtY;
+                double rgKM = sqrt((dx*dx)+(dy*dy));
+                pRadar->addDetectionZone(point.x,point.y,200/(rgKM)+1,7.0/mScale);!!
             }
             else
             {//select radar target
@@ -526,10 +521,10 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
             gz3.isActive = 1;
             gz3.x1 = event->x();
             gz3.y1 = event->y();
-        }
-        else*/
+        }*/
+        else
         {
-
+            if(!isHeadUp)setMouseMode(MouseDrag,true);
             //mouse_mode=MouseDrag;//isDraging = true;
         }
     }
@@ -855,7 +850,8 @@ void Mainwindow::DrawDetectZones(QPainter* p)//draw radar target from pRadar->mT
     for (uint i = 0;i<pRadar->mDetectZonesList.size();i++)
     {
         DetectionWindow *dw = &pRadar->mDetectZonesList[i];
-        if(dw->isRemoved)continue;
+        if(dw->trackCount==0)continue;
+
         int dazi = dw->maxDazDeg;
         double azi = 90.0-(trueShiftDeg+dw->aziDeg);
         int drg =  int(dw->maxDrg*mScale);
@@ -1030,9 +1026,10 @@ PointAziRgkm Mainwindow::ConvScrPointToAziRgkm (int x, int y)
     p.x = (x-radCtX)/mScale;
     p.y = -(y-radCtY)/mScale;
     rotateVector(trueShiftDeg,&p.x,&p.y);
+
     ouput.aziRad = ConvXYToAziRd(p.x,p.y);
     ouput.rg = sqrt(p.x*p.x+p.y*p.y);;
-    return ouput;
+    return output;
 }
 void Mainwindow::ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat)
 {
@@ -1133,41 +1130,41 @@ void Mainwindow::DrawIADArea(QPainter* p)
 {
     if(ui->tabWidget_iad->isHidden())return;
     p->setCompositionMode(QPainter::CompositionMode_SourceOver);
-    mIADrect = ui->tabWidget_iad->geometry();
-    mIADrect.adjust(4,30,-5,-5);
+    QRect rect = ui->tabWidget_iad->geometry();
+    rect.adjust(4,30,-5,-5);
     p->setBrush(QBrush(Qt::black));
     p->setPen(Qt::black);
-    p->drawRect(mIADrect);
+    p->drawRect(rect);
     if(ui->tabWidget_iad->currentIndex()==0)
     {
-        if(!pRadar->img_zoom_ar)return;
-        if(pRadar->img_zoom_ar->isNull())return;
         p->setPen(QPen(Qt::white,2));
-        QPoint p1(mIADrect.x(),mIADrect.y());
+        QPoint p1(rect.x(),rect.y());
         //QPoint p2(rect.x(),rect.y());
-        QPoint p11(mIADrect.x()+mIADrect.width(),mIADrect.y());
-        QPoint p22(mIADrect.x(),mIADrect.y()+mIADrect.height());
+        QPoint p11(rect.x()+rect.width(),rect.y());
+        QPoint p22(rect.x(),rect.y()+rect.height());
         p->drawLine(p1,p11);
         p->drawLine(p1,p22);
-        int step = mIADrect.width()/5;
+        int step = rect.width()/5;
         for(int i = 0;i<5;i++)
         {
-            p->drawLine(mIADrect.x()+step*i,mIADrect.y(),mIADrect.x()+step*i,mIADrect.y()+5);
-            p->drawLine(mIADrect.x(),mIADrect.y()+step*i,mIADrect.x()+5,mIADrect.y()+step*i);
+            p->drawLine(rect.x()+step*i,rect.y(),rect.x()+step*i,rect.y()+5);
+            p->drawLine(rect.x(),rect.y()+step*i,rect.x()+5,rect.y()+step*i);
         }
         p->setFont(QFont("Times",10));
-        p->drawText(mIADrect.x()+mIADrect.width()-50,mIADrect.y()+15,QString::number(mZoomSizeRg/0.1852,'f',1)+QString::fromUtf8(" Liên"));
-        p->drawText(mIADrect.x()+5,mIADrect.y()+mIADrect.height()-5,QString::number(mZoomSizeAz,'f',1)+QString::fromUtf8(" Độ"));
-        QImage img = pRadar->img_zoom_ar->scaled(mIADrect.width(),mIADrect.height(),Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
-        p->drawImage(mIADrect,img);//todo:resize
+        p->drawText(rect.x()+rect.width()-50,rect.y()+15,QString::number(mZoomSizeRg/0.1852,'f',1)+QString::fromUtf8(" Liên"));
+        p->drawText(rect.x()+5,rect.y()+rect.height()-5,QString::number(mZoomSizeAz,'f',1)+QString::fromUtf8(" Độ"));
+        if(pRadar->img_zoom_ar)
+        {
+            QImage img = pRadar->img_zoom_ar->scaled(rect.width(),rect.height(),Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
+            p->drawImage(rect,img);//todo:resize
 
-
+        }
 
     }
     else if(ui->tabWidget_iad->currentIndex()==4)
     {
         //C_radar_data *prad = pRadar;
-        p->drawImage(mIADrect,*pRadar->img_zoom_ppi,pRadar->img_zoom_ppi->rect());
+        p->drawImage(rect,*pRadar->img_zoom_ppi,pRadar->img_zoom_ppi->rect());
         if(mRangeIndex>2)
         {
             short zoom_size = ui->tabWidget_iad->width()/pRadar->scale_zoom_ppi*pRadar->scale_ppi;
@@ -1180,27 +1177,27 @@ void Mainwindow::DrawIADArea(QPainter* p)
     else if(ui->tabWidget_iad->currentIndex()==1)
     {
 
-        p->drawImage(mIADrect,*pRadar->img_histogram,
+        p->drawImage(rect,*pRadar->img_histogram,
                      pRadar->img_histogram->rect());
 
     }
     else if(ui->tabWidget_iad->currentIndex()==2)
     {
 
-        p->drawImage(mIADrect,*pRadar->img_spectre,
+        p->drawImage(rect,*pRadar->img_spectre,
                      pRadar->img_spectre->rect());
     }
     else if(ui->tabWidget_iad->currentIndex()==3)
     {
         if(ui->toolButton_scope_2->isChecked()==false)pRadar->drawRamp();
-        QRect rect1 = mIADrect;
-        rect1.adjust(0,0,0,-mIADrect.height()/2);
+        QRect rect1 = rect;
+        rect1.adjust(0,0,0,-rect.height()/2);
         //        pengrid.setWidth(10);
         //        p->setPen(pengrid);
         p->drawImage(rect1,*pRadar->img_RAmp);
         double rampos = ui->horizontalSlider_ramp_pos_2->value()/(double(ui->horizontalSlider_ramp_pos_2->maximum()));
-        QRect rect2 = mIADrect;
-        rect2.adjust(0,mIADrect.height()/2,0,0);
+        QRect rect2 = rect;
+        rect2.adjust(0,rect.height()/2,0,0);
         int zoomw = rect2.width()/2;
         int ramposInt = (pRadar->img_RAmp->width()-zoomw)*rampos;
         QRect srect(ramposInt,0,zoomw,pRadar->img_RAmp->height());
@@ -1382,11 +1379,9 @@ void Mainwindow::SetUpTheonGUILayout()
    ui->groupBox_24->setGeometry(10,10,490,40);
    ui->tabWidget_iad->setGeometry(1380,610,530,540);
    ui->tabWidget_iad->show();
-   ui->tabWidget_iad->setTabEnabled(5,false);
    ui->tabWidget_iad->mMoveable = false;
    ui->tabWidget_menu_2->setGeometry(1600,10,310,590);
-   ui->tableWidgetTarget->setGeometry(0,0,308,400);
-   ui->groupBox_3->setGeometry(10,420,280,110);
+   ui->tableWidgetTarget->setGeometry(0,0,308,560);
 
 }
 void Mainwindow::InitSetting()
@@ -1405,7 +1400,7 @@ void Mainwindow::InitSetting()
     //penTarget.setWidth(2);
     //penTargetEnemy.setWidth(3);
     //penTargetEnemy.setStyle(Qt::DashLine);
-    ui->tableWidgetTarget->setRowCount(24);
+    ui->tableWidgetTarget->setRowCount(1);
     ui->tableWidgetTarget->setStyleSheet("QTableView{gridline-color: gray;background-color:black}"
                                          "QTableView::item{color:white; background:#000000; font-weight:900; }"
                                          "QHeaderView::section { color:white; background-color:rgb(24, 48, 64); }");
@@ -1446,8 +1441,6 @@ void Mainwindow::InitSetting()
     //load map
     osmap = new CMap();
     SetGPS(CConfig::getDouble("mLat"), CConfig::getDouble("mLon"));
-    CConfig::mStat.mLat = mLat;
-    CConfig::mStat.mLon = mLon;
     osmap->setCenterPos(mLat,mLon);
     osmap->setImgSize(SCR_H,SCR_H);
     osmap->SetType(0);
@@ -1791,6 +1784,8 @@ void Mainwindow::readBuffer()
 }
 void Mainwindow::InitTimer()
 {
+
+
     tprocessing = new QThread();
     processing = new dataProcessingThread();
     pRadar = processing->mRadarData;
@@ -1870,8 +1865,7 @@ void Mainwindow::Update100ms()
     }
     if(isInsideViewZone(mMousex,mMousey))
     {
-        if(mouse_mode&MouseAutoSelect1||mouse_mode&MouseAutoSelect2)QApplication::setOverrideCursor(Qt::DragMoveCursor);
-        else QApplication::setOverrideCursor(Qt::CrossCursor);
+        QApplication::setOverrideCursor(Qt::CrossCursor);
         double azi,rg;
         if(ui->toolButton_measuring->isChecked())
         {
@@ -2133,7 +2127,7 @@ void Mainwindow::ViewTrackInfo()
         TrackPointer *trackPt = mTargetMan.getTrackAt(i);
         if(trackPt)
         {
-
+            row++;
             if(row>=ui->tableWidgetTarget->rowCount())ui->tableWidgetTarget->setRowCount(row+1);
             for(int col = 0;col<5;col++)
             {
@@ -2153,7 +2147,6 @@ void Mainwindow::ViewTrackInfo()
                 //
 
             }
-            row++;
 
         }
 
@@ -2253,9 +2246,8 @@ void Mainwindow::sync1S()//period 1 second
     ViewTrackInfo();
     // update rate
     int sampleTime = 10*paintTime/7;
-    if(sampleTime<20)sampleTime=20;
     ui->label_frame_rate->setText("SFR:"+QString::number(1000/sampleTime));
-
+    if(sampleTime<20)sampleTime=20;
     timerVideoUpdate.start(sampleTime);
     timerMetaUpdate.start(sampleTime*4);
 
@@ -3580,7 +3572,7 @@ void Mainwindow::UpdateGpsData()
 {
     if(CConfig::mStat.getAgeGps()<3000)
     {
-        SetGPS(CConfig::mStat.mLat, CConfig::mStat.mLon);
+    SetGPS(CConfig::mStat.mLat, CConfig::mStat.mLon);
     }
     else
     {
@@ -4751,31 +4743,8 @@ void Mainwindow::on_bt_rg_5_clicked(bool checked)
 
 }
 
-
-
-
-void Mainwindow::on_toolButton_dzs_1_clicked(bool checked)
+void Mainwindow::on_pushButton_dzs_1_clicked()
 {
-    if(checked)
-    {
-        setMouseMode(MouseAutoSelect1,true);
-        this->setCursor(Qt::ArrowCursor);
-    }
-}
-
-void Mainwindow::on_toolButton_dzs_2_clicked()
-{
-    for(int i=0;i<pRadar->mTrackList.size();i++)
-    {
-        C_primary_track* track=&( pRadar->mTrackList[i]);
-        track->mState = TrackState::removed;
-
-    }
-}
-
-void Mainwindow::on_toolButton_hdsd_clicked()
-{
-    DialogDocumentation *dlg=new DialogDocumentation();
-    dlg->setModal(false);
-    dlg->showNormal();
+    setMouseMode(MouseAutoSelect1,true);
+    this->setCursor(Qt::ArrowCursor);
 }

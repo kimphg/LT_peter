@@ -3,17 +3,9 @@
 //  |----------------------------------------------------------|
 //  |HR2D signal processing class and tracking algorithm       |
 //  |First release: November 2015                              |
-//  |Last update: Jan 2019                                     |
+//  |Last update: Sept 2018                                    |
 //  |Author: Phung Kim Phuong                                  |
 //  |----------------------------------------------------------|
-#define THEON
-#ifdef THEON
-#define TRACK_LOST_TIME 30000
-#define TRACK_DELETE_TIME 60000
-#else
-#define TRACK_LOST_TIME 90000
-#define TRACK_DELETE_TIME 120000
-#endif
 #define ARMA_USE_LAPACK
 #define ARMA_USE_BLAS
 #define ARMA_BLAS_UNDERSCORE
@@ -41,7 +33,7 @@
 #define MAX_FRAME_SIZE_HALF RADAR_RESOLUTION_HALF*2+FRAME_HEADER_SIZE
 #define CONST_E 2.71828182846
 #define MAX_TRACK_LEN               400
-#define MAX_TRACKS                  200
+#define MAX_TRACKS                  400
 #define ENCODER_RES                 5000
 #define MAX_AZIR                    RADAR_RESOLUTION
 #define MAX_AZIR_DRAW               6144
@@ -81,114 +73,6 @@ inline double sinFast(double a)
     double a2 = a*a;
     return a-a2*a/6.0+a2*a2*a/120.0-a2*a2*a2*a/5040.0;
 }
-inline void bin2hex(unsigned char byte, char* str)
-{
-    switch (byte>>4) {
-    case 0:
-        *str = '0';
-        break;
-    case 1:
-        *str = '1';
-        break;
-    case 2:
-        *str = '2';
-        break;
-    case 3:
-        *str = '3';
-        break;
-    case 4:
-        *str = '4';
-        break;
-    case 5:
-        *str = '5';
-        break;
-    case 6:
-        *str = '6';
-        break;
-    case 7:
-        *str = '7';
-        break;
-    case 8:
-        *str = '8';
-        break;
-    case 9:
-        *str = '9';
-        break;
-    case 10:
-        *str = 'A';
-        break;
-    case 11:
-        *str = 'B';
-        break;
-    case 12:
-        *str = 'C';
-        break;
-    case 13:
-        *str = 'D';
-        break;
-    case 14:
-        *str = 'E';
-        break;
-    case 15:
-        *str = 'F';
-        break;
-    default:
-        break;
-    }
-    switch (byte&(0x0F)) {
-    case 0:
-        *(str+1) = '0';
-        break;
-    case 1:
-        *(str+1) = '1';
-        break;
-    case 2:
-        *(str+1) = '2';
-        break;
-    case 3:
-        *(str+1) = '3';
-        break;
-    case 4:
-        *(str+1) = '4';
-        break;
-    case 5:
-        *(str+1) = '5';
-        break;
-    case 6:
-        *(str+1) = '6';
-        break;
-    case 7:
-        *(str+1) = '7';
-        break;
-    case 8:
-        *(str+1) = '8';
-        break;
-    case 9:
-        *(str+1) = '9';
-        break;
-    case 10:
-        *(str+1) = 'A';
-        break;
-    case 11:
-        *(str+1) = 'B';
-        break;
-    case 12:
-        *(str+1) = 'C';
-        break;
-    case 13:
-        *(str+1) = 'D';
-        break;
-    case 14:
-        *(str+1) = 'E';
-        break;
-    case 15:
-        *(str+1) = 'F';
-        break;
-    default:
-        break;
-    }
-
-}
 inline double cosFast(double a)
 {
     while (a>PI) {
@@ -215,8 +99,7 @@ inline double ConvXYToAziRd(double x, double y)
 }
 typedef struct
 {
-    bool isRemoved;
-    bool isOneTime;
+    int trackCount;
     qint64 timeStart;
     double xkm,ykm;
     double aziDeg,rg;
@@ -330,7 +213,6 @@ public:
         return mState==TrackState::lost;
     }
     TrackState mState;
-    QString mTTM;
     uint ageMs;
     //    int operatorID;
 //    uint time;
@@ -362,8 +244,6 @@ public:
 private:
     double courseRad;
     double mSpeedkmh;
-    void generateTTM();
-    uchar getCheckSum(QString message);
 };
 
 //______________________________________//
@@ -487,7 +367,7 @@ public:
 
     double getArcMaxAziRad() const;
     double getArcMinAziRad() const;
-    void addDetectionZone(double x, double y,double dazi,double drg, bool isOneTime);
+    void addDetectionZone(double x, double y,double dazi,double drg);
     std::vector<DetectionWindow> mDetectZonesList;
 private:
     QTransform mPPITrans;
@@ -536,7 +416,6 @@ private:
     void LeastSquareFit(C_primary_track* track);
     //    double LinearFitCost(track_t *track, object_t *myobj);
     void ProcessGOData(unsigned char *data, short len, int azi);
-    void addDetectionZone(DetectionWindow dw);
 public:
     unsigned char mSledValue;
     int mEncoderVal;
@@ -556,7 +435,6 @@ public:
 //    void setShipHeading(int shipHeading);
     void setShipHeadingDeg(double headingDeg);
     void setAziViewOffsetDeg(double angle);
-    void addDetectionZoneAZ(double az, double rg, double dazi, double drg, bool isOneTime);
 };
 
 //extern C_radar_data radarData;

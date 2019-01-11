@@ -10,8 +10,8 @@ enum mouseMode
 {
     MouseNormal =       0,
     MouseAddingTrack =  0x0001,
-    MouseAutoSelect1 =  0x0002,
-    MouseAutoSelect2 =  0x0004,
+    MouseAutoSelect =   0x0002,
+    MouseScope  =       0x0004,
     MouseDrag =         0x0008,
     MouseMeasuring =    0x0010,
     MouseELB =          0x0020,
@@ -35,7 +35,7 @@ inline void hex2bin(const char* src,unsigned char* target)
     src += 2;
   }
   *(target++)=0;
-}/*
+}
 inline void bin2hex(unsigned char byte, char* str)
 {
     switch (byte>>4) {
@@ -143,7 +143,7 @@ inline void bin2hex(unsigned char byte, char* str)
         break;
     }
 
-}*/
+}
 inline double deg2rad(double deg) {
   return (deg /57.295779513);
 }
