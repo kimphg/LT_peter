@@ -9,9 +9,9 @@
 #define THEON
 #define DEBUGMODE
 #ifdef THEON
-#define TRACK_LOST_TIME 30000
-#define TRACK_DELETE_TIME 60000
-#define TRACK_MAX_DTIME 20000
+#define TRACK_LOST_TIME 60000
+#define TRACK_DELETE_TIME 80000
+#define TRACK_MAX_DTIME 40000
 #define TRACK_MIN_DTIME 500
 #else
 #define TRACK_MAX_DTIME 70000
@@ -19,11 +19,13 @@
 #define TRACK_LOST_TIME 90000
 #define TRACK_DELETE_TIME 120000
 #endif
+#define MAX_OBJ_SIZE 0.4//400m
+#define STABLE_TRACK_LEN 5
 #define ARMA_USE_LAPACK
 #define ARMA_USE_BLAS
 #define ARMA_BLAS_UNDERSCORE
 #define MODE_MARINE
-#define TRACK_STABLE_STATE          5
+#define TRACK_STABLE_LEN          5
 #define MIN_TERRAIN                 10
 #define TRACK_CONFIRMED_SIZE        3
 #define TRACK_INIT_STATE            3
@@ -65,7 +67,7 @@
 #define TERRAIN_GAIN                0.9f
 #define TERRAIN_GAIN_1              0.1f
 #define TERRAIN_THRESH              0.5f
-#define TARGET_MAX_SPEED_MARINE     50.0
+#define TARGET_MAX_SPEED_MARINE     80.0
 #define ZOOM_SIZE                   550
 #define DISPLAY_RES_ZOOM            8192
 #define DISPLAY_SCALE_ZOOM          4
@@ -207,6 +209,15 @@ inline double ConvXYToRg(double x, double y)
     return sqrt(x*x + y*y);
 
 }
+inline double fastPow(double a, double b) {
+    union {
+        double d;
+        int x[2];
+    } u = { a };
+    u.x[1] = (int)(b * (u.x[1] - 1072632447) + 1072632447);
+    u.x[0] = 0;
+    return u.d;
+}
 inline double ConvXYToAziRd(double x, double y)
 {
     if (!y)        return (x>0 ? PI_CHIA2 : (PI_NHAN2 - PI_CHIA2));
@@ -244,6 +255,7 @@ typedef struct  {
     //    double          azRadfit,rgKmfit;
     double          rgKm;
     short           dazi,drg;
+    int             energy;
     short           size;
     char            dopler;
     //    bool            isProcessed;
@@ -293,12 +305,17 @@ public:
         isUpdating = false;
         uniqId =-1;
     }
+    bool isConfirmed(){return mState==TrackState::confirmed;}
     void init(object_t* obj1,object_t* obj2,int id=-1)
     {
+        objectList.clear();
+        objectHistory.clear();
 
         double dtime = (obj1->timeMs-obj2->timeMs)/3600000.0;
         double dx = obj1->xkm - obj2->xkm;
         double dy = obj1->ykm - obj2->ykm;
+        mDopler = obj1->dopler;
+        if(mDopler>7)mDopler-=16;
         rgSpeedkmh = (obj1->rgKm-obj2->rgKm)/dtime;
         //        isRemoved  = false;
         mSpeedkmh  = sqrt(dx*dx+dy*dy)/dtime;
@@ -321,6 +338,7 @@ public:
         mState = TrackState::newDetection;
         //        operatorID = 0;
     }
+
     ~C_primary_track()
     {
 
@@ -347,8 +365,8 @@ public:
     double mSpeedkmhFit;
     std::vector<object_t> objectList;
     std::vector<object_t> objectHistory;
-    object_t possibleObj;
-    float                   possibleMaxScore;
+    object_t                possibleObj;
+    double                   possibleMaxScore;
     double                  courseRadFit;
     double                  courseDeg;
     double                  rgSpeedkmh;
@@ -358,6 +376,7 @@ public:
     double                  sko_spd;
     double                  sko_cour;
     qint64                  lastTimeMs;
+    int                     mDopler;
     void LinearFit();
     void addPossible(object_t *obj, double score);
     double LinearFitCost(object_t *myobj);
@@ -416,7 +435,7 @@ public:
     double                  tb_tap_k;
     //    int                     get_tb_tap();
     bool                    is_do_bup_song;
-    bool                    isClkAdcChanged,xl_dopler,noise_nornalize,isSled,filter2of3;
+    bool                    isClkAdcChanged,gat_mua_va_dia_vat,noise_nornalize,isSled,filter2of3;
     bool                    isManualTune,cut_noise,bo_bang_0,data_export;
     bool                    isSelfRotation;
     double                   krain,kgain,ksea,brightness;
@@ -543,6 +562,11 @@ private:
     void ProcessGOData(unsigned char *data, short len, int azi);
     void addDetectionZone(DetectionWindow dw);
     int approximateAzi(int newAzi);
+    bool checkInsideDW(double aziDeg, double rgkm);
+    bool checkInsideDWOneTime(double aziDeg, double rgkm);
+    void addFreeObj(object_t *obj1);
+    bool checkSimilarityToExistingTracks(object_t *obj1);
+    void UpdateTrackStatistic();
 public:
     unsigned char mSledValue;
     int mEncoderVal;
@@ -554,7 +578,7 @@ public:
     double getSelfRotationAzi() const;
     void setSelfRotationAzi(int value);
     void processSocketData(unsigned char *data, short len);
-    bool ProcessObject(object_t *obj1);
+    void ProcessObject(object_t *obj1);
     //    void ProcessObjects();
     //    inline static double ConvXYToRange(double x, double y);
     //    inline static double ConvXYToAziRad(double x, double y);

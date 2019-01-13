@@ -898,7 +898,25 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
 //    short sx1=0,sy1=0;
     //float scale_ppi = pRadar->scale_ppi;
     //short targetId = 0;
-    //    std::vector<object_t>* pObjList = &(pRadar->mFreeObjList);
+    p->setPen(penCyan);
+    std::vector<object_t>* pObjList = &(pRadar->mFreeObjList);
+    for (uint i = 0;i<pObjList->size();i++)
+    {
+        if(pObjList->at(i).isRemoved)continue;
+        PointInt sTrack = ConvKmXYToScrPoint(pObjList->at(i).xkm,pObjList->at(i).ykm);
+        //p->drawPoint(sTrack.x,sTrack.y);
+        p->drawRect(sTrack.x-5,sTrack.y-5,10,10);
+    }
+    for (uint i = 0;i<pRadar->mTrackList.size();i++)
+    {
+        C_primary_track* track = &(pRadar->mTrackList[i]);
+        if(track->mState==TrackState::newDetection)
+        {
+            PointInt sTrack = ConvKmXYToScrPoint(track->objectList.back().xkm,track->objectList.back().ykm);
+            //p->drawPoint(sTrack.x,sTrack.y);
+            p->drawRect(sTrack.x-5,sTrack.y-5,10,10);
+        }
+    }
     //    p->setPen(penTargetBlue);
 
     bool blink = (CConfig::time_now_ms/500)%2;
@@ -962,7 +980,7 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
 
             int size = 18000.0/(CConfig::time_now_ms - track->lastTimeMs+400);
             if(size<TARG_SIZE)size=TARG_SIZE;//rect size depend to time
-            if(track->objectList.size()>3)
+            if(track->isConfirmed())
             {
 
                 p->drawEllipse(sTrack.x-size/2,sTrack.y-size/2,size,size);
@@ -1314,6 +1332,12 @@ void Mainwindow::trackTableItemMenu(int row,int col)
         QAction action1(QString::fromUtf8("Xóa"), this);
         connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
         contextMenu.addAction(&action1);
+        //Dopler
+        QAction action5(QString::fromUtf8("Dopler: ")+QString::number(mTargetMan.currTrackPt->track->mDopler), this);
+        //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
+        contextMenu.addAction(&action5);
+
+
         contextMenu.exec((QCursor::pos()));
     }
 }
@@ -1821,12 +1845,7 @@ void Mainwindow::InitTimer()
 }
 void Mainwindow::Update100ms()
 {
-    //find new tracks
-    for(uint i =0;i<pRadar->mTrackList.size();i++)
-    {
-        if(!mTargetMan.checkIDExist(pRadar->mTrackList[i].uniqId))
-            mTargetMan.addTrack(&pRadar->mTrackList[i]);
-    }
+
     //smooth the heading
     ui->label_head_ship->setText(QString::number(CConfig::mStat.shipHeadingDeg,'f',1));
     ui->label_course_ship->setText(QString::number(CConfig::mStat.shipCourseDeg,'f',1));
@@ -2126,6 +2145,14 @@ void Mainwindow::UpdateMay22Status()
 }
 void Mainwindow::ViewTrackInfo()
 {
+    //find new tracks
+    for(uint i =0;i<pRadar->mTrackList.size();i++)
+    {
+        C_primary_track* track = &(pRadar->mTrackList[i]);
+        if(track->isConfirmed())
+        if(!mTargetMan.checkIDExist(pRadar->mTrackList[i].uniqId))
+            mTargetMan.addTrack(&pRadar->mTrackList[i]);
+    }
     //track table
     int row = 0;
     for(int i=0;i<TRACK_TABLE_SIZE;i++)
@@ -2248,6 +2275,7 @@ void Mainwindow::ViewTrackInfo()
 }
 void Mainwindow::sync1S()//period 1 second
 {
+
     UpdateMay22Status();
     UpdateGpsData();
     ViewTrackInfo();
@@ -3211,10 +3239,10 @@ void Mainwindow::on_toolButton_xl_dopler_clicked()
 
 }
 
-void Mainwindow::on_toolButton_xl_dopler_toggled(bool checked)
-{
-    pRadar->xl_dopler = checked;
-}
+//void Mainwindow::on_toolButton_xl_dopler_toggled(bool checked)
+//{
+//    pRadar->gat_mua_dopler = checked;
+//}
 
 
 //void Mainwindow::on_toolButton_xl_nguong_3_toggled(bool checked)
@@ -4013,7 +4041,8 @@ void Mainwindow::on_toolButton_sled_clicked(bool checked)
 
 void Mainwindow::on_toolButton_xl_dopler_clicked(bool checked)
 {
-    pRadar->xl_dopler = checked;
+    pRadar->gat_mua_va_dia_vat = checked;
+    CConfig::setValue("gat_mua_dopler",QString::number(int(checked)));
 }
 
 void Mainwindow::on_toolButton_setRangeUnit_toggled(bool checked)
@@ -4765,12 +4794,8 @@ void Mainwindow::on_toolButton_dzs_1_clicked(bool checked)
 
 void Mainwindow::on_toolButton_dzs_2_clicked()
 {
-    for(int i=0;i<pRadar->mTrackList.size();i++)
-    {
-        C_primary_track* track=&( pRadar->mTrackList[i]);
-        track->mState = TrackState::removed;
+    pRadar->resetTrack();
 
-    }
 }
 
 void Mainwindow::on_toolButton_hdsd_clicked()

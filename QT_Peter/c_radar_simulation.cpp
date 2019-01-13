@@ -260,7 +260,7 @@ void c_radar_simulation::run()
 {
     while (true)
     {
-        msleep(15);
+        msleep(50);
         if(!isPlaying)
         {
             msleep(500);

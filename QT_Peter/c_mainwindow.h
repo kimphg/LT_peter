@@ -255,7 +255,7 @@ private slots:
 
     void on_toolButton_xl_dopler_clicked();
 
-    void on_toolButton_xl_dopler_toggled(bool checked);
+//    void on_toolButton_xl_dopler_toggled(bool checked);
 
 //    void on_toolButton_xl_nguong_3_toggled(bool checked);
 
