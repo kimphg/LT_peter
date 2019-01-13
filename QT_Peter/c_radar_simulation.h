@@ -26,7 +26,7 @@ class target_t
 public:
 
     target_t();
-    void init(double tx, double ty, double tspeed, double tbearing, int dople =0);
+    void init(double tx, double ty, double tspeed, double tbearing, int dople =5);
     void generateSignal();
     void eraseSIgnal();
     void update();

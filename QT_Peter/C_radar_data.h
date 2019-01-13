@@ -7,11 +7,11 @@
 //  |Author: Phung Kim Phuong                                  |
 //  |----------------------------------------------------------|
 #define THEON
-#define DEBUGMODE
+//#define DEBUGMODE
 #ifdef THEON
-#define TRACK_LOST_TIME 60000
+#define TRACK_LOST_TIME 65000
 #define TRACK_DELETE_TIME 80000
-#define TRACK_MAX_DTIME 40000
+#define TRACK_MAX_DTIME 60000
 #define TRACK_MIN_DTIME 500
 #else
 #define TRACK_MAX_DTIME 70000
@@ -310,7 +310,6 @@ public:
     {
         objectList.clear();
         objectHistory.clear();
-
         double dtime = (obj1->timeMs-obj2->timeMs)/3600000.0;
         double dx = obj1->xkm - obj2->xkm;
         double dy = obj1->ykm - obj2->ykm;
@@ -435,7 +434,7 @@ public:
     double                  tb_tap_k;
     //    int                     get_tb_tap();
     bool                    is_do_bup_song;
-    bool                    isClkAdcChanged,gat_mua_va_dia_vat,noise_nornalize,isSled,filter2of3;
+    bool                    isClkAdcChanged,gat_mua_va_dia_vat,noise_nornalize,isShowSled,filter2of3;
     bool                    isManualTune,cut_noise,bo_bang_0,data_export;
     bool                    isSelfRotation;
     double                   krain,kgain,ksea,brightness;

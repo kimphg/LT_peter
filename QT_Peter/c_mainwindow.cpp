@@ -461,8 +461,16 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
                 ui->toolButton_dzs_1->setChecked(false);
                 AutoSelP2 =  ConvScrPointToAziRgkm(mMousex,mMousey);
                 double dazi = abs(AutoSelP1.aziRad-AutoSelP2.aziRad)/2.0;
+
                 double dRg = abs( AutoSelP1.rg-AutoSelP2.rg)/2.0;
-                double cazi = (AutoSelP1.aziRad+AutoSelP2.aziRad)/2;
+                double cazi = (AutoSelP1.aziRad+AutoSelP2.aziRad)/2; ;
+                if(dazi>PI_CHIA2)
+                {
+                    dazi = PI-dazi;
+                    cazi+=PI;
+                    if(cazi>PI_NHAN2)cazi-=PI_NHAN2;
+                }
+
                 double cRg =( AutoSelP1.rg+AutoSelP2.rg)/2;
                 setMouseMode(MouseAutoSelect2,false);
 
@@ -1064,15 +1072,24 @@ void Mainwindow::UpdateMouseStat(QPainter *p)
 {
 
     if(!isInsideViewZone(mMousex,mMousey))return;
-    if((mouse_mode&MouseVRM)||(mouse_mode&MouseELB))
+    if((mouse_mode&MouseVRM)||(mouse_mode&MouseELB)||(mouse_mode&MouseAutoSelect1)||(mouse_mode&MouseAutoSelect2))
     {
         QPen penmousePointer(QColor(0x50ffffff));
         penmousePointer.setWidth(2);
 
         short r = sqrt((mMousex - radCtX)*(mMousex - radCtX)+(mMousey - radCtY)*(mMousey - radCtY));
         p->setPen(penmousePointer);
-        if(mouse_mode&MouseVRM)p->drawEllipse(QPoint(radCtX,radCtY),r,r);
-        if(mouse_mode&MouseELB)p->drawLine(QPoint(radCtX,radCtY),QPoint(radCtX-(radCtX-mMousex)*100,radCtY-(radCtY-mMousey)*100));
+
+        if((mouse_mode&MouseAutoSelect1)||(mouse_mode&MouseAutoSelect2))
+        {
+            p->drawEllipse(QPoint(radCtX,radCtY),r,r);
+            p->drawLine(QPoint(radCtX,radCtY),QPoint(radCtX-(radCtX-mMousex)*100,radCtY-(radCtY-mMousey)*100));
+        }
+        else
+        {
+            if(mouse_mode&MouseVRM)p->drawEllipse(QPoint(radCtX,radCtY),r,r);
+            if(mouse_mode&MouseELB)p->drawLine(QPoint(radCtX,radCtY),QPoint(radCtX-(radCtX-mMousex)*100,radCtY-(radCtY-mMousey)*100));
+        }
     }
     /*if(isSelectingTarget)
     {
@@ -1423,6 +1440,8 @@ void Mainwindow::InitSetting()
 #ifdef THEON
     SetUpTheonGUILayout();
 #endif
+    ui->toolButton_xl_nguong_4->setChecked(CConfig::getInt("cut_noise"));
+    ui->toolButton_sled->setChecked(CConfig::getInt("isShowSled"));
     updateSimTargetStatus();
     ui->tabWidget_menu_2->setCurrentIndex(0);
     //penTargetEnemySelected.setWidth(3);
@@ -3720,7 +3739,8 @@ void Mainwindow::on_toolButton_sled_clicked()
 
 void Mainwindow::on_toolButton_sled_toggled(bool checked)
 {
-    pRadar->isSled=checked;
+    pRadar->isShowSled=checked;
+    CConfig::setValue("isShowSled",int(checked));
 }
 
 void Mainwindow::on_toolButton_sled_reset_clicked()
@@ -4036,7 +4056,7 @@ void Mainwindow::on_toolButton_xl_nguong_4_clicked(bool checked)
 
 void Mainwindow::on_toolButton_sled_clicked(bool checked)
 {
-    pRadar->isSled=checked;
+    pRadar->isShowSled=checked;
 }
 
 void Mainwindow::on_toolButton_xl_dopler_clicked(bool checked)

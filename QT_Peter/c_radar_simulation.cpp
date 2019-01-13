@@ -219,7 +219,7 @@ void c_radar_simulation::setTarget(int id,double aziDeg, double rangeKm,  double
     double tx,ty;
     tx = rangeKm*CONST_NM*sin(radians(aziDeg));
     ty = rangeKm*CONST_NM*cos(radians(aziDeg));
-    target[id].init(tx,ty,tspeed*CONST_NM,tbearingDeg,dople);
+    target[id].init(tx,ty,tspeed*CONST_NM,tbearingDeg,1);
 }
 void c_radar_simulation::setRange(int clk_adc)
 {

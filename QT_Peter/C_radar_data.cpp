@@ -191,19 +191,19 @@ double C_primary_track::estimateScore(object_t *obj1,object_t *obj2)
     double distanceCoeff = distancekm/(TARGET_MAX_SPEED_MARINE*dtime+ obj1->rgKm*AZI_ERROR_STD);
     if(distanceCoeff>3.0)return -1;
     double rgSpeedkmh = abs(obj1->rgKm - obj2->rgKm)/(dtime);
-    double dDopler = abs(obj1->dopler-obj2->dopler);
-    if(dDopler>7)dDopler=16-dDopler;
-    if(dDopler>3)
-    {
-        printf("\n 2 objs rejected by dopler diff");return -1;
-    }
+    //double dDopler = abs(obj1->dopler-obj2->dopler);
+//    if(dDopler>7)dDopler=16-dDopler;
+//    if(dDopler>3)
+//    {
+//        printf("\n 2 objs rejected by dopler diff:%f",dDopler);return -1;
+//    }
     //normalize params
     //speedkmh/=TARGET_MAX_SPEED_MARINE;
     rgSpeedkmh = abs(rgSpeedkmh)/(TARGET_MAX_SPEED_MARINE+obj1->rgStdEr);
-    dDopler/=2.0;
+    //dDopler/=2.0;
     double score =
              fastPow(CONST_E,-sq(distanceCoeff))
-            *fastPow(CONST_E,-sq(dDopler))
+            //*fastPow(CONST_E,-sq(dDopler))
             *fastPow(CONST_E,-sq(rgSpeedkmh));
 #ifdef DEBUGMODE
     /*if(distancekm>0.1&&score>0.1){
@@ -304,14 +304,15 @@ double C_primary_track::LinearFitCost(object_t *myobj)
     //    delete[] y1;
     //    delete[] y2;
     //    delete[] t;
-    double costOfFit = 0;
+    double probability = 1;
     for(int i=0;i<FIT_ELEMENTS;i++)
     {
-        costOfFit+=abs(azRadfit[i]-obj[i]->azRad)/obj[i]->aziStdEr;
-        costOfFit+=abs(rgKmfit[i]  -obj[i]->rgKm)/obj[i]->rgStdEr;
+        double x1 =abs(azRadfit[i]-obj[i]->azRad)/obj[i]->aziStdEr;
+        probability*=fastPow(CONST_E,-sq(x1)/2.0);
+        double x2 =abs(rgKmfit[i]  -obj[i]->rgKm)/obj[i]->rgStdEr;
+        probability*=fastPow(CONST_E,-sq(x2)/2.0);
     }
-    costOfFit/=double(FIT_ELEMENTS);
-    return costOfFit;
+    return probability;
 }
 
 double C_primary_track::estimateScore(object_t *obj1)
@@ -330,35 +331,42 @@ double C_primary_track::estimateScore(object_t *obj1)
 
     double distancekm = sqrt(dx*dx+dy*dy);
     double distanceCoeff = distancekm/(TARGET_MAX_SPEED_MARINE*dtime   + obj1->rgKm*AZI_ERROR_STD);
-    if(distanceCoeff>3.0)return -1;
-    double dDopler = abs(obj1->dopler-obj2->dopler);
-    if(dDopler>7.0)dDopler=abs(16-dDopler);
-    if(dDopler>4)
+    if(distanceCoeff>3.0)
     {
-//        printf("\n obj rejected by dopler diff");
+        //printf("\n obj rejected by distanceCoeff");
         return -1;
     }
+//    double dDopler = abs(obj1->dopler-obj2->dopler);
+//    if(dDopler>7.0)dDopler=abs(16-dDopler);
+//    if(dDopler>4)
+//    {
+//        printf("\n obj rejected by dopler diff:%f",dDopler);
+//        return -1;
+//    }
 //    double dBearing = ConvXYToAziRd(dx,dy)-this->courseRad;
     //double speedkmh = distancekm/(dtime);
     //if(speedkmh>500.0)return -1;
     //double dSpeed = abs(speedkmh-this->mSpeedkmh);//*cosFast(-dBearing));
     //if(dSpeed>600.0)return -1;
     double rgSpeedkmh = (obj1->rgKm-obj2->rgKm)/(dtime);
-    //if(abs(rgSpeedkmh)>TARGET_MAX_SPEED_MARINE)return -1;
+    if(abs(rgSpeedkmh)>TARGET_MAX_SPEED_MARINE*2)return -1;
     double dRgSp = abs(rgSpeedkmh - this->rgSpeedkmh);
-    //if(abs(dRgSp)>TARGET_MAX_SPEED_MARINE)return -1;
+    if(abs(dRgSp)>TARGET_MAX_SPEED_MARINE)return -1;
 
 
-    double linearFit = LinearFitCost(obj1);
+    double linearFitProb = LinearFitCost(obj1);
     //normalize machine learning likelihood model
     rgSpeedkmh/=TARGET_MAX_SPEED_MARINE+obj1->rgStdEr;
     //dSpeed/=TARGET_MAX_SPEED_MARINE;
     //speedkmh/=TARGET_MAX_SPEED_MARINE;
-    dRgSp/=TARGET_MAX_SPEED_MARINE+obj1->rgStdEr;
-    linearFit/=0.8;
-    dtime/=0.004167;
-    double dazi = (obj1->azRad-obj2->azRad)/(AZI_ERROR_STD+mSpeedkmh*dtime/obj1->rgKm);
-    dDopler/=2.0;
+    //dRgSp/=TARGET_MAX_SPEED_MARINE+obj1->rgStdEr;
+//    linearFit/=0.8;
+    dtime/=0.011;
+    double dazi = abs(obj1->azRad-obj2->azRad);
+    if(dazi>PI)dazi = PI_NHAN2-dazi;
+     dazi       /=(AZI_ERROR_STD+mSpeedkmh*dtime/obj1->rgKm);
+     if(dazi>3)return -1;
+//    dDopler/=2.0;
     /*
     rgSpeedkmh/=50.0;
     dSpeed/=200.0;
@@ -370,10 +378,10 @@ double C_primary_track::estimateScore(object_t *obj1)
             *fastPow(CONST_E,-sq(rgSpeedkmh))
             //*fastPow(CONST_E,-sq(dSpeed))
 //            *fastPow(CONST_E,-sq(speedkmh))
-            *fastPow(CONST_E,-sq(dDopler))
+//            *fastPow(CONST_E,-sq(dDopler))
             *fastPow(CONST_E,-sq(dazi))
-            *fastPow(CONST_E,-sq(dRgSp))
-            *fastPow(CONST_E,-sq(linearFit))
+            //*fastPow(CONST_E,-sq(dRgSp))
+            *linearFitProb
             *fastPow(CONST_E,-sq(dtime));
 #ifdef DEBUGMODE
     {
@@ -383,8 +391,8 @@ double C_primary_track::estimateScore(object_t *obj1)
     //fprintf(logfile,"%f,",speedkmh);//500
     //fprintf(logfile,"%f,",abs(dSpeed));//600
     fprintf(logfile,"%f,",abs(rgSpeedkmh));//150
-    fprintf(logfile,"%f,",abs(dRgSp));//120
-    fprintf(logfile,"%f,",linearFit);//0.5
+//    fprintf(logfile,"%f,",abs(dRgSp));//120
+    fprintf(logfile,"%f,",linearFitProb);//0.5
     }
 #endif
     return score;
@@ -407,7 +415,10 @@ void C_primary_track::update()
     {mState = TrackState::removed;return;}
     else if((mState!= TrackState::lost)&&ageMs>TRACK_LOST_TIME)
     {
-        if(mState==TrackState::newDetection)mState = TrackState::removed;
+        if(mState==TrackState::newDetection)
+        {
+            mState = TrackState::removed;!!!
+        }
         else {
             mState = TrackState::lost;
             printf("\ntrack lost id:%d len:%d",uniqId, objectList.size());
@@ -653,7 +664,7 @@ C_radar_data::C_radar_data()
     //    isEncoderAzi  =false;
     isManualTune = false;
     isVtorih = true;
-    cut_noise = false;
+    cut_noise = CConfig::getInt("cut_noise");
     //    doubleFilter = false;
     rotation_per_min = 0;
     bo_bang_0 = false;
@@ -673,7 +684,7 @@ C_radar_data::C_radar_data()
     brightness = 1;
     avtodetect = true;
     isClkAdcChanged = true;
-    isSled = false;
+    isShowSled = CConfig::getInt("isShowSled");
     init_time = 5;
     dataOver = max_s_m_200;
     curAzir = 0;
@@ -1862,7 +1873,7 @@ void C_radar_data::procPLot(plot_t* mPlot)
     if(init_time)
         return;
     // remove too small obj
-    if(mPlot->sumEnergy<200)
+    if(mPlot->sumEnergy<150)
     {
         mFalsePositiveCount++;
         return;
@@ -2366,17 +2377,8 @@ void C_radar_data::resetGain()
 }
 void C_radar_data::setAutorgs(bool aut)
 {
-    if(aut)
-    {
-        cut_noise = true;
-        //krain_auto = 0.3;
-        //kgain_auto  = 4;
-        //ksea_auto = 0;
-    }else
-    {
-        cut_noise = false;
-    }
-
+    cut_noise = aut;
+    CConfig::setValue("cut_noise",int(cut_noise));
 }
 void C_radar_data::raw_map_init()
 {
@@ -2537,7 +2539,7 @@ uint C_radar_data::getColor(unsigned char pvalue,unsigned char dopler,unsigned c
 {
     dopler = dopler%16;
     unsigned short value = ((unsigned short)pvalue)*brightness;
-    if(!isSled)sled = 0;
+    if(!isShowSled)sled = 0;
     else
         if(sled>=32)sled = 0xff; else sled*=8;
     if(value>0xff)
@@ -2735,7 +2737,7 @@ bool C_radar_data::checkBelongToTrack(object_t *obj1)
 {
     bool isBelongingToTrack = false;
     C_primary_track* chosenTrack =nullptr;
-    double maxScore=0.0001;
+    double maxScore=0.2;
     for (ushort j=0;j<mTrackList.size();j++)
     {
         C_primary_track* track = &(mTrackList[j]);
@@ -2768,9 +2770,28 @@ bool C_radar_data::checkBelongToTrack(object_t *obj1)
 
         if(score>maxScore&&score>track->possibleMaxScore)
         {
-            maxScore=score;
-            chosenTrack = track;
-            isBelongingToTrack = true;
+
+            if(track->mState==TrackState::confirmed)
+            {
+                maxScore=score;
+                chosenTrack = track;
+                isBelongingToTrack = true;
+            }
+            else if(chosenTrack)
+            {
+                if(chosenTrack->mState==TrackState::confirmed)continue;//
+                maxScore=score;
+                chosenTrack = track;
+                isBelongingToTrack = true;
+
+            }
+            else
+            {
+                maxScore=score;
+                chosenTrack = track;
+                isBelongingToTrack = true;
+            }
+
         }
 
     }
@@ -2804,7 +2825,7 @@ bool C_radar_data::checkInsideDWOneTime(double aziDeg,double rgkm)
         if(dw->isRemoved)continue;
         if(dw->isOneTime)
         {
-            if((CConfig::time_now_ms-dw->timeStart>80000)){dw->isRemoved=true;continue;}
+            if((CConfig::time_now_ms-dw->timeStart>TRACK_DELETE_TIME)){dw->isRemoved=true;continue;}
             if((abs(aziDeg-dw->aziDeg))<dw->maxDazDeg
                     &&(abs(rgkm-dw->rg)<dw->maxDrg)
                     )
@@ -2825,7 +2846,9 @@ bool C_radar_data::checkInsideDW(double aziDeg,double rgkm)
         if(dw->isRemoved)continue;
         if(!dw->isOneTime)
         {
-            if((abs(aziDeg-dw->aziDeg))<dw->maxDazDeg
+            double daz = abs(aziDeg-dw->aziDeg);
+            if(daz>180)daz=360-daz;
+            if(daz<dw->maxDazDeg
                     &&(abs(rgkm-dw->rg)<dw->maxDrg)
                     )
             {
