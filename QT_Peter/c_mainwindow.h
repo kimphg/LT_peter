@@ -665,6 +665,8 @@ private slots:
 
     void on_toolButton_hdsd_clicked();
 
+    void on_toolButton_dz_clear_clicked();
+
 private:
 
 //    bool mShowobjects,

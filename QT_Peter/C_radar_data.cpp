@@ -356,7 +356,7 @@ double C_primary_track::estimateScore(object_t *obj1)
 
     double linearFitProb = LinearFitCost(obj1);
     //normalize machine learning likelihood model
-    rgSpeedkmh/=TARGET_MAX_SPEED_MARINE+obj1->rgStdEr;
+    rgSpeedkmh/=(TARGET_MAX_SPEED_MARINE+obj1->rgStdEr);
     //dSpeed/=TARGET_MAX_SPEED_MARINE;
     //speedkmh/=TARGET_MAX_SPEED_MARINE;
     //dRgSp/=TARGET_MAX_SPEED_MARINE+obj1->rgStdEr;
@@ -417,7 +417,8 @@ void C_primary_track::update()
     {
         if(mState==TrackState::newDetection)
         {
-            mState = TrackState::removed;!!!
+            mState = TrackState::removed;
+
         }
         else {
             mState = TrackState::lost;
@@ -438,8 +439,11 @@ void C_primary_track::update()
                 objectList.erase(objectList.begin());
                 if(mState==TrackState::newDetection)
                 {
-                    uniqId = C_primary_track::IDCounter++;
-                    mState = TrackState::confirmed;
+                    if(mSpeedkmhFit<TARGET_MAX_SPEED_MARINE)
+                    {
+                        uniqId = C_primary_track::IDCounter++;
+                        mState = TrackState::confirmed;
+                    }
                 }
 
             }
@@ -450,7 +454,7 @@ void C_primary_track::update()
             if(mState==TrackState::newDetection)
             {
                 object_t* obj1  = &(objectList.back());
-                object_t* obj2  = &(objectList.back())-1;
+                object_t* obj2  = &(objectList[0]);
                 double dx       = obj1->xkm - obj2->xkm;
                 double dy       = obj1->ykm - obj2->ykm;
                 double dtime    = (obj1->timeMs-obj2->timeMs)/3600000.0;

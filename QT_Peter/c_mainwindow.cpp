@@ -923,6 +923,7 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
             PointInt sTrack = ConvKmXYToScrPoint(track->objectList.back().xkm,track->objectList.back().ykm);
             //p->drawPoint(sTrack.x,sTrack.y);
             p->drawRect(sTrack.x-5,sTrack.y-5,10,10);
+            //p->drawText(sTrack.x+10,sTrack.y+10,100,50,0,QString::number(track->objectList.size()));
         }
     }
     //    p->setPen(penTargetBlue);
@@ -1426,8 +1427,8 @@ void Mainwindow::SetUpTheonGUILayout()
    ui->tabWidget_iad->setTabEnabled(5,false);
    ui->tabWidget_iad->mMoveable = false;
    ui->tabWidget_menu_2->setGeometry(1600,10,310,590);
-   ui->tableWidgetTarget->setGeometry(0,0,308,400);
-   ui->groupBox_3->setGeometry(10,420,280,110);
+   ui->tableWidgetTarget->setGeometry(0,0,308,450);
+   ui->groupBox_3->setGeometry(10,460,280,100);
 
 }
 void Mainwindow::InitSetting()
@@ -1654,12 +1655,12 @@ void Mainwindow::DrawViewFrame(QPainter* p)
         }
     }
     //fill back ground
-    p->setPen(penBackground);
-    //p->setBrush(penBackground.brush());
-    //p->drawRect(SCR_H+SCR_LEFT_MARGIN,SCR_TOP_MARGIN,SCR_W-SCR_H-SCR_LEFT_MARGIN,SCR_H);
+    p->setPen(QColor(24 ,48 ,64,255));
+    p->setBrush(QBrush(QColor(24 ,48 ,64,255)));
+    p->drawRect(SCR_H+SCR_LEFT_MARGIN,SCR_TOP_MARGIN,SCR_W-SCR_H-SCR_LEFT_MARGIN,SCR_H);
     //p->drawRect(0,0,SCR_LEFT_MARGIN,SCR_H);
     p->setBrush(Qt::NoBrush);
-
+    p->setPen(penBackground);
     //    for (short i=60;i<650;i+=110)
     //    {
     //        p->drawEllipse(-i/2+(scrCtX-scrCtY)+25,-i/2+25,SCR_H -50+i,SCR_H -50+i);
@@ -4823,4 +4824,9 @@ void Mainwindow::on_toolButton_hdsd_clicked()
     DialogDocumentation *dlg=new DialogDocumentation();
     dlg->setModal(false);
     dlg->showNormal();
+}
+
+void Mainwindow::on_toolButton_dz_clear_clicked()
+{
+    pRadar->mDetectZonesList.clear();
 }
