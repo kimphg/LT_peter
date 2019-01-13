@@ -335,7 +335,8 @@ double C_primary_track::estimateScore(object_t *obj1)
     if(dDopler>7.0)dDopler=abs(16-dDopler);
     if(dDopler>4)
     {
-        printf("\n obj rejected by dopler diff");return -1;
+//        printf("\n obj rejected by dopler diff");
+        return -1;
     }
 //    double dBearing = ConvXYToAziRd(dx,dy)-this->courseRad;
     //double speedkmh = distancekm/(dtime);
@@ -357,7 +358,7 @@ double C_primary_track::estimateScore(object_t *obj1)
     linearFit/=0.8;
     dtime/=0.004167;
     double dazi = (obj1->azRad-obj2->azRad)/(AZI_ERROR_STD+mSpeedkmh*dtime/obj1->rgKm);
-    dDopler/=1.5;
+    dDopler/=2.0;
     /*
     rgSpeedkmh/=50.0;
     dSpeed/=200.0;
@@ -2154,17 +2155,18 @@ void C_radar_data::procPix(short proc_azi,short lastAzi,short range)//_______sig
     if(max_drange>=RANGE_MIN)max_drange=RANGE_MIN-1;
     int plotIndex =-1;
     char dopler_0 = data_mem.dopler[proc_azi][range];
-    char dopler_1 = dopler_0 +1;
-    if(dopler_1>15)dopler_1-=16;
-    char dopler_2 = dopler_0 - 1;
-    if(dopler_2<0)dopler_2+=16;
+    //char dopler_1 = dopler_0 +1;
+//    if(dopler_1>15)dopler_1-=16;
+//    //char dopler_2 = dopler_0 - 1;
+//    if(dopler_2<0)dopler_2+=16;
 
     for(int dr=-max_drange;dr<=max_drange;dr++)//  search lastAzi
     {
          if(data_mem.detect[lastAzi][range+dr])
          {
-             int dopler = data_mem.dopler[lastAzi][range+dr];
-             if(dopler==dopler_0||dopler==dopler_2||dopler==dopler_1)
+             int dDopler = abs(data_mem.dopler[lastAzi][range+dr]-dopler_0);
+             if(dDopler>7)dDopler=16-dDopler;
+             if(dDopler<3)
              {
                  plotIndex = data_mem.plotIndex[lastAzi][range+dr];
                  break;
@@ -2177,8 +2179,9 @@ void C_radar_data::procPix(short proc_azi,short lastAzi,short range)//_______sig
         {
              if(data_mem.detect[proc_azi][range+dr])
              {
-                 int dopler = data_mem.dopler[proc_azi][range+dr];
-                 if(dopler==dopler_0||dopler==dopler_2||dopler==dopler_1)
+                 int dDopler = abs(data_mem.dopler[proc_azi][range+dr]-dopler_0);
+                 if(dDopler>7)dDopler=16-dDopler;
+                 if(dDopler<3)
                  {
                      plotIndex = data_mem.plotIndex[proc_azi][range+dr];
                      break;

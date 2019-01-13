@@ -19,7 +19,7 @@
 #define TRACK_LOST_TIME 90000
 #define TRACK_DELETE_TIME 120000
 #endif
-#define MAX_OBJ_SIZE 0.4//400m
+#define MAX_OBJ_SIZE 0.45//400m
 #define STABLE_TRACK_LEN 5
 #define ARMA_USE_LAPACK
 #define ARMA_USE_BLAS
