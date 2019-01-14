@@ -60,6 +60,7 @@ void c_target_manager::setSelectedTrack(int uniqID)
         if(trackTable[i].track !=nullptr)
         {
             trackTable[i].selected=(trackTable[i].track->uniqId==uniqID);
+            if(trackTable[i].selected)currTrackPt = &(trackTable[i]);
         }
     }
 }

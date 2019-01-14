@@ -7,7 +7,7 @@
 
 #define MAX_VIEW_RANGE_KM   50
 static QPen penTargetHistory(QBrush(Qt::gray),1);
-static QPen penTargetEnemy(QBrush(Qt::darkMagenta),2);
+static QPen penTargetEnemy(QBrush(Qt::magenta),2);
 static QPen penTargetFriend(QBrush(QColor(0,200,200 ,255)),2);
 static QPen penTargetEnemySelected(QBrush(Qt::magenta),3);
 static QPen penTargetFriendSelected(QBrush(QColor(50,255,255 ,255)),3);
@@ -506,7 +506,8 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
                 if(trackSel!=0)
                 {
                     mTargetMan.setSelectedTrack(trackSel);
-
+                    //mTargetMan.currTrackPt = mTargetMan.getTrackById(trackSel);
+                    showTrackContext();
                 }
             }
         }
@@ -1321,43 +1322,76 @@ void Mainwindow::targetTableItemMenu(int row,int col)
         contextMenu.exec((QCursor::pos()));
     }
 }
+void Mainwindow::showTrackContext()
+{
+    if(!mTargetMan.currTrackPt)return;
+    QMenu contextMenu(tr("Context menu"), this);
+    QAction action2(QString::fromUtf8("Đặt cờ địch"), this);
+    connect(&action2, SIGNAL(triggered()), this, SLOT(setEnemy()));
+    contextMenu.addAction(&action2);
+    //
+
+    QAction action3(QString::fromUtf8("Đặt cờ ta"), this);
+    connect(&action3, SIGNAL(triggered()), this, SLOT(setFriend()));
+    contextMenu.addAction(&action3);
+#ifndef THEON
+    //add to target
+    QAction action0(QString::fromUtf8("Đặt chỉ thị"), this);
+    connect(&action0, &QAction::triggered, this, &Mainwindow::addToTargets);
+    contextMenu.addAction(&action0);
+    //
+    QAction action6(QString::fromUtf8("Bỏ chỉ thị"), this);
+    connect(&action6, SIGNAL(triggered()), this, SLOT(removeTarget()));
+    contextMenu.addAction(&action6);
+#endif
+//        //change id
+    QAction action4(QString::fromUtf8("Đổi số hiệu"), this);
+    connect(&action4, &QAction::triggered, this, &Mainwindow::changeID);
+    contextMenu.addAction(&action4);
+    //delete
+    QAction action1(QString::fromUtf8("Xóa"), this);
+    connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
+    contextMenu.addAction(&action1);
+    C_primary_track* track = mTargetMan.currTrackPt->track;
+    //Ph. vị
+    QAction action7(QString::fromUtf8("Ph. vị:    ")+QString::number(track->aziDeg,'f',1) , this);
+    //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
+    contextMenu.addAction(&action7);
+    //Cự ly
+    QAction action8(QString::fromUtf8("Cự ly(Nm): ")+QString::number(nm(track->rgKm),'f',2) , this);
+    //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
+    contextMenu.addAction(&action8);
+    //Hướng cđ:
+    QAction action9(QString::fromUtf8("Hướng cđ:  ")+QString::number(track->courseDeg,'f',1)  , this);
+    //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
+    contextMenu.addAction(&action9);
+    //Tốc độ:
+    QAction action10(QString::fromUtf8("Tốc độ:   ")+QString::number(nm(track->mSpeedkmhFit),'f',1) , this);
+    //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
+    contextMenu.addAction(&action10);
+    //Dopler
+    QAction action5(QString::fromUtf8("Dopler:    ")+QString::number(track->mDopler), this);
+    //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
+    contextMenu.addAction(&action5);
+    //Dopler
+    int secs = int(track->lastTimeMs-track->startTime)/1000;
+    int minutes = secs/60;
+    secs = secs%60;
+    QAction action11(QString::fromUtf8("T.gian theo dõi: ")+QString::number(minutes)+"p"+QString::number(secs)+QString::fromUtf8("giây"), this);
+    //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
+    contextMenu.addAction(&action11);
+
+    contextMenu.exec((QCursor::pos()));
+}
 void Mainwindow::trackTableItemMenu(int row,int col)
 {
     QTableWidgetItem* item =  ui->tableWidgetTarget->item(row,0);
     if(!item)return;
     int selectedTrackID = item->text().toInt();
-    mTargetMan.currTrackPt = mTargetMan.getTrackById(selectedTrackID);
-    if(mTargetMan.currTrackPt)
-    {
-        QMenu contextMenu(tr("Context menu"), this);
-        QAction action2(QString::fromUtf8("Đặt cờ địch"), this);
-        connect(&action2, SIGNAL(triggered()), this, SLOT(setEnemy()));
-        contextMenu.addAction(&action2);
-        //
-        QAction action3(QString::fromUtf8("Đặt cờ ta"), this);
-        connect(&action3, SIGNAL(triggered()), this, SLOT(setFriend()));
-        contextMenu.addAction(&action3);
-        //
-        //add to target
-        QAction action0(QString::fromUtf8("Đặt chỉ thị"), this);
-        connect(&action0, &QAction::triggered, this, &Mainwindow::addToTargets);
-        contextMenu.addAction(&action0);
-//        //change id
-        QAction action4(QString::fromUtf8("Đổi số hiệu"), this);
-        connect(&action4, &QAction::triggered, this, &Mainwindow::changeID);
-        contextMenu.addAction(&action4);
-        //delete
-        QAction action1(QString::fromUtf8("Xóa"), this);
-        connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
-        contextMenu.addAction(&action1);
-        //Dopler
-        QAction action5(QString::fromUtf8("Dopler: ")+QString::number(mTargetMan.currTrackPt->track->mDopler), this);
-        //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
-        contextMenu.addAction(&action5);
+    //mTargetMan.currTrackPt = mTargetMan.getTrackById(selectedTrackID);
+    mTargetMan.setSelectedTrack(selectedTrackID);
+    showTrackContext();
 
-
-        contextMenu.exec((QCursor::pos()));
-    }
 }
 void Mainwindow::changeID()
 {

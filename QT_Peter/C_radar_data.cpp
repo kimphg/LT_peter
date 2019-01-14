@@ -418,7 +418,6 @@ void C_primary_track::update()
         if(mState==TrackState::newDetection)
         {
             mState = TrackState::removed;
-
         }
         else {
             mState = TrackState::lost;

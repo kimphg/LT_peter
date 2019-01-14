@@ -705,6 +705,7 @@ private:
     void rotateVector(double angle, double *x, double *y);
     void SetUpTheonGUILayout();
     PointAziRgkm ConvScrPointToAziRgkm(int x, int y);
+    void showTrackContext();
 };
 
 #endif // MAINWINDOW_H

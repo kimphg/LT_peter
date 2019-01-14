@@ -10,7 +10,7 @@
 //#define DEBUGMODE
 #ifdef THEON
 #define TRACK_LOST_TIME 65000
-#define TRACK_DELETE_TIME 80000
+#define TRACK_DELETE_TIME 80000000
 #define TRACK_MAX_DTIME 60000
 #define TRACK_MIN_DTIME 500
 #else
@@ -306,8 +306,10 @@ public:
         uniqId =-1;
     }
     bool isConfirmed(){return mState==TrackState::confirmed;}
+    qint64 startTime;
     void init(object_t* obj1,object_t* obj2,int id=-1)
     {
+        startTime = CConfig::time_now_ms;
         objectList.clear();
         objectHistory.clear();
         double dtime = (obj1->timeMs-obj2->timeMs)/3600000.0;
