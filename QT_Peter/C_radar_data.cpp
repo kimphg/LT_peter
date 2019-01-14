@@ -1486,6 +1486,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     newAzi+= (mShipHeading+antennaHeadOffset);
     while(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
     newAzi = approximateAzi(newAzi);
+    while(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
 #ifndef THEON
     if(data[0]==4)// du lieu may hoi
     {

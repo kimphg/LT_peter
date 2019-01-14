@@ -439,8 +439,9 @@ void dataProcessingThread::sendRATTM()
             {
                 (*it)->write(track->mTTM.toStdString().data(),len);
             }
+            track->mTTM.clear();
         }
-        track->mTTM.clear();
+
     }
 }
 void dataProcessingThread::Timer200ms()

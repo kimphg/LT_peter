@@ -253,6 +253,7 @@ QPixmap CMap::getImage(double scale)
         printf("\nMap image size have not set.");
         return m_emptyTile;
     }
+//    return m_emptyTile;
     Repaint();
     return mapImage->scaled(mapImage->width()*zoomRatio,mapImage->height()*zoomRatio,Qt::IgnoreAspectRatio,Qt::SmoothTransformation );
 }
