@@ -3066,21 +3066,7 @@ void Mainwindow::on_toolButton_replay_fast_toggled(bool checked)
 
 void Mainwindow::on_toolButton_record_toggled(bool checked)
 {
-    if(checked)
-    {
 
-        QDateTime now = QDateTime::currentDateTime();
-        QString filename = now.toString("dd.MM_hh.mm.ss")+
-                "_"+ui->label_range_resolution->text()+
-                "_"+ui->label_sn_type->text()+
-                "_"+ui->label_sn_param->text();
-        ui->label_record_file_name->setText(filename);
-        processing->startRecord("D:/HR2D/rec_"+filename+HR_FILE_EXTENSION);
-    }
-    else
-    {
-        processing->stopRecord();
-    }
 }
 
 void Mainwindow::on_toolButton_open_record_clicked()
@@ -3751,20 +3737,20 @@ void Mainwindow::on_toolButton_set_default_clicked()
 
 
 
-void Mainwindow::on_toolButton_heading_update_clicked()
-{
-    /*if(processing->isHeadingAvaible)
-    {
-        mHeadingT = processing->getHeading()+CConfig::getDouble("mHeadingT3");
-        if(mHeadingT>=360)mHeadingT-=360;
-        ui->label_compass_value->setText(QString::number(processing->getHeading(),'f',1));
-        ui->textEdit_heading->setText(QString::number(mHeadingT));
-    }
-    else
-    {
-        warningList.push_back(QString::fromUtf8("Chưa kết nối la bàn"));
-    }*/
-}
+//void Mainwindow::on_toolButton_heading_update_clicked()
+//{
+//    /*if(processing->isHeadingAvaible)
+//    {
+//        mHeadingT = processing->getHeading()+CConfig::getDouble("mHeadingT3");
+//        if(mHeadingT>=360)mHeadingT-=360;
+//        ui->label_compass_value->setText(QString::number(processing->getHeading(),'f',1));
+//        ui->textEdit_heading->setText(QString::number(mHeadingT));
+//    }
+//    else
+//    {
+//        warningList.push_back(QString::fromUtf8("Chưa kết nối la bàn"));
+//    }*/
+//}
 
 void Mainwindow::on_toolButton_sled_clicked()
 {
@@ -4334,10 +4320,10 @@ void Mainwindow::on_toolButton_second_azi_clicked(bool checked)
     else sendToRadarHS("1dab000070");
 }
 
-void Mainwindow::on_on_toolButton_xl_nguong_3_toggled(bool checked)
-{
+//void Mainwindow::on_on_toolButton_xl_nguong_3_toggled(bool checked)
+//{
 
-}
+//}
 
 void Mainwindow::on_toolButton_signal_type_1_clicked()
 {
@@ -4704,10 +4690,10 @@ void Mainwindow::on_toolButton_start_simulation_stop_clicked(bool checked)
     }
 }
 
-void Mainwindow::on_bt_rg_1_clicked(bool checked)
-{
+//void Mainwindow::on_bt_rg_1_clicked(bool checked)
+//{
 
-}
+//}
 
 void Mainwindow::on_toolButton_sim_target_autogenerate_clicked()
 {
@@ -4826,7 +4812,21 @@ void Mainwindow::on_toolButton_chong_nhieu_ppy_clicked(bool checked)
 
 void Mainwindow::on_toolButton_record_clicked(bool checked)
 {
+    if(checked)
+    {
 
+        QDateTime now = QDateTime::currentDateTime();
+        QString filename = now.toString("dd.MM_hh.mm.ss")+
+                "_"+ui->label_range_resolution->text()+
+                "_"+ui->label_sn_type->text()+
+                "_"+ui->label_sn_param->text();
+        ui->label_record_file_name->setText(filename);
+        processing->startRecord("D:/HR2D/rec_"+filename+HR_FILE_EXTENSION);
+    }
+    else
+    {
+        processing->stopRecord();
+    }
 }
 
 void Mainwindow::on_bt_rg_5_clicked(bool checked)

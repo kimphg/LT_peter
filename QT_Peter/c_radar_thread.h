@@ -112,6 +112,7 @@ private:
     bool isPlaying;
     QFile signRepFile;
     QFile signRecFile;
+    QFile signTTMFile;
     std::vector<QSerialPort*>     serialPorts;
     QUdpSocket      *radarSocket;
     QUdpSocket      *navSocket;

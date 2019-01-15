@@ -386,7 +386,7 @@ private slots:
 
 //    void on_toolButton_gps_update_auto_2_clicked();
 
-    void on_toolButton_heading_update_clicked();
+//    void on_toolButton_heading_update_clicked();
 
     void on_toolButton_sled_clicked();
 
@@ -581,7 +581,7 @@ private slots:
 
     void on_toolButton_second_azi_clicked(bool checked);
 
-    void on_on_toolButton_xl_nguong_3_toggled(bool checked);
+//    void on_on_toolButton_xl_nguong_3_toggled(bool checked);
 
     void on_toolButton_signal_type_1_clicked();
 
@@ -635,7 +635,7 @@ private slots:
 
     void on_toolButton_start_simulation_stop_clicked(bool checked);
 
-    void on_bt_rg_1_clicked(bool checked);
+//    void on_bt_rg_1_clicked(bool checked);
 
     void on_toolButton_sim_target_autogenerate_clicked();
 

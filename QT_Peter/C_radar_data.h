@@ -20,7 +20,7 @@
 #define TRACK_DELETE_TIME 120000
 #endif
 #define MAX_OBJ_SIZE 0.45//400m
-#define STABLE_TRACK_LEN 5
+#define STABLE_TRACK_LEN 6
 #define ARMA_USE_LAPACK
 #define ARMA_USE_BLAS
 #define ARMA_BLAS_UNDERSCORE
@@ -54,7 +54,7 @@
 #define MAX_AZIR_DRAW               6144
 //#define RAD_M_PULSE_RES             1536
 #define RAD_S_PULSE_RES             256
-#define RAD_DISPLAY_RES             650//768
+#define RAD_DISPLAY_RES             700//768
 #define RAD_FULL_RES                1792
 #define SIGNAL_SCALE_7              0.24113 //215.38461538461538461538461538461
 #define SIGNAL_SCALE_6              0.24113//184.61538461538461538461538461538
@@ -307,8 +307,10 @@ public:
     }
     bool isConfirmed(){return mState==TrackState::confirmed;}
     qint64 startTime;
+    double fitProbability;
     void init(object_t* obj1,object_t* obj2,int id=-1)
     {
+        fitProbability=1;
         startTime = CConfig::time_now_ms;
         objectList.clear();
         objectHistory.clear();
@@ -378,7 +380,7 @@ public:
     double                  sko_cour;
     qint64                  lastTimeMs;
     int                     mDopler;
-    void LinearFit();
+    void LinearFit(int nEle);
     void addPossible(object_t *obj, double score);
     double LinearFitProbability(object_t *myobj);
     double estimateScore(object_t *obj1);

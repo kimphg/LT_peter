@@ -15,6 +15,7 @@ bool *pIsPlaying;
 dataProcessingThread::~dataProcessingThread()
 {
     delete mRadarData;
+    signTTMFile.close();
 //    delete arpaData;
 }
 
@@ -127,6 +128,11 @@ dataProcessingThread::dataProcessingThread()
     connect(&readUdpBuffTimer, &QTimer::timeout, this, &dataProcessingThread::ReadDataBuffer);
     readUdpBuffTimer.start(20);
     initSerialComm();
+    QDateTime now = QDateTime::currentDateTime();
+    QString filename = "D:/HR2D/rec_"+ now.toString("dd.MM.yy_hh.mm")+ ".log";
+
+    signTTMFile.setFileName(filename);
+    signTTMFile.open(QIODevice::WriteOnly);
 
 }
 void dataProcessingThread::ReadNavData()
@@ -435,10 +441,12 @@ void dataProcessingThread::sendRATTM()
         int len = track->mTTM.size();
         if(len)
         {
+            std::string str=(track->mTTM.toStdString());
             for(std::vector<QSerialPort*>::iterator it = serialPorts.begin() ; it != serialPorts.end(); ++it)
             {
-                (*it)->write(track->mTTM.toStdString().data(),len);
+                (*it)->write(str.data(),len);
             }
+            signTTMFile.write(str.data());
             track->mTTM.clear();
         }
 

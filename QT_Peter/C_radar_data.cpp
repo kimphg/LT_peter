@@ -438,14 +438,14 @@ void C_primary_track::update()
                 objectList.erase(objectList.begin());
                 if(mState==TrackState::newDetection)
                 {
-                    if(mSpeedkmhFit<TARGET_MAX_SPEED_MARINE)
+                    if(true)//mSpeedkmhFit<TARGET_MAX_SPEED_MARINE)
                     {
-                        if()
+                        LinearFit(TRACK_STABLE_LEN);
+                        if(fitProbability<0.8)printf("\n fitProbability:%f",fitProbability);
                         uniqId = C_primary_track::IDCounter++;
                         mState = TrackState::confirmed;
                     }
                 }
-
             }
             lastTimeMs = possibleObj.timeMs;
             if((lastTimeMs-objectHistory.back().timeMs)>60000)
@@ -457,8 +457,8 @@ void C_primary_track::update()
                 object_t* obj2  = &(objectList[0]);
                 double dx       = obj1->xkm - obj2->xkm;
                 double dy       = obj1->ykm - obj2->ykm;
-                double dtime    = (obj1->timeMs-obj2->timeMs)/3600000.0;
-                rgSpeedkmh      = (obj1->rgKm-obj2->rgKm)/dtime;
+                double dtime    = (obj1->timeMs - obj2->timeMs)/3600000.0;
+                rgSpeedkmh      = (obj1->rgKm - obj2->rgKm)/dtime;
                 //speed param
                 mSpeedkmhFit    = sqrt(dx*dx+dy*dy)/dtime;
                 sko_spd         = mSpeedkmhFit/2.0;
@@ -480,7 +480,7 @@ void C_primary_track::update()
             else if(mState==TrackState::confirmed)
             {
 
-                LinearFit();
+                LinearFit(TRACK_STABLE_LEN);
                 object_t* obj1  = &(objectList.back());
                 object_t* obj2  = &(objectList[0]);
                 double dx       = obj1->xkm - obj2->xkm;
@@ -511,7 +511,7 @@ void C_primary_track::update()
                 aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
                 double sko_aziNew         = abs(aziDeg-degrees(obj1->azRad));
                 sko_aziDeg += (sko_aziNew-sko_aziDeg)/5.0;
-                if(objectList.size()>20)generateTTM();
+                generateTTM();
             }
         }
 
@@ -546,7 +546,7 @@ uchar C_primary_track::getCheckSum(QString message)
     }
     return (sum);
 }
-void C_primary_track::LinearFit()
+void C_primary_track::LinearFit(int nEle)
 {
     /*
 double xsum=0,x2sum=0,ysum=0,xysum=0;
@@ -563,8 +563,12 @@ double xsum=0,x2sum=0,ysum=0,xysum=0;
     for (i=0;i<n;i++)
         y_fit[i]=a*x[i]+b;
 */
-    uint nEle=4;
-    if(this->objectList.size()<nEle)return;
+    //uint nEle=4;
+    if(this->objectList.size()<nEle)
+    {
+        printf("\nlinear fit error");
+        return;
+    }
     object_t* obj = &(this->objectList[(this->objectList.size()- nEle)]) ;
     double *y1 = new double[nEle];
     double *y2 = new double[nEle];
@@ -609,28 +613,38 @@ double xsum=0,x2sum=0,ysum=0,xysum=0;
         obj[i].xkm+=(y1[i]-obj[i].xkm)*i/double(nEle);
         obj[i].ykm+=(y2[i]-obj[i].ykm)*i/double(nEle);
     }
-    //    rgSpeedkmh = (obj[nEle-1].rgKmfit-obj[nEle-2].rgKmfit)/
-    //            ((obj[nEle-1].timeMs-obj[nEle-2].timeMs)/3600000.0);
+    //
+    double azRadfit[3];
+    double rgKmfit[3];
+    for(int i=0;i<FIT_ELEMENTS;i++)
+    {
+        //obj[i].xkm+=(y1[i]-obj[i].xkm)*i/float(nEle);
+        //obj[i].ykm+=(y2[i]-obj[i].ykm)*i/float(nEle);
+        //obj[i].xkmfit=y1[i];
+        //obj[i].ykmfit=y2[i];
+        azRadfit[i] = ConvXYToAziRd  (y1[i],y2[i]);
+        rgKmfit[i]  = ConvXYToRg   (y1[i],y2[i]);
+    }
     double probability = 1;
     for(int i=0;i<FIT_ELEMENTS;i++)
     {
-        double x1 =abs(azRadfit[i]-obj[i]->azRad)/obj[i]->aziStdEr;
+        double x1 =abs(azRadfit[i]-obj[i].azRad)/obj[i].aziStdEr;
         probability*=fastPow(CONST_E,-sq(x1)/2.0);
-        double x2 =abs(rgKmfit[i]  -obj[i]->rgKm)/obj[i]->rgStdEr;
+        double x2 =abs(rgKmfit[i]  -obj[i].rgKm)/obj[i].rgStdEr;
         probability*=fastPow(CONST_E,-sq(x2)/2.0);
     }
-    return probability;
+
     delete[] y1;
     delete[] y2;
     delete[] t;
-
+    fitProbability=probability;
 }
 
 C_radar_data::C_radar_data()
 {
     mShipHeading = 0;
     aziViewOffset = 0;
-    antennaHeadOffset=CConfig::getInt("antennaHeadOffset",0);
+    antennaHeadOffset=(CConfig::getDouble("antennaHeadOffset",0))/360.0*MAX_AZIR;
     while((antennaHeadOffset)>=MAX_AZIR)antennaHeadOffset-=MAX_AZIR;
     while((antennaHeadOffset)<=0)antennaHeadOffset+=MAX_AZIR;
 
@@ -683,7 +697,7 @@ C_radar_data::C_radar_data()
     data_export = false;
     gat_mua_va_dia_vat = CConfig::getInt("gat_mua_va_dia_vat");
     noise_nornalize = false;
-    filter2of3 = false;
+     filter2of3 = CConfig::getInt("filter2of3");
     is_do_bup_song = false;
     clk_adc = 1;
     noiseAverage = 30;
@@ -1212,19 +1226,40 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
 {
 
     rainLevel = noiseAverage;
-
     for(short r_pos=0;r_pos<range_max;r_pos++)
     {
         // RGS threshold
         short displayVal;
-        rainLevel += krain_auto*(data_mem.level[azi][r_pos]-rainLevel);
+        unsigned char* pLevel = &(data_mem.level[azi][r_pos]);
+        unsigned char* pSled= &(data_mem.sled[azi][r_pos]);
+        bool* pDetect= &(data_mem.detect[azi][r_pos]);
+        rainLevel += krain_auto*((*pLevel)-rainLevel);
         if(rainLevel>MAX_RAIN)rainLevel = MAX_RAIN;
         short nthresh = rainLevel + noiseVar*kgain_auto;
         threshRay[r_pos] += (nthresh-threshRay[r_pos])*0.5;
-        bool underThreshold = data_mem.level[azi][r_pos]<threshRay[r_pos];
-        if(data_mem.dopler[azi][r_pos]!=data_mem.dopler[lastAzi][r_pos])underThreshold = true;
-        data_mem.detect[azi][r_pos] = (!underThreshold);
-        if(!underThreshold)if(!init_time)if(r_pos>RANGE_MIN&&r_pos<(range_max-RANGE_MIN))procPix(azi,lastAzi,r_pos);
+        bool underThreshold = (*pLevel)<threshRay[r_pos];
+        //if(data_mem.dopler[azi][r_pos]!=data_mem.dopler[lastAzi][r_pos])underThreshold = true;
+        //(*pDetect) = (!underThreshold);
+        //if(!underThreshold)if(!init_time)if(r_pos>RANGE_MIN&&r_pos<(range_max-RANGE_MIN))procPix(azi,lastAzi,r_pos);
+        if(filter2of3)
+        {
+            unsigned char* pHot= &(data_mem.hot[azi][r_pos]);
+            if(underThreshold)
+            {
+                if((*pHot))(*pHot)--;
+            }
+            else
+            {
+                (*pHot)++;
+                if((*pHot)>3)(*pHot)=3;
+            }
+            (*pDetect) = ((*pHot)>1);
+        }
+        else
+        {
+            (*pDetect) = !underThreshold;
+        }
+        if((*pDetect))if(!init_time)if(r_pos>RANGE_MIN&&r_pos<(range_max-RANGE_MIN))procPix(azi,lastAzi,r_pos);
 
         // display value
         if(!isManualTune)
@@ -1232,20 +1267,20 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
 
             if(noise_nornalize&&(!cut_noise))
             {
-                short dif = (data_mem.level[azi][r_pos]+32+ noiseVar*kgain_auto -threshRay[r_pos]);
+                short dif = ((*pLevel)+32+ noiseVar*kgain_auto -threshRay[r_pos]);
                 if(dif<0)dif=0;
                 else if(dif>255)dif=255;
                 displayVal=dif;
             }
             else
-                displayVal=data_mem.level[azi][r_pos];
+                displayVal=(*pLevel);
             if(!underThreshold)
             {
-                if(!init_time)data_mem.sled[azi][r_pos] = mSledValue;
+                if(!init_time)(*pSled) = mSledValue;
             }
             else
             {
-                data_mem.sled[azi][r_pos] -= (data_mem.sled[azi][r_pos])/50;
+                if(*pSled)(*pSled)--;
                 if(cut_noise)displayVal= 0;
             }
             if(data_mem.may_hoi[azi][r_pos])displayVal+=80;
@@ -1417,7 +1452,7 @@ int C_radar_data::approximateAzi(int newAzi)
     if(mRealAziRate<0)  intAzi=int(mRealAzi+mInverseRotAziCorrection+0.5);
     else                intAzi=int(mRealAzi+0.5);
     if(intAzi>=MAX_AZIR){mRealAzi-=MAX_AZIR;intAzi-=MAX_AZIR;}
-    else if(intAzi<=0)  {mRealAzi+=MAX_AZIR;intAzi+=MAX_AZIR;}
+    else if(intAzi<0)  {mRealAzi+=MAX_AZIR;intAzi+=MAX_AZIR;}
     return intAzi;
 }
 void C_radar_data::processSocketData(unsigned char* data,short len)
@@ -1495,7 +1530,6 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     newAzi+= (mShipHeading+antennaHeadOffset);
     while(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
     newAzi = approximateAzi(newAzi);
-    while(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
 #ifndef THEON
     if(data[0]==4)// du lieu may hoi
     {
@@ -1825,8 +1859,15 @@ bool C_radar_data::UpdateData()
         if(dazi==1||dazi==-2047)isInverseRotation = false;
         else if(dazi==-1||dazi==2047)isInverseRotation = true;
         else continue;
+        clock_t clkBegin = clock();
         ProcessData(azi,lastAzi);
         drawAzi(azi);
+        clock_t clkEnd = clock();
+        int ProcessingTime = (clkEnd-clkBegin);
+        if(ProcessingTime>1)
+        {
+            printf("\nProcessingTime:%d azi:%d",ProcessingTime,azi);
+        }
         processing_azi_count++;
         if(!(processing_azi_count%16))//xu ly moi 16 chu ky
         {
@@ -1886,7 +1927,7 @@ void C_radar_data::procPLot(plot_t* mPlot)
     if(init_time)
         return;
     // remove too small obj
-    if(mPlot->sumEnergy<150)
+    if(mPlot->sumEnergy<100)
     {
         mFalsePositiveCount++;
         return;
