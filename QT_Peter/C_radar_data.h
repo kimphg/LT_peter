@@ -380,7 +380,7 @@ public:
     int                     mDopler;
     void LinearFit();
     void addPossible(object_t *obj, double score);
-    double LinearFitCost(object_t *myobj);
+    double LinearFitProbability(object_t *myobj);
     double estimateScore(object_t *obj1);
     static double estimateScore(object_t *obj1, object_t *obj2);
     double aziDeg,rgKm;

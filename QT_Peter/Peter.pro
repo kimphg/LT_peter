@@ -72,8 +72,10 @@ HEADERS  += \
     c_radar_simulation.h \
     c_sim_target.h \
     dialoginputvalue.h \
-    dialogconfig.h
-
+    dialogconfig.h \
+    pch_file.h
+PRECOMPILED_HEADER = "pch_file.h"
+CONFIG += precompile_header
 FORMS    += mainwindow.ui \
     dialogdocumentation.ui \
     dialogaisinfo.ui \

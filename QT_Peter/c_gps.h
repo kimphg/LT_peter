@@ -64,7 +64,7 @@ public:
 
 public:
   // date as ddmmyy, time as hhmmsscc, and age in milliseconds
-  void get_datetime(unsigned long *date, unsigned long *time, unsigned long *age = 0);
+  void get_datetime(unsigned long *date, unsigned long *time, unsigned long *age = nullptr);
 
   // signed altitude in centimeters (from GPGGA sentence)
   inline long altitude() { return _altitude; }
@@ -81,9 +81,9 @@ public:
   // horizontal dilution of precision in 100ths
   inline unsigned long hdop() { return _hdop; }
 
-  void get_position(double *latitude, double *longitude, unsigned long *fix_age = 0);
+  void get_position(double *latitude, double *longitude, unsigned long *fix_age = nullptr);
   void crack_datetime(int *year, unsigned char *month, unsigned char *day,
-    unsigned char *hour, unsigned char *minute, unsigned char *second, unsigned char *hundredths = 0, unsigned long *fix_age = 0);
+    unsigned char *hour, unsigned char *minute, unsigned char *second, unsigned char *hundredths = nullptr, unsigned long *fix_age = nullptr);
   double get_altitude();
   double get_course();
   double get_speed_knots();
@@ -103,7 +103,7 @@ public:
 
 private:
   enum {_GPS_SENTENCE_GPGGA, _GPS_SENTENCE_GPRMC, _GPS_SENTENCE_OTHER};
-  void get_position(long *latitude, long *longitude, unsigned long *fix_age = 0);
+  void get_position(long *latitude, long *longitude, unsigned long *fix_age = nullptr);
   // properties
   unsigned long _time, _new_time;
   unsigned long _date, _new_date;

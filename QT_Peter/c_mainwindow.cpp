@@ -17,10 +17,11 @@ QRect ppiRect(SCR_LEFT_MARGIN+SCR_BORDER_SIZE/2,
               SCR_TOP_MARGIN+SCR_BORDER_SIZE/2,
               SCR_H -SCR_BORDER_SIZE,
               SCR_H -SCR_BORDER_SIZE);
+static PointAziRgkm AutoSelP1,AutoSelP2;
 #ifdef THEON
 static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),224+SCR_BORDER_SIZE);
 QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
-PointAziRgkm AutoSelP1,AutoSelP2;
+
 #else
 
 static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),150+SCR_BORDER_SIZE);
@@ -89,7 +90,7 @@ static double curAziRad = 3;
 short lon2x(float lon)
 {
     double refLat = mLat*0.00872664625997;
-    return  (- dx + scrCtX + ((lon - mLon) * 111.31949079327357*cos(refLat))*mScale);
+    return  short(- dx + scrCtX + ((lon - mLon) * 111.31949079327357*cos(refLat))*mScale);
 }
 short lat2y(float lat)
 {
@@ -98,11 +99,11 @@ short lat2y(float lat)
 }
 double y2lat(short y)
 {
-    return (y  )/mScale/111.31949079327357f + mLat;
+    return (y  )/mScale/111.31949079327357 + mLat;
 }
 double x2lon(short x)
 {
-    float refLat = mLat*0.00872664625997;
+    double refLat = mLat*0.00872664625997;
     return (x  )/mScale/111.31949079327357/cos(refLat) + mLon;
 }
 inline QString demicalDegToDegMin(double demicalDeg)
@@ -192,7 +193,7 @@ void Mainwindow::drawAisTarget(QPainter *p)
             //draw ais mark
             QPolygon poly;
             QPoint point;
-            float head = aisObj.mCog*PI_NHAN2/360.0;
+            double head = aisObj.mCog*PI_NHAN2/360.0;
             point.setX(s.x+8*sinFast(head));
             point.setY(s.y-8*cosFast(head));
             poly<<point;
@@ -220,8 +221,6 @@ void Mainwindow::drawAisTarget(QPainter *p)
                 p->drawPolygon(poly);
                 p->drawText(s.x,s.y,100,20,0,aisObj.mName);
             }
-
-
         }
         else
         {
