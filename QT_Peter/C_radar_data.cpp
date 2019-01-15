@@ -674,7 +674,7 @@ C_radar_data::C_radar_data()
     data_export = false;
     gat_mua_va_dia_vat = CConfig::getInt("gat_mua_va_dia_vat");
     noise_nornalize = false;
-    filter2of3 = false;
+    filter2of3 = CConfig::getInt("filter2of3");;
     is_do_bup_song = false;
     clk_adc = 1;
     noiseAverage = 30;
@@ -1208,35 +1208,66 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
     {
         // RGS threshold
         short displayVal;
-        rainLevel += krain_auto*(data_mem.level[azi][r_pos]-rainLevel);
+        unsigned char* pLevel = &(data_mem.level[azi][r_pos]);
+        rainLevel += krain_auto*((*pLevel)-rainLevel);
         if(rainLevel>MAX_RAIN)rainLevel = MAX_RAIN;
         short nthresh = rainLevel + noiseVar*kgain_auto;
         threshRay[r_pos] += (nthresh-threshRay[r_pos])*0.5;
-        bool underThreshold = data_mem.level[azi][r_pos]<threshRay[r_pos];
+        bool underThreshold = (*pLevel)<threshRay[r_pos];
         if(data_mem.dopler[azi][r_pos]!=data_mem.dopler[lastAzi][r_pos])underThreshold = true;
         data_mem.detect[azi][r_pos] = (!underThreshold);
-        if(!underThreshold)if(!init_time)if(r_pos>RANGE_MIN&&r_pos<(range_max-RANGE_MIN))procPix(azi,lastAzi,r_pos);
+        if(filter2of3)
+        {
+            if(underThreshold)
+            {
 
+                if(data_mem.hot[azi][r_pos])data_mem.hot[azi][r_pos]--;
+            }
+            else
+            {
+                if(data_mem.hot[azi][r_pos]<3)data_mem.hot[azi][r_pos]++;
+            }
+            if(data_mem.hot[azi][r_pos]>1)
+            {
+                data_mem.detect[azi][r_pos] = true;
+                if(!init_time)if(r_pos>RANGE_MIN&&r_pos<(range_max-RANGE_MIN))procPix(azi,lastAzi,r_pos);
+            }
+        }
+        else
+        {
+            if(underThreshold)
+            {
+                data_mem.detect[azi][r_pos] = false;
+            }
+            else
+            {
+                data_mem.detect[azi][r_pos] = true;
+                if(!init_time)if(r_pos>RANGE_MIN&&r_pos<(range_max-RANGE_MIN))procPix(azi,lastAzi,r_pos);
+            }
+        }
         // display value
         if(!isManualTune)
         {
 
             if(noise_nornalize&&(!cut_noise))
             {
-                short dif = (data_mem.level[azi][r_pos]+32+ noiseVar*kgain_auto -threshRay[r_pos]);
+                short dif = ((*pLevel)+32+ noiseVar*kgain_auto -threshRay[r_pos]);
                 if(dif<0)dif=0;
                 else if(dif>255)dif=255;
                 displayVal=dif;
             }
             else
-                displayVal=data_mem.level[azi][r_pos];
+                displayVal=(*pLevel);
             if(!underThreshold)
             {
-                if(!init_time)data_mem.sled[azi][r_pos] = mSledValue;
+                if(!init_time)
+                {
+                    if(data_mem.sled[azi][r_pos]<(*pLevel))data_mem.sled[azi][r_pos]=(*pLevel);
+                }
             }
             else
             {
-                data_mem.sled[azi][r_pos] -= (data_mem.sled[azi][r_pos])/50;
+                if(data_mem.sled[azi][r_pos])data_mem.sled[azi][r_pos] --;
                 if(cut_noise)displayVal= 0;
             }
             if(data_mem.may_hoi[azi][r_pos])displayVal+=80;
@@ -1408,7 +1439,7 @@ int C_radar_data::approximateAzi(int newAzi)
     if(mRealAziRate<0)  intAzi=int(mRealAzi+mInverseRotAziCorrection+0.5);
     else                intAzi=int(mRealAzi+0.5);
     if(intAzi>=MAX_AZIR){mRealAzi-=MAX_AZIR;intAzi-=MAX_AZIR;}
-    else if(intAzi<=0)  {mRealAzi+=MAX_AZIR;intAzi+=MAX_AZIR;}
+    else if(intAzi<0)  {mRealAzi+=MAX_AZIR;intAzi+=MAX_AZIR;}
     return intAzi;
 }
 void C_radar_data::processSocketData(unsigned char* data,short len)
@@ -1486,7 +1517,6 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     newAzi+= (mShipHeading+antennaHeadOffset);
     while(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
     newAzi = approximateAzi(newAzi);
-    while(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
 #ifndef THEON
     if(data[0]==4)// du lieu may hoi
     {
@@ -1877,7 +1907,7 @@ void C_radar_data::procPLot(plot_t* mPlot)
     if(init_time)
         return;
     // remove too small obj
-    if(mPlot->sumEnergy<150)
+    if(mPlot->sumEnergy<100)
     {
         mFalsePositiveCount++;
         return;
