@@ -1176,8 +1176,7 @@ void Mainwindow::DrawIADArea(QPainter* p)
     p->drawRect(mIADrect);
     if(ui->tabWidget_iad->currentIndex()==0)
     {
-        if(!pRadar->img_zoom_ar)return;
-        if(pRadar->img_zoom_ar->isNull())return;
+        if((!pRadar->img_zoom_ar)||(pRadar->img_zoom_ar->isNull()))return;
         p->setPen(QPen(Qt::white,2));
         QPoint p1(mIADrect.x(),mIADrect.y());
         //QPoint p2(rect.x(),rect.y());

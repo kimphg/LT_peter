@@ -1086,7 +1086,6 @@ void C_radar_data::drawAzi(short azi)
 void  C_radar_data::getNoiseLevel()
 {
 
-
     if(nNoiseFrameCount<50)return;
 
     short histogram_max_val=1;
@@ -1859,15 +1858,15 @@ bool C_radar_data::UpdateData()
         if(dazi==1||dazi==-2047)isInverseRotation = false;
         else if(dazi==-1||dazi==2047)isInverseRotation = true;
         else continue;
-        clock_t clkBegin = clock();
+//        clock_t clkBegin = clock();
         ProcessData(azi,lastAzi);
         drawAzi(azi);
-        clock_t clkEnd = clock();
-        int ProcessingTime = (clkEnd-clkBegin);
-        if(ProcessingTime>1)
-        {
-            printf("\nProcessingTime:%d azi:%d",ProcessingTime,azi);
-        }
+//        clock_t clkEnd = clock();
+//        int ProcessingTime = (clkEnd-clkBegin);
+//        if(ProcessingTime>1)
+//        {
+//            printf("\nProcessingTime:%d azi:%d",ProcessingTime,azi);
+//        }
         processing_azi_count++;
         if(!(processing_azi_count%16))//xu ly moi 16 chu ky
         {
@@ -2215,9 +2214,7 @@ void C_radar_data::drawRamp(double azi)
 }*/
 void C_radar_data::procPix(short proc_azi,short lastAzi,short range)//_______signal detected, check 4 last neighbour points for nearby mark_______________//
 {
-    int max_drange = MAX_OBJ_SIZE/sn_scale;
-    if(max_drange<1)max_drange=1;
-    if(max_drange>=RANGE_MIN)max_drange=RANGE_MIN-1;
+
     int plotIndex =-1;
     char dopler_0 = data_mem.dopler[proc_azi][range];
     //char dopler_1 = dopler_0 +1;
@@ -2225,7 +2222,7 @@ void C_radar_data::procPix(short proc_azi,short lastAzi,short range)//_______sig
 //    //char dopler_2 = dopler_0 - 1;
 //    if(dopler_2<0)dopler_2+=16;
 
-    for(int dr=-max_drange;dr<=max_drange;dr++)//  search lastAzi
+    for(int dr=-max_drange_plot;dr<=max_drange_plot;dr++)//  search lastAzi
     {
          if(data_mem.detect[lastAzi][range+dr])
          {
@@ -2240,7 +2237,7 @@ void C_radar_data::procPix(short proc_azi,short lastAzi,short range)//_______sig
     }
     if(plotIndex<0)
     {
-        for(int dr=-max_drange;dr<0;dr++)//  search proc_azi
+        for(int dr=-max_drange_plot;dr<0;dr++)//  search proc_azi
         {
              if(data_mem.detect[proc_azi][range+dr])
              {
@@ -2259,27 +2256,28 @@ void C_radar_data::procPix(short proc_azi,short lastAzi,short range)//_______sig
             &&(plot_list.at(plotIndex).isUsed)
             )// add to existing plot
     {
+        plot_t* pPlot = &(plot_list[plotIndex]);
         data_mem.plotIndex[proc_azi][range] = plotIndex;
-        plot_list.at(plotIndex).size++;
-        plot_list.at(plotIndex).sumEnergy+=data_mem.level[proc_azi][range];
-        if(plot_list.at(plotIndex).maxR<range)plot_list.at(plotIndex).maxR= range;
-        if(plot_list.at(plotIndex).minR>range)plot_list.at(plotIndex).minR= range;
-        plot_list.at(plotIndex).sumR    +=  range;
-        plot_list.at(plotIndex).lastA   = proc_azi;
+        pPlot->size++;
+        pPlot->sumEnergy+=data_mem.level[proc_azi][range];
+        if(pPlot->maxR<range)pPlot->maxR = range;
+        if(pPlot->minR>range)pPlot->minR = range;
+        pPlot->sumR    +=  range;
+        pPlot->lastA   = proc_azi;
         //
         // get max dopler and max level of this plot
-        if(plot_list.at(plotIndex).maxLevel<data_mem.level[proc_azi][range])
+        if(pPlot->maxLevel<data_mem.level[proc_azi][range])
         {
-            plot_list.at(plotIndex).riseA = proc_azi;
-            plot_list.at(plotIndex).maxLevel = data_mem.level[proc_azi][range];
-            plot_list.at(plotIndex).dopler = data_mem.dopler[proc_azi][range];
+            pPlot->riseA = proc_azi;
+            pPlot->maxLevel = data_mem.level[proc_azi][range];
+            pPlot->dopler = data_mem.dopler[proc_azi][range];
         }
         else
         {
-            data_mem.dopler[proc_azi][range] = plot_list.at(plotIndex).dopler;
+            data_mem.dopler[proc_azi][range] = pPlot->dopler;
         }
-        if((plot_list.at(plotIndex).maxLevel-noiseVar)<data_mem.level[proc_azi][range])
-            plot_list.at(plotIndex).fallA = proc_azi;
+        if((pPlot->maxLevel-noiseVar)<data_mem.level[proc_azi][range])
+            pPlot->fallA = proc_azi;
     }
     else//_________new plot_____________//
     {
@@ -2514,6 +2512,9 @@ void C_radar_data::resetData()
     default:
         sn_scale = SIGNAL_SCALE_0;
     }
+    max_drange_plot = MAX_OBJ_SIZE/sn_scale/2;
+    if(max_drange_plot<1)max_drange_plot=1;
+    if(max_drange_plot>=10)max_drange_plot=10;
     int dataLen = RADAR_RESOLUTION*MAX_AZIR;
     memset(data_mem.level,      0,dataLen);
     memset(data_mem.dopler,     0,dataLen);
@@ -2521,13 +2522,8 @@ void C_radar_data::resetData()
     memset(data_mem.plotIndex,  0,dataLen);
     memset(data_mem.hot,        0,dataLen);
     memset(data_mem.may_hoi,    0,dataLen);
-//    std::queue<int> empty;
-//    std::swap( aziToProcess, empty );
-    //memset(data_mem.terrain,    TERRAIN_INIT,dataLen);
-    //memset(data_mem.rainLevel,  0,dataLen);
-    //noiseAverage = 30;
-    resetSled();
-    init_time += 5;
+    memset(data_mem.sled,       0,dataLen);
+    init_time = 5;
 
 }
 void C_radar_data::resetSled()

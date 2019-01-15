@@ -50,7 +50,7 @@
 #define MAX_TRACK_LEN               400
 #define MAX_TRACKS                  200
 #define ENCODER_RES                 5000
-#define MAX_AZIR                    RADAR_RESOLUTION
+#define MAX_AZIR                    2048
 #define MAX_AZIR_DRAW               6144
 //#define RAD_M_PULSE_RES             1536
 #define RAD_S_PULSE_RES             256
@@ -517,6 +517,7 @@ public:
     void addDetectionZone(double x, double y,double dazi,double drg, bool isOneTime);
     std::vector<DetectionWindow> mDetectZonesList;
 private:
+    int max_drange_plot;
     QTransform mPPITrans;
 //    bool isShipHeadingChanged;
     int mShipHeading;
