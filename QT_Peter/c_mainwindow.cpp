@@ -1464,6 +1464,8 @@ void Mainwindow::SetUpTheonGUILayout()
    ui->tableWidgetTarget->setGeometry(0,0,308,450);
    ui->groupBox_3->setGeometry(10,460,280,100);
    ui->tabWidget_iad->setCurrentIndex(4);
+   ui->bt_rg_5->setChecked(true);
+   ui->groupBox_14->setGeometry(1430,140,160,120);
 }
 void Mainwindow::InitSetting()
 {

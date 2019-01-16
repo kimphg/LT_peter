@@ -1275,11 +1275,11 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
                 displayVal=(*pLevel);
             if(!underThreshold)
             {
-                if(!init_time)(*pSled) = mSledValue;
+                if(!init_time)if((*pSled)<(*pLevel)) (*pSled)= (*pLevel);
             }
             else
             {
-                if(*pSled)(*pSled)--;
+                if((*pSled)>0)(*pSled)--;
                 if(cut_noise)displayVal= 0;
             }
             if(data_mem.may_hoi[azi][r_pos])displayVal+=80;
@@ -2591,7 +2591,7 @@ uint C_radar_data::getColor(unsigned char pvalue,unsigned char dopler,unsigned c
     unsigned short value = ((unsigned short)pvalue)*brightness;
     if(!isShowSled)sled = 0;
     else
-        if(sled>=32)sled = 0xff; else sled*=8;
+        if(sled>=128)sled = 0xff; else sled*=2;
     if(value>0xff)
     {
         value = 0xff;

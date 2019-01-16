@@ -615,8 +615,8 @@ void dataProcessingThread::processARPAData(QByteArray inputdata)
                     if(obj.mName.isEmpty()&&(!oldObj.mName.isEmpty()))
                         obj.mName = oldObj.mName;
                     obj.mUpdateTime = clock();
-                    if(obj.mLat==0)obj.mLat = oldObj.mLat;
-                    if(obj.mLong==0)obj.mLong = oldObj.mLong;
+                    if(obj.mLat<5)obj.mLat = oldObj.mLat;
+                    if(obj.mLong<5)obj.mLong = oldObj.mLong;
                     if(obj.mDst.isEmpty())
                         obj.mDst       = oldObj.mDst;
                     if(!obj.mImo)
