@@ -667,6 +667,8 @@ private slots:
 
     void on_toolButton_dz_clear_clicked();
 
+    void on_toolButton_ais_show_clicked(bool checked);
+
 private:
 
 //    bool mShowobjects,

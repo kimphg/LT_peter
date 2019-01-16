@@ -89,10 +89,10 @@ public:
     uint32_t get_imo() {return get_u32(AIS_PARAM_U32_IMO); }
 
     bool get_posAccuracy_flag() {return get_flag(AIS_PARAM_B_ACCURACY);}
+    bool get_display_flag() {return get_flag(AIS_PARAM_B_DISPLAY);}
     bool get_raim_flag()  {return get_flag(AIS_PARAM_B_RAIM);}
     bool get_dte_flag() {return get_flag(AIS_PARAM_B_DTE);}
     bool get_cs_flag() {return get_flag(AIS_PARAM_B_CS);}
-    bool get_display_flag() {return get_flag(AIS_PARAM_B_DISPLAY);}
     bool get_dsc_flag() {return get_flag(AIS_PARAM_B_DSC);}
     bool get_band_flag() {return get_flag(AIS_PARAM_B_BAND);}
     bool get_msg22_flag() {return get_flag(AIS_PARAM_B_MSG22);}

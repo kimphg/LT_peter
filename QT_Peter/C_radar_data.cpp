@@ -521,11 +521,11 @@ void C_primary_track::update()
 void C_primary_track::generateTTM()
 {
     mTTM = "$RATTM,"+QString::number(uniqId)+","+
-            QString::number(rgKm*1.852,'f',2)+","+
+            QString::number(nm(rgKm),'f',2)+","+
             QString::number(aziDeg,'f',1)+","+
             +"T,"+
-            QString::number(mSpeedkmhFit*1.852,'f',1)+","+
-            QString::number(courseDeg*1.852,'f',1)+","+
+            QString::number(nm(mSpeedkmhFit),'f',1)+","+
+            QString::number(courseDeg,'f',1)+","+
             +"T,"+
             "0.0"+","+
             "0.0"+","+

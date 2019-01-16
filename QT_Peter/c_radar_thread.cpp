@@ -588,7 +588,7 @@ QString messageStringbuffer;
 void dataProcessingThread::processARPAData(QByteArray inputdata)
 {
     messageStringbuffer.append(QString::fromLatin1(inputdata));
-    if(messageStringbuffer.size()>100)messageStringbuffer = "";
+    if(messageStringbuffer.size()>1500)messageStringbuffer = "";
     //printf(inputdata.data());
     QStringList strlist = messageStringbuffer.split("!");
     if(strlist.size() <= 1)return;

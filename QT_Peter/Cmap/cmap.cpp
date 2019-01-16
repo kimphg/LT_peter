@@ -240,11 +240,13 @@ QPixmap CMap::getImage(double scale)
     if(zoomRatio<0.8)
     {
         if(this->setScaleRatio(getScaleRatio()-1))return getImage(scale);
+        else return m_emptyTile;
 
     }
     else if(zoomRatio>=1.6)
     {
         if(this->setScaleRatio(getScaleRatio()+1))return getImage(scale);
+        else return m_emptyTile;
 
     }
     // repaint, rescale and return mapImage

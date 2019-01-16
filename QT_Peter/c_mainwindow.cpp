@@ -36,6 +36,7 @@ static clock_t paintTime = 20;
 static QStringList                 commandLogList;
 static QTransform                  mTrans;
 static QPixmap                     *pMap=nullptr;// painter cho ban do
+static bool isShowAIS =true;
 //QPixmap                     *pViewFrame=NULL;// painter cho ban do
 static CMap *osmap ;
 static bool toolButton_grid_checked = true;
@@ -1157,7 +1158,8 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     //draw mouse coordinates
 
     UpdateMouseStat(&p);
-    if(ui->toolButton_ais_show->isChecked())drawAisTarget(&p);
+
+    if(isShowAIS)drawAisTarget(&p);
     //ve luoi cu ly phuong vi
     DrawDetectZones(&p);
     DrawViewFrame(&p);
@@ -1609,8 +1611,8 @@ bool Mainwindow::CalcAziContour(double theta, int d)
     while (theta>=360.0)theta-=360.0;
     while(theta<0)theta+=360.0;
     double tanA = tan(theta/57.295779513);
-    double sinA = sinFast(theta/57.295779513);
-    double cosA = cosFast(theta/57.295779513);
+    double sinA = sin(theta/57.295779513);
+    double cosA = cos(theta/57.295779513);
 
     if(theta==0)
     {
@@ -1713,6 +1715,13 @@ void Mainwindow::DrawViewFrame(QPainter* p)
                     Qt::AlignHCenter|Qt::AlignVCenter,
                     QString::number(theta));
         }
+    }
+    if(CalcAziContour((CConfig::mStat.antennaAziDeg)+trueShiftDeg,SCR_H-SCR_BORDER_SIZE-20))
+    {
+        p->setPen(QPen(Qt::red,4,Qt::SolidLine,Qt::RoundCap));
+        p->drawLine(points[2],points[1]);
+        //draw text
+
     }
 #ifndef THEON
     //ve vanh goc trong
@@ -4861,4 +4870,10 @@ void Mainwindow::on_toolButton_hdsd_clicked()
 void Mainwindow::on_toolButton_dz_clear_clicked()
 {
     pRadar->mDetectZonesList.clear();
+}
+
+void Mainwindow::on_toolButton_ais_show_clicked(bool checked)
+{
+    isShowAIS = checked;
+    CConfig::setValue("isShowAIS",int(checked));
 }

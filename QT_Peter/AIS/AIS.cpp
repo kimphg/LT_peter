@@ -255,7 +255,7 @@ AIS::AIS()
 bool AIS::ProcessPayload(const char *AISbitstream, unsigned int fillBits)
 {
     //msglen = 0;
-    uint8_t* tmp = (uint8_t*)AISbitstream;
+    uint8_t* tmp = (uint8_t*)(AISbitstream);
     int i = 0;
     while (*tmp != '\0') {
         msg[i] = *tmp;
@@ -621,7 +621,7 @@ bool AIS::ProcessNMEA(QString data)
             {
                 payloadFirstHalf += fieldList.at(5);
                 return ProcessPayload(payloadFirstHalf.toStdString().data(),padding);
-                lastMesID=-1;
+                lastMesID=-1;// !!!
             }
 
         }
