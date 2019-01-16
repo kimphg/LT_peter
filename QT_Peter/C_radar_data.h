@@ -25,14 +25,14 @@
 #define ARMA_USE_BLAS
 #define ARMA_BLAS_UNDERSCORE
 #define MODE_MARINE
-#define TRACK_STABLE_LEN          5
+#define TRACK_STABLE_LEN          6
 #define MIN_TERRAIN                 10
 #define TRACK_CONFIRMED_SIZE        3
 #define TRACK_INIT_STATE            3
 #define DEG_RAD 57.295779513
 #define sq(x) (x*x)
-#define degrees(x) (x*57.295779513)
-#define radians(x) (x/57.295779513)
+#define degrees(x) ((x)*57.295779513)
+#define radians(x) ((x)/57.295779513)
 #ifndef CONST_NM
 #define CONST_NM 1.852// he so chuyen doi tu km sang hai ly
 #endif
@@ -54,7 +54,7 @@
 #define MAX_AZIR_DRAW               6144
 //#define RAD_M_PULSE_RES             1536
 #define RAD_S_PULSE_RES             256
-#define RAD_DISPLAY_RES             700//768
+#define RAD_DISPLAY_RES             750//768
 #define RAD_FULL_RES                1792
 #define SIGNAL_SCALE_7              0.24113 //215.38461538461538461538461538461
 #define SIGNAL_SCALE_6              0.24113//184.61538461538461538461538461538

@@ -190,7 +190,7 @@ QHash<QString, QString> CConfig::readFile(QString fileName)
         if(xml.name()==XML_ELEM_NAME)
         {
 
-           for (uint i=0;i<xml.attributes().size();i++)
+           for (int i=0;i<xml.attributes().size();i++)
            {
                nElement++;
                QXmlStreamAttribute attr = xml.attributes().at(i);

@@ -13,14 +13,14 @@ static QPen penTargetEnemySelected(QBrush(Qt::magenta),3);
 static QPen penTargetFriendSelected(QBrush(QColor(50,255,255 ,255)),3);
 
 static QPen penCyan(QBrush(QColor(50,255,255 ,255)),1);//xoay mui tau
-QRect ppiRect(SCR_LEFT_MARGIN+SCR_BORDER_SIZE/2,
+static QRect ppiRect(SCR_LEFT_MARGIN+SCR_BORDER_SIZE/2,
               SCR_TOP_MARGIN+SCR_BORDER_SIZE/2,
               SCR_H -SCR_BORDER_SIZE,
               SCR_H -SCR_BORDER_SIZE);
 static PointAziRgkm AutoSelP1,AutoSelP2;
 #ifdef THEON
 static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),224+SCR_BORDER_SIZE);
-QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
+static QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
 
 #else
 
@@ -1176,7 +1176,7 @@ void Mainwindow::DrawIADArea(QPainter* p)
     p->drawRect(mIADrect);
     if(ui->tabWidget_iad->currentIndex()==0)
     {
-        if((!pRadar->img_zoom_ar)||(pRadar->img_zoom_ar->isNull()))return;
+        if((pRadar->img_zoom_ar==nullptr)||(pRadar->img_zoom_ar->isNull()))return;
         p->setPen(QPen(Qt::white,2));
         QPoint p1(mIADrect.x(),mIADrect.y());
         //QPoint p2(rect.x(),rect.y());
@@ -1201,7 +1201,7 @@ void Mainwindow::DrawIADArea(QPainter* p)
     }
     else if(ui->tabWidget_iad->currentIndex()==4)
     {
-        //C_radar_data *prad = pRadar;
+        //if((!pRadar->img_zoom_ppi)||(pRadar->img_zoom_ppi->isNull()))return;
         p->drawImage(mIADrect,*pRadar->img_zoom_ppi,pRadar->img_zoom_ppi->rect());
         if(mRangeIndex>2)
         {
@@ -1461,7 +1461,7 @@ void Mainwindow::SetUpTheonGUILayout()
    ui->tabWidget_menu_2->setGeometry(1600,10,310,590);
    ui->tableWidgetTarget->setGeometry(0,0,308,450);
    ui->groupBox_3->setGeometry(10,460,280,100);
-
+   ui->tabWidget_iad->setCurrentIndex(4);
 }
 void Mainwindow::InitSetting()
 {
