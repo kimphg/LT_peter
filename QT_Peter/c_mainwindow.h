@@ -712,6 +712,7 @@ private:
     PointAziRgkm ConvScrPointToAziRgkm(int x, int y);
     void showTrackContext();
     void DrawViewFrameSquared(QPainter *p);
+    void RestartCuda();
 };
 
 #endif // MAINWINDOW_H

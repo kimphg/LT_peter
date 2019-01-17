@@ -1171,7 +1171,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     DrawIADArea(&p);
     clkEnd = clock();
     paintTime = (clkEnd-clkBegin);
-    printf("\npaint:%ldms",paintTime);
+    //printf("\npaint:%ldms",paintTime);
 }
 void Mainwindow::DrawIADArea(QPainter* p)
 {
@@ -1473,6 +1473,15 @@ void Mainwindow::SetUpTheonGUILayout()
    ui->bt_rg_5->setChecked(true);
    ui->groupBox_14->setGeometry(1430,140,160,120);
 }
+void Mainwindow::RestartCuda()
+{
+    //const char* systemCommand = "start D:\\HR2D\\cudaFFT.exe";
+    //const char* exeFile = "cudaFFT.exe";
+    system("taskkill /f /im cudaFFT.exe");
+    system("start D:\\HR2D\\cudaFFT.exe");
+
+
+}
 void Mainwindow::InitSetting()
 {
 //    CalcAziContour(355,500);
@@ -1509,10 +1518,7 @@ void Mainwindow::InitSetting()
     qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
     ui->tabWidget_iad->SetTransparent(true);
     QApplication::setOverrideCursor(Qt::CrossCursor);
-    QString systemCommand = CConfig::getString("systemCommand","D:\\HR2D\\cudaFFT.exe");
-    if(systemCommand.size()){
-        systemCommand= "start "+systemCommand;
-        system((char*)systemCommand.toStdString().data());}
+
     mMaxTapMayThu = CConfig::getInt("mMaxTapMayThu");
     mRangeIndex = CConfig::getInt("mRangeLevel");
     //assert(mRangeLevel>=0&&mRangeLevel<8);
@@ -2354,7 +2360,12 @@ void Mainwindow::ViewTrackInfo()
 }
 void Mainwindow::sync1S()//period 1 second
 {
-    if(clock()-pRadar->u)
+    int cudaAge = clock()-pRadar->mUpdateTime;
+    if(cudaAge>1000&&cudaAge<5000)
+    {
+        printf("\ncuda restarted");
+        RestartCuda();
+    }
 
     UpdateMay22Status();
     UpdateGpsData();

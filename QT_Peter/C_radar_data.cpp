@@ -1848,7 +1848,7 @@ uint processing_azi_count = 0;
 bool C_radar_data::UpdateData()
 {
     CConfig::time_now_ms = (QDateTime::currentMSecsSinceEpoch());
-    mUpdateTime = clock();
+
     while (indexCurrProcessAzi!=indexCurrRecAzi)
     {
         indexLastProcessAzi = indexCurrProcessAzi;
@@ -1869,6 +1869,7 @@ bool C_radar_data::UpdateData()
 //        {
 //            printf("\nProcessingTime:%d azi:%d",ProcessingTime,azi);
 //        }
+        mUpdateTime = clock();
         processing_azi_count++;
         if(!(processing_azi_count%16))//xu ly moi 16 chu ky
         {
