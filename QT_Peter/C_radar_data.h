@@ -410,6 +410,7 @@ public:
 //    float k_vet;// !!!!
 
     bool                       isInverseRotation;
+    bool                        cut_terrain;
     double                      mInverseRotAziCorrection;
     double                      rotation_per_min ;
     double                      azi_er_rad;
@@ -572,6 +573,11 @@ private:
     bool checkSimilarityToExistingTracks(object_t *obj1);
     void UpdateTrackStatistic();
 public:
+    void updateTerrain();
+    void saveTerrain();
+    void loadTerrain();
+    unsigned int maxTer;
+    bool mTerrainAvailable;
     unsigned char mSledValue;
     int mEncoderVal;
     bool isMarineMode;

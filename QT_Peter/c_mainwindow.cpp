@@ -700,7 +700,7 @@ Mainwindow::~Mainwindow()
 {
     processing->stopThread();
     processing->wait();
-
+    pRadar->saveTerrain();
     delete ui;
     CConfig::SaveToFile();
     if(pMap)delete pMap;
@@ -1473,11 +1473,12 @@ void Mainwindow::SetUpTheonGUILayout()
    ui->groupBox_3->setGeometry(10,460,280,100);
    ui->tabWidget_iad->setCurrentIndex(4);
    ui->bt_rg_5->setChecked(true);
-
+   on_bt_rg_5_clicked();
    ui->textBrowser_message->setStyleSheet("background-color:black");
-   ui->groupBox_8->setGeometry(1290,20,300,250);
-   ui->groupBox_14->setGeometry(1430,400,160,120);
-   ui->groupBox_5->setGeometry(1430,280,160,100);
+   ui->textBrowser_message->setFont(QFont("Times", 4));
+   ui->groupBox_8->setGeometry(1230,10,360,250);
+   ui->groupBox_14->setGeometry(1430,390,160,120);
+   ui->groupBox_5->setGeometry(1430,270,160,100);
 
 }
 void Mainwindow::RestartCuda()
@@ -1492,11 +1493,11 @@ void Mainwindow::RestartCuda()
         if (check_file.exists() && check_file.isFile())
         {
             processCuda->start("D:\\HR2D\\cudaFFT.exe");
-            ui->textBrowser_message->append(QString::fromUtf8("Khởi động xử lý FFT: OK"));
+            CConfig::AddMessage(QString::fromUtf8("Khởi động core FFT: OK"));
         }
         else
         {
-            ui->textBrowser_message->append(QString::fromUtf8("Không tìm thấy cudaFFT.exe"));
+            CConfig::AddMessage(QString::fromUtf8("Không tìm thấy cudaFFT.exe"));
         }
     }
 
@@ -1511,6 +1512,7 @@ void Mainwindow::InitSetting()
 {
 //    CalcAziContour(355,500);
     //hide iad
+    pRadar->loadTerrain();
     ui->tabWidget_iad->setGeometry(200,-800,ui->tabWidget_iad->width(),ui->tabWidget_iad->height());
     ui->tabWidget_iad->hide();
     ui->tabWidget_iad->mMoveable = true;
@@ -1935,8 +1937,8 @@ void Mainwindow::InitTimer()
     //
     connect(&syncTimer1s, SIGNAL(timeout()), this, SLOT(sync1S()));
     syncTimer1s.start(1000);
-    connect(&syncTimer5p, SIGNAL(timeout()), this, SLOT(sync5p()));
-    syncTimer5p.start(300000);
+    connect(&syncTimer5p, SIGNAL(timeout()), this, SLOT(sync1p()));
+    syncTimer5p.start(60000);
     //syncTimer1s.moveToThread(t);
 
     connect(&timerVideoUpdate, SIGNAL(timeout()), this, SLOT(UpdateVideo()));
@@ -2109,23 +2111,29 @@ void Mainwindow::ShutDown()
 //{
 
 //}
-void Mainwindow::sync5p()//period 10 second
+void Mainwindow::sync1p()//period 1 min
 {
-
-    if(radar_state!=DISCONNECTED)
+    QString str = ui->textBrowser_message->toPlainText();
+    if(str.size())
     {
         QFile logFile;
         QDateTime now = QDateTime::currentDateTime();
-        if(!QDir("D:\\logs\\"+now.toString("\\dd.MM\\")).exists())
+        QString dir = "D:\\HR2D\\logs\\"+now.toString("\\dd.MM\\");
+        if(!(QDir(dir).exists()))
         {
-            QDir().mkdir("D:\\logs\\"+now.toString("\\dd.MM\\"));
+            QDir().mkdir(dir);
         }
-        logFile.setFileName("D:\\logs\\"+now.toString("\\dd.MM\\")+now.toString("dd.MM-hh.mm.ss")+"_radar_online.log");
+        logFile.setFileName(dir+now.toString("message_log")+".log");
         logFile.open(QIODevice::WriteOnly);
-
+        logFile.write(str.toUtf8());
+//        if(str.size()>200)
+//        {
+//            ui->textBrowser_message->
+//        }
         logFile.close();
 
     }
+    if(clock()-pRadar->mUpdateTime<10000)pRadar->updateTerrain();
 
 }
 void Mainwindow::updateTargetInfo()
@@ -2385,11 +2393,18 @@ void Mainwindow::ViewTrackInfo()
 }
 void Mainwindow::sync1S()//period 1 second
 {
-    int cudaAge = clock()-pRadar->mUpdateTime;
-    if(cudaAge>2000)
+    if(processCuda->state()!=QProcess::Running)
     {
-//        CConfig::AddWarning("Cuda not running");
+
         RestartCuda();
+    }
+    else
+    {
+        QByteArray ba = processCuda->readAllStandardOutput();
+        if(ba.size())
+        {
+            CConfig::AddMessage(QString::fromLatin1(ba));
+        }
     }
     if(CConfig::getWarningList()->size())
     {
@@ -4943,4 +4958,14 @@ void Mainwindow::on_toolButton_ais_show_clicked(bool checked)
 {
     isShowAIS = checked;
     CConfig::setValue("isShowAIS",int(checked));
+}
+
+void Mainwindow::on_toolButton_loc_dia_vat_clicked(bool checked)
+{
+    pRadar->cut_terrain = checked;
+}
+
+void Mainwindow::on_toolButton_loc_dia_vat_2_clicked()
+{
+    pRadar->updateTerrain();
 }

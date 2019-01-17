@@ -166,11 +166,11 @@ void CConfig::ReportError(const char* error)
     cerr << endl;
 }
 
-void CConfig::AddWarning(QString message)
+void CConfig::AddMessage(QString message)
 {
     QDateTime now = QDateTime::fromMSecsSinceEpoch(time_now_ms);
     WarningMessage warning;
-    warning.message = message + ", "+now.toString("hh:mm:ss");
+    warning.message = now.toString("hh:mm:ss:")+ message ;
     warning.time = clock();
     mWarningList.push(warning);
 }

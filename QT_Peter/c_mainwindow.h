@@ -160,7 +160,7 @@ private slots:
     void DrawMap();
     void readBuffer();
     void sync1S();
-    void sync5p();
+    void sync1p();
     void ShutDown();
     void gpsOption();
     void processARPA();
@@ -671,6 +671,10 @@ private slots:
     void on_toolButton_dz_clear_clicked();
 
     void on_toolButton_ais_show_clicked(bool checked);
+
+    void on_toolButton_loc_dia_vat_clicked(bool checked);
+
+    void on_toolButton_loc_dia_vat_2_clicked();
 
 private:
 

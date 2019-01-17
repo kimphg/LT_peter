@@ -149,7 +149,7 @@ public:
     static void    setDefault();
     static void    SaveToFile();
     static void     ReportError(const char *error);
-    static void     AddWarning(QString warning);
+    static void     AddMessage(QString warning);
     //static QXmlStreamReader xml;
     static QHash<QString, QString> readFile();
     static std::queue<WarningMessage> *getWarningList();

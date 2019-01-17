@@ -42,7 +42,7 @@ typedef struct  {
     bool          detect[MAX_AZIR][RADAR_RESOLUTION];
     //unsigned char rainLevel[MAX_AZIR][RADAR_RESOLUTION];
     unsigned char dopler[MAX_AZIR][RADAR_RESOLUTION];
-    unsigned char terrain[MAX_AZIR][RADAR_RESOLUTION];
+    unsigned int terrainMap[MAX_AZIR][RADAR_RESOLUTION];
     //    unsigned char dopler_old[MAX_AZIR][RADAR_RESOLUTION];
     //    unsigned char dopler_old2[MAX_AZIR][RADAR_RESOLUTION];
     unsigned char sled[MAX_AZIR][RADAR_RESOLUTION];
@@ -421,7 +421,7 @@ void C_primary_track::update()
         }
         else {
             mState = TrackState::lost;
-            CConfig::AddWarning(QString::fromUtf8("Mất mục tiêu(SH:")+
+            CConfig::AddMessage(QString::fromUtf8("Mất MT SH:")+
                                 QString::number(uniqId)+" PV:"+
                                 QString::number(aziDeg,'f',1)+" CL:"+
                                 QString::number(nm(rgKm),'f',1)
@@ -654,6 +654,8 @@ double xsum=0,x2sum=0,ysum=0,xysum=0;
 
 C_radar_data::C_radar_data()
 {
+    cut_terrain=false;
+    mTerrainAvailable = false;
     mShipHeading = 0;
     aziViewOffset = 0;
     antennaHeadOffset=int((CConfig::getDouble("antennaHeadOffset",0))/360.0*MAX_AZIR);
@@ -1235,15 +1237,14 @@ short threshRay[RADAR_RESOLUTION];
 #define MAX_RAIN  180//noiseAverage+noiseVar*15;
 void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
 {
-
     rainLevel = noiseAverage;
     for(short r_pos=0;r_pos<range_max;r_pos++)
     {
         // RGS threshold
         short displayVal;
         unsigned char* pLevel = &(data_mem.level[azi][r_pos]);
-        unsigned char* pSled= &(data_mem.sled[azi][r_pos]);
-        bool* pDetect= &(data_mem.detect[azi][r_pos]);
+        unsigned char* pSled=   &(data_mem.sled[azi][r_pos]);
+        bool* pDetect=          &(data_mem.detect[azi][r_pos]);
         rainLevel += krain_auto*((*pLevel)-rainLevel);
         if(rainLevel>MAX_RAIN)rainLevel = MAX_RAIN;
         short nthresh = rainLevel + noiseVar*kgain_auto;
@@ -1252,6 +1253,11 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
         //if(data_mem.dopler[azi][r_pos]!=data_mem.dopler[lastAzi][r_pos])underThreshold = true;
         //(*pDetect) = (!underThreshold);
         //if(!underThreshold)if(!init_time)if(r_pos>RANGE_MIN&&r_pos<(range_max-RANGE_MIN))procPix(azi,lastAzi,r_pos);
+//        if(mTerrainEnabled)
+//        {
+//            if(data_mem.terrainMap[azi][r_pos]>150)underThreshold=true;
+//        }
+
         if(filter2of3)
         {
             unsigned char* pHot= &(data_mem.hot[azi][r_pos]);
@@ -1271,7 +1277,10 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
             (*pDetect) = !underThreshold;
         }
         if((*pDetect))if(!init_time)if(r_pos>RANGE_MIN&&r_pos<(range_max-RANGE_MIN))procPix(azi,lastAzi,r_pos);
-
+        if(cut_terrain&&mTerrainAvailable)
+        {
+            if(data_mem.terrainMap[azi][r_pos]>150)underThreshold=true;
+        }
         // display value
         if(!isManualTune)
         {
@@ -1962,7 +1971,10 @@ void C_radar_data::procPLot(plot_t* mPlot)
         ctA = (mPlot->riseA + mPlot->fallA)/2.0;
     }
     if(ctA >= MAX_AZIR)ctA -= MAX_AZIR;
-
+    if(mTerrainAvailable)
+    {
+        if(data_mem.terrainMap[int(ctA)][int(ctR)]>150)return;
+    }
     //double objSizeAz = (dAz*PI_NHAN2/MAX_AZIR)*ctR*sn_scale;
     if(dAz<2||dAz>30)
     {
@@ -2768,6 +2780,70 @@ void C_radar_data::UpdateTrackStatistic()
     {
         printf("\ntracks statistic: sumSize:%f sumDazi:%f sumDrg:%f sumEng:%f",sumSize,sumDazi,sumDrg,sumEng);
     }
+}
+
+void C_radar_data::updateTerrain()
+{
+    maxTer=0;
+    for(short azi=0;azi<MAX_AZIR;azi++)
+    {
+        for(short r_pos=0;r_pos<RADAR_RESOLUTION;r_pos++)
+        {
+            //int offset = azi*RADAR_RESOLUTION+r_pos
+            if((data_mem.dopler[azi][r_pos]==0)&&data_mem.detect[azi][r_pos])
+            {
+                data_mem.terrainMap[azi][r_pos]++;
+                if(maxTer<data_mem.terrainMap[azi][r_pos])maxTer=data_mem.terrainMap[azi][r_pos];
+            }
+        }
+    }
+    if((maxTer/300)>1)
+    {
+        int k=maxTer/300;
+        for(short azi=0;azi<MAX_AZIR;azi++)
+        {
+            for(short r_pos=0;r_pos<RADAR_RESOLUTION;r_pos++)
+            {
+                data_mem.terrainMap[azi][r_pos]/=k;
+            }
+        }
+    }
+    mTerrainAvailable = maxTer>300;
+    CConfig::AddMessage(QString::fromUtf8("Địa vật:")+QString::number(maxTer));
+}
+
+void C_radar_data::saveTerrain()
+{
+    QFile terrainFile("d:\\HR2D\\terrain.dat");
+    terrainFile.open(QIODevice::WriteOnly);
+    if(terrainFile.isOpen())
+    {
+        terrainFile.write((char*)(&(data_mem.terrainMap[0][0])),(RADAR_RESOLUTION*MAX_AZIR*4));
+        CConfig::AddMessage("Terrain saved.");
+    }
+    else
+    {
+        printf("\nCan't save terrain");
+    }
+    terrainFile.close();
+}
+
+void C_radar_data::loadTerrain()
+{
+    QFile terrainFile("d:\\HR2D\\terrain.dat");
+    terrainFile.open(QIODevice::ReadOnly);
+    if(terrainFile.size()==(RADAR_RESOLUTION*MAX_AZIR*4))
+    {
+        terrainFile.read((char*)(&(data_mem.terrainMap[0][0])),(RADAR_RESOLUTION*MAX_AZIR*4));
+        CConfig::AddMessage("Terrain loaded.");
+    }
+    else
+    {
+        CConfig::AddMessage("Terrain file error, reset terrain.");
+        memset((char*)(&data_mem.terrainMap[0][0]),0,(RADAR_RESOLUTION*MAX_AZIR*4));
+    }
+    terrainFile.close();
+
 }
 void C_radar_data::ProcessObject(object_t *obj1)
 {
