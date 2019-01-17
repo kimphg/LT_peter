@@ -2361,7 +2361,7 @@ void Mainwindow::ViewTrackInfo()
 void Mainwindow::sync1S()//period 1 second
 {
     int cudaAge = clock()-pRadar->mUpdateTime;
-    if(cudaAge>1000&&cudaAge<5000)
+    if(cudaAge>3000&&cudaAge<5000)
     {
         printf("\ncuda restarted");
         RestartCuda();
