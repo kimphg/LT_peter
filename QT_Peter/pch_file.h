@@ -4,10 +4,6 @@
   #include <QLabel>
   #include <QCheckBox>
   #include <QComboBox>
-  #include <QVBoxLayout>
-  #include <QHBoxLayout>
-  #include <QDrag>
-  #include <QMimeData>
   #include <QToolButton>
   #include <QFrame>
   #include <QValidator>
@@ -16,7 +12,6 @@
   #include <QHeaderView>
   #include <QLineEdit>
   #include <QSpacerItem>
-  #include <QStackedWidget>
   #include <QRadioButton>
   #include <QTabWidget>
   #include <QToolTip>
@@ -33,27 +28,27 @@
   #include <QPointer>
   #include <QColor>
 
-  #include <string>
-  #include <set>
-  #include <map>
-  #include <memory>
-  #include <vector>
-  #include <unordered_map>
-  #include <array>
-  #include <bitset>
-  #include <initializer_list>
-  #include <functional>
-  #include <algorithm>
-  #include <numeric>
-  #include <iterator>
-  #include <type_traits>
-  #include <cmath>
-  #include <cassert>
-  #include <cfloat>
-  #include <complex>
-  #include <cstddef>
-  #include <cstdint>
-  #include <cstdlib>
-  #include <mutex>
-  #include <thread>
-  #include <condition_variable>
+//  #include <string>
+//  #include <set>
+//  #include <map>
+//  #include <memory>
+//  #include <vector>
+//  #include <unordered_map>
+//  #include <array>
+//  #include <bitset>
+//  #include <initializer_list>
+//  #include <functional>
+//  #include <algorithm>
+//  #include <numeric>
+//  #include <iterator>
+//  #include <type_traits>
+//  #include <cmath>
+//  #include <cassert>
+//  #include <cfloat>
+//  #include <complex>
+//  #include <cstddef>
+//  #include <cstdint>
+//  #include <cstdlib>
+//  #include <mutex>
+//  #include <thread>
+//  #include <condition_variable>

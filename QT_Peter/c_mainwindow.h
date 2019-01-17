@@ -33,6 +33,9 @@
 #include "Cmap/cmap.h"
 #include "dialogcommandlog.h"
 #include "dialogconfig.h"
+
+#include <QMenu>
+#include <QMessageBox>
 #ifdef THEON
 #define SCR_W 1920
 #define SCR_H 1200
@@ -86,6 +89,7 @@ protected:
     void mouseDoubleClickEvent( QMouseEvent * e );
     enum radarSate   { DISCONNECTED,CONNECTED,CONNECTED_ROTATE9_TXOFF,CONNECTED_ROTATE12_TXOFF, CONNECTED_ROTATE9_TXON,CONNECTED_ROTATE12_TXON } radar_state;
 private:
+    QRect ppiRect;
     QString degreeSymbol ;
     c_target_manager mTargetMan;
     void DrawGrid(QPainter* p,short centerX,short centerY);
@@ -109,7 +113,6 @@ private:
     //QUdpSocket      *udpSocket;//raymarine
 //    QUdpSocket      *udpARPA;//ARPA
     QUdpSocket      *m_udpSocket;//socket for radar control
-
     QString                     mTxCommand,mRxCommand;
     QString                     mR0Command,mR1Command,mR2Command,mR3Command,
                                 mR4Command,mR5Command,mR6Command,mR7Command;

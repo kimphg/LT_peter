@@ -2,8 +2,6 @@
 #include "statuswindow.h"
 #include "ui_mainwindow.h"
 
-#include <QMenu>
-#include <QMessageBox>
 
 #define MAX_VIEW_RANGE_KM   50
 static QPen penTargetHistory(QBrush(Qt::gray),1);
@@ -13,20 +11,17 @@ static QPen penTargetEnemySelected(QBrush(Qt::magenta),3);
 static QPen penTargetFriendSelected(QBrush(QColor(50,255,255 ,255)),3);
 
 static QPen penCyan(QBrush(QColor(50,255,255 ,255)),1);//xoay mui tau
-static QRect ppiRect(SCR_LEFT_MARGIN+SCR_BORDER_SIZE/2,
-              SCR_TOP_MARGIN+SCR_BORDER_SIZE/2,
-              SCR_H -SCR_BORDER_SIZE,
-              SCR_H -SCR_BORDER_SIZE);
+
 static PointAziRgkm AutoSelP1,AutoSelP2;
-#ifdef THEON
-static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),224+SCR_BORDER_SIZE);
-static QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
+//#ifdef THEON
+//static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),224+SCR_BORDER_SIZE);
+//static QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
 
-#else
+//#else
 
-static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),150+SCR_BORDER_SIZE);
-QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
-#endif
+//static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),150+SCR_BORDER_SIZE);
+//QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
+//#endif
 static QRect mIADrect;
 static QPen penYellow(QBrush(QColor(255,255,50 ,255)),2);
 static QPen mGridViewPen1(QBrush(QColor(150,150,150,255)),1);
@@ -70,9 +65,9 @@ static short                       radCtY= SCR_H/2+SCR_TOP_MARGIN;
 static short                       mZoomCenterx,mZoomCentery,mMouseLastX,mMouseLastY;
 static bool                        isScaleChanged =true;
 static double                      mScale;
-static double      rangeRatio = 1;
+static double                       rangeRatio = 1;
 //extern CConfig         mGlobbalConfig;
-static QStringList     warningList;
+//static QStringList     warningList;
 static QString         strDistanceUnit;
 //short selectedTargetIndex;
 static mouseMode mouse_mode = MouseNormal;
@@ -596,7 +591,11 @@ Mainwindow::Mainwindow(QWidget *parent) :
     //ui->frame_RadarViewOptions->hide();
     QFont font;
     font.setPointSize(12);
-    cmLog = new DialogCommandLog();
+    //cmLog = new DialogCommandLog();
+    ppiRect = QRect(SCR_LEFT_MARGIN+SCR_BORDER_SIZE/2,
+                 SCR_TOP_MARGIN+SCR_BORDER_SIZE/2,
+                 SCR_H -SCR_BORDER_SIZE,
+                 SCR_H -SCR_BORDER_SIZE);
     //    mShowobjects = false;
     //    mShowLines = false;
 //    mShowTracks = false;
@@ -1172,7 +1171,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     DrawIADArea(&p);
     clkEnd = clock();
     paintTime = (clkEnd-clkBegin);
-    printf("\n painttime:%d",paintTime);
+    printf("\npaint:%ldms",paintTime);
 }
 void Mainwindow::DrawIADArea(QPainter* p)
 {
@@ -1704,18 +1703,23 @@ void Mainwindow::DrawViewFrame(QPainter* p)
     p->drawRect(SCR_H+SCR_LEFT_MARGIN,SCR_TOP_MARGIN,SCR_W-SCR_H-SCR_LEFT_MARGIN,SCR_H);
     p->drawRect(0,0,SCR_LEFT_MARGIN,SCR_H);
     p->setBrush(Qt::NoBrush);
+#ifdef THEON
+    QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),224+SCR_BORDER_SIZE);
+    QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
     p->setPen(penBackground);
-    //    for (short i=60;i<650;i+=110)
-    //    {
-    //        p->drawEllipse(-i/2+(scrCtX-scrCtY)+25,-i/2+25,SCR_H -50+i,SCR_H -50+i);
-    //    }
-
     p->drawEllipse(circleRect);
+#else
+
+    QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),150+SCR_BORDER_SIZE);
+    QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
+    p->setPen(penBackground);
+    p->drawEllipse(circleRect);
+#endif
     p->setPen(penYellow);
     p->drawEllipse(ppiRect);
     p->setFont(QFont("Times", 10));
     //ve vanh goc ngoai
-    for(short theta=0;theta<360;theta+=1)
+    for(short theta=0;theta<360;theta+=2)
     {
         if(CalcAziContour(theta+trueShiftDeg,SCR_H - SCR_BORDER_SIZE))
         {
@@ -3344,7 +3348,7 @@ void Mainwindow::on_toolButton_xl_dopler_2_toggled(bool checked)
 
 void Mainwindow::on_label_status_warning_clicked()
 {
-    if(warningList.size())warningList.removeAt(warningList.size()-1);
+    /*if(warningList.size())warningList.removeAt(warningList.size()-1);
     if(warningList.size())
     {
         ui->label_status_warning->setText(warningList.at(warningList.size()-1));
@@ -3353,7 +3357,7 @@ void Mainwindow::on_label_status_warning_clicked()
     {
         ui->label_status_warning->setText(QString::fromUtf8("Không cảnh báo"));
         ui->label_status_warning->setStyleSheet("background-color: rgb(20, 40, 60,255);");
-    }
+    }*/
 }
 
 //void Mainwindow::on_toolButton_delete_target_clicked()
@@ -3815,11 +3819,11 @@ void Mainwindow::on_toolButton_command_log_toggled(bool checked)
 {
     if(checked)
     {
-        cmLog->show();
+        //cmLog->show();
     }
     else
     {
-        cmLog->hide();
+        //cmLog->hide();
     }
 }
 
