@@ -8,7 +8,7 @@ using namespace std;
 //double CConfig::shipCourseDeg = 0;
 //double CConfig::shipSpeed=0;
 //double CConfig::antennaAziDeg=0;
-QList<WarningMessage> CConfig::mWarningList;
+std::queue<WarningMessage> CConfig::mWarningList;
 radarStatus_3C CConfig::mStat ;
 radarStatus_3C::radarStatus_3C()
 {
@@ -170,9 +170,9 @@ void CConfig::AddWarning(QString message)
 {
     QDateTime now = QDateTime::fromMSecsSinceEpoch(time_now_ms);
     WarningMessage warning;
-    warning.message = message + ", "+now.toString("yyyy/dd/MM-hh:mm:ss");
+    warning.message = message + ", "+now.toString("hh:mm:ss");
     warning.time = clock();
-    mWarningList.push_front(warning);
+    mWarningList.push(warning);
 }
 
 void CConfig::setDefault()
@@ -239,8 +239,8 @@ QHash<QString, QString> CConfig::readFile() {
     return readFile(HR_CONFIG_FILE);
 }
 
-QList<WarningMessage> CConfig::getWarningList()
+std::queue<WarningMessage>* CConfig::getWarningList()
 {
-    return mWarningList;
+    return &mWarningList;
 }
 

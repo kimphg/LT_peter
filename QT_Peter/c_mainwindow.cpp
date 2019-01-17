@@ -76,6 +76,7 @@ static unsigned char commandMay22[]={0xaa,0x55,0x02,0x0c,0x00,0x00,0x00,0x00,0x0
 static enum TargetType{
     RADAR,AIS,NOTARGET
 }selectedTargetType  = NOTARGET;
+QProcess *processCuda ;
 
 //short config.getRangeView() = 1;
 static double ringStep = 1;
@@ -604,6 +605,7 @@ Mainwindow::Mainwindow(QWidget *parent) :
     setFocusPolicy(Qt::StrongFocus);
     InitSetting();
     setRadarState(DISCONNECTED);
+    processCuda = new QProcess(this);
     //    GDALAllRegister();
     //    GDALDataset       *poDS;
 
@@ -1458,7 +1460,7 @@ void Mainwindow::SetUpTheonGUILayout()
    ui->groupBox_statuses->setGeometry(1430,1165,480,30);
    ui->groupBox_25->setGeometry(10,1010,130,100);
    ui->groupBox_gps->setGeometry(10,1120,211,70);
-   ui->groupBox_5->setGeometry(1430,10,160,100);
+
    ui->groupBox_15->setGeometry(10,50,310,65);
    ui->groupBox_16->setGeometry(10,120,160,170);
    ui->groupBox_24->setGeometry(10,10,490,40);
@@ -1471,14 +1473,37 @@ void Mainwindow::SetUpTheonGUILayout()
    ui->groupBox_3->setGeometry(10,460,280,100);
    ui->tabWidget_iad->setCurrentIndex(4);
    ui->bt_rg_5->setChecked(true);
-   ui->groupBox_14->setGeometry(1430,140,160,120);
+
+   ui->textBrowser_message->setStyleSheet("background-color:black");
+   ui->groupBox_8->setGeometry(1290,20,300,250);
+   ui->groupBox_14->setGeometry(1430,400,160,120);
+   ui->groupBox_5->setGeometry(1430,280,160,100);
+
 }
 void Mainwindow::RestartCuda()
 {
+    if(processCuda->state()!=QProcess::Running)//processCuda->reset();
+//    QString file = "D:\\HR2D\\cudaFFT.exe";
+    //else
+    {
+
+        system("taskkill /f /im cudaFFT.exe");
+        QFileInfo check_file("D:\\HR2D\\cudaFFT.exe");
+        if (check_file.exists() && check_file.isFile())
+        {
+            processCuda->start("D:\\HR2D\\cudaFFT.exe");
+            ui->textBrowser_message->append(QString::fromUtf8("Khởi động xử lý FFT: OK"));
+        }
+        else
+        {
+            ui->textBrowser_message->append(QString::fromUtf8("Không tìm thấy cudaFFT.exe"));
+        }
+    }
+
     //const char* systemCommand = "start D:\\HR2D\\cudaFFT.exe";
     //const char* exeFile = "cudaFFT.exe";
-    system("taskkill /f /im cudaFFT.exe");
-    system("start D:\\HR2D\\cudaFFT.exe");
+    //system("taskkill /f /im cudaFFT.exe");
+    //system("start D:\\HR2D\\cudaFFT.exe");
 
 
 }
@@ -2361,10 +2386,22 @@ void Mainwindow::ViewTrackInfo()
 void Mainwindow::sync1S()//period 1 second
 {
     int cudaAge = clock()-pRadar->mUpdateTime;
-    if(cudaAge>3000&&cudaAge<5000)
+    if(cudaAge>2000)
     {
-        printf("\ncuda restarted");
+//        CConfig::AddWarning("Cuda not running");
         RestartCuda();
+    }
+    if(CConfig::getWarningList()->size())
+    {
+        std::queue<WarningMessage> * listMsg = (CConfig::getWarningList());
+
+        while(listMsg->size())
+        {
+//            printf("warning added");
+            WarningMessage msg = listMsg->front();
+            ui->textBrowser_message->append(msg.message);
+            listMsg->pop();
+        }
     }
 
     UpdateMay22Status();

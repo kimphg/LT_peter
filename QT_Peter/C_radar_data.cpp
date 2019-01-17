@@ -421,9 +421,13 @@ void C_primary_track::update()
         }
         else {
             mState = TrackState::lost;
-            CConfig::AddWarning(QString::fromUtf8("Mất mục tiêu số:")+
-                                QString::number(uniqId));
-            printf("\ntrack lost id:%d len:%llu",uniqId, objectList.size());
+            CConfig::AddWarning(QString::fromUtf8("Mất mục tiêu(SH:")+
+                                QString::number(uniqId)+" PV:"+
+                                QString::number(aziDeg,'f',1)+" CL:"+
+                                QString::number(nm(rgKm),'f',1)
+                                );
+//            printf("\ntrack lost id:%d len:%llu",uniqId, objectList.size());
+//            _flushall();
         }
         return;
     }
@@ -440,12 +444,18 @@ void C_primary_track::update()
                 objectList.erase(objectList.begin());
                 if(mState==TrackState::newDetection)
                 {
-                    if(true)//mSpeedkmhFit<TARGET_MAX_SPEED_MARINE)
+                    if(mSpeedkmhFit<TARGET_MAX_SPEED_MARINE)
                     {
                         LinearFit(TRACK_STABLE_LEN);
-                        if(fitProbability<0.8)printf("\n fitProbability:%f",fitProbability);
-                        uniqId = C_primary_track::IDCounter++;
-                        mState = TrackState::confirmed;
+                        if(fitProbability<0.75)
+                        {
+                            printf("\n fitProbability too small:%f",fitProbability);
+                        }
+                        else
+                        {
+                            uniqId = C_primary_track::IDCounter++;
+                            mState = TrackState::confirmed;
+                        }
                     }
                 }
             }
@@ -1929,7 +1939,7 @@ void C_radar_data::procPLot(plot_t* mPlot)
     if(init_time)
         return;
     // remove too small obj
-    if(mPlot->sumEnergy<100)
+    if(mPlot->size<3)
     {
         mFalsePositiveCount++;
         return;

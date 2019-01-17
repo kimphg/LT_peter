@@ -19,6 +19,8 @@
 #include <QXmlStreamReader>
 #include <time.h>
 #include <QDateTime>
+
+#include <queue>
 struct WarningMessage
 {
     QString message;
@@ -150,10 +152,10 @@ public:
     static void     AddWarning(QString warning);
     //static QXmlStreamReader xml;
     static QHash<QString, QString> readFile();
-    static QList<WarningMessage> getWarningList();
+    static std::queue<WarningMessage> *getWarningList();
 
 private:
-    static QList<WarningMessage> mWarningList;
+    static std::queue<WarningMessage> mWarningList;
     static QHash<QString, QString> readFile(QString fileName);
 
 };
