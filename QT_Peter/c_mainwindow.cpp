@@ -2354,6 +2354,7 @@ void Mainwindow::ViewTrackInfo()
 }
 void Mainwindow::sync1S()//period 1 second
 {
+    if(clock()-pRadar->u)
 
     UpdateMay22Status();
     UpdateGpsData();
