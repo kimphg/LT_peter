@@ -18,7 +18,12 @@
 #include <QHash>
 #include <QXmlStreamReader>
 #include <time.h>
-
+#include <QDateTime>
+struct WarningMessage
+{
+    QString message;
+    clock_t time;
+};
 class radarStatus_3C
 {
 public:
@@ -132,7 +137,7 @@ public:
 //    static double shipCourseDeg;
 //    static double shipSpeed;
 //    static double antennaAziDeg;
-    static volatile long long int time_now_ms;
+    static volatile qint64 time_now_ms;
     static QHash<QString, QString> mHashData;
     static void    setValue(QString key, double value);
     static void    setValue(QString key,QString value);
@@ -141,11 +146,14 @@ public:
     static int     getInt(QString key, int defaultValue=0);
     static void    setDefault();
     static void    SaveToFile();
-    static void ReportError(const char *error);
+    static void     ReportError(const char *error);
+    static void     AddWarning(QString warning);
     //static QXmlStreamReader xml;
     static QHash<QString, QString> readFile();
-private:
+    static QList<WarningMessage> getWarningList();
 
+private:
+    static QList<WarningMessage> mWarningList;
     static QHash<QString, QString> readFile(QString fileName);
 
 };

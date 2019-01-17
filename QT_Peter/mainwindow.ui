@@ -478,8 +478,8 @@
    <widget class="QCustomTabWidget" name="tabWidget_menu">
     <property name="geometry">
      <rect>
-      <x>1310</x>
-      <y>10</y>
+      <x>1650</x>
+      <y>200</y>
       <width>531</width>
       <height>541</height>
      </rect>
@@ -493,7 +493,7 @@
      <bool>false</bool>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>3</number>
     </property>
     <property name="elideMode">
      <enum>Qt::ElideNone</enum>
@@ -41856,7 +41856,7 @@ color: rgb(255, 0, 0);</string>
     <property name="geometry">
      <rect>
       <x>790</x>
-      <y>180</y>
+      <y>170</y>
       <width>161</width>
       <height>111</height>
      </rect>
@@ -41912,6 +41912,16 @@ color: rgb(255, 0, 0);</string>
      </item>
     </layout>
    </widget>
+   <widget class="QListWidget" name="listWidget_warning">
+    <property name="geometry">
+     <rect>
+      <x>1340</x>
+      <y>60</y>
+      <width>256</width>
+      <height>192</height>
+     </rect>
+    </property>
+   </widget>
    <zorder>frame</zorder>
    <zorder>groupBox_16</zorder>
    <zorder>groupBox_24</zorder>
@@ -41925,6 +41935,7 @@ color: rgb(255, 0, 0);</string>
    <zorder>groupBox_25</zorder>
    <zorder>groupBox_gps_3</zorder>
    <zorder>groupBox_14</zorder>
+   <zorder>listWidget_warning</zorder>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

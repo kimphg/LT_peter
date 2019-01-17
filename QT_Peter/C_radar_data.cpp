@@ -421,6 +421,8 @@ void C_primary_track::update()
         }
         else {
             mState = TrackState::lost;
+            CConfig::AddWarning(QString::fromUtf8("Mất mục tiêu số:")+
+                                QString::number(uniqId));
             printf("\ntrack lost id:%d len:%llu",uniqId, objectList.size());
         }
         return;
@@ -1279,7 +1281,7 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
             }
             else
             {
-                if((*pSled)>0)(*pSled)--;
+                if((*pSled)>0)  if((rand()%4)==0)    (*pSled)--;
                 if(cut_noise)displayVal= 0;
             }
             if(data_mem.may_hoi[azi][r_pos])displayVal+=80;

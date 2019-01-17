@@ -686,7 +686,7 @@ private:
     bool isInsideViewZone(int x, int y);
     void UpdateMouseStat(QPainter *p);
     void setMouseMode(mouseMode mode, bool isOn);
-    bool CalcAziContour(double theta, int d);
+    bool CalcAziContour(double theta, double d);
     void DisplayClkAdc(int clk);
     void setDistanceUnit(int unit);
     void keyReleaseEvent(QKeyEvent *event);
@@ -708,6 +708,7 @@ private:
     void SetUpTheonGUILayout();
     PointAziRgkm ConvScrPointToAziRgkm(int x, int y);
     void showTrackContext();
+    void DrawViewFrameSquared(QPainter *p);
 };
 
 #endif // MAINWINDOW_H
