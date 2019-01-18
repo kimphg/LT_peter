@@ -604,8 +604,10 @@ Mainwindow::Mainwindow(QWidget *parent) :
     InitTimer();
     setFocusPolicy(Qt::StrongFocus);
     InitSetting();
+
     setRadarState(DISCONNECTED);
     processCuda = new QProcess(this);
+    RestartCuda();
     //    GDALAllRegister();
     //    GDALDataset       *poDS;
 
@@ -2396,7 +2398,7 @@ void Mainwindow::sync1S()//period 1 second
     if(processCuda->state()!=QProcess::Running)
     {
 
-        RestartCuda();
+
     }
     else
     {
