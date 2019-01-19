@@ -8,7 +8,7 @@ static QPen penTargetHistory(QBrush(Qt::gray),1);
 static QPen penTargetEnemy(QBrush(Qt::magenta),2);
 static QPen penTargetFriend(QBrush(QColor(0,200,200 ,255)),2);
 static QPen penTargetEnemySelected(QBrush(Qt::magenta),3);
-static QPen penTargetFriendSelected(QBrush(QColor(50,255,255 ,255)),3);
+static QPen penTargetFriendSelected(QBrush(QColor(50,255,255 ,255)),4);
 
 static QPen penCyan(QBrush(QColor(50,255,255 ,255)),1);//xoay mui tau
 
@@ -59,7 +59,7 @@ static QTimer                      dataPlaybackTimer ;
 static short                       dxMax,dyMax;
 //static C_ARPA_data                 arpa_data;
 static short                       scrCtX= SCR_H/2 + SCR_LEFT_MARGIN, scrCtY= SCR_H/2+SCR_TOP_MARGIN;
-static short                       dx =0,dy=0,dxMap=0,dyMap=0;
+static short                       dx =-100,dy=-100,dxMap=0,dyMap=0;
 static short                       radCtX= SCR_H/2 + SCR_LEFT_MARGIN;
 static short                       radCtY= SCR_H/2+SCR_TOP_MARGIN;
 static short                       mZoomCenterx,mZoomCentery,mMouseLastX,mMouseLastY;
@@ -117,8 +117,10 @@ void Mainwindow::mouseDoubleClickEvent( QMouseEvent * e )
 {
     if ( e->button() == Qt::LeftButton )
     {
-        mMousex=this->mapFromGlobal(QCursor::pos()).x();
-        mMousey=this->mapFromGlobal(QCursor::pos()).y();
+        int posx = (QCursor::pos()).x();
+        int posy = (QCursor::pos()).y();
+        if(posx)mMousex= posx;
+        if(posy)mMousey= posy;
         if(isInsideViewZone(mMousex,mMousey))
         {
             PointDouble point = ConvScrPointToKMXY(mMousex,mMousey);
@@ -175,7 +177,7 @@ void Mainwindow::drawAisTarget(QPainter *p)
     {
         AIS_object_t aisObj = *iter;
         iter++;
-        if(aisObj.mUpdateTime>300000)continue;
+        if(clock()-aisObj.mUpdateTime>300000)continue;
         /*double fx,fy;
         ConvWGSToKm(&fx,&fy,aisObj.mLong,aisObj.mLat);
         short x = (fx*mScale);//+;
@@ -319,8 +321,10 @@ void Mainwindow::keyPressEvent(QKeyEvent *event)
     {
         if(key==Qt::Key_1)
         {
-            mMousex=this->mapFromGlobal(QCursor::pos()).x();
-            mMousey=this->mapFromGlobal(QCursor::pos()).y();
+            int posx = (QCursor::pos()).x();
+            int posy = (QCursor::pos()).y();
+            if(posx)mMousex= posx;
+            if(posy)mMousey= posy;
 
             SetGPS(y2lat(-(mMousey - radCtY)),
                    x2lon(mMousex - radCtX)
@@ -347,8 +351,10 @@ void Mainwindow::keyPressEvent(QKeyEvent *event)
     }
     else if(key == Qt::Key_Space)
     {
-        mMousex=this->mapFromGlobal(QCursor::pos()).x();
-        mMousey=this->mapFromGlobal(QCursor::pos()).y();
+        int posx = (QCursor::pos()).x();
+        int posy = (QCursor::pos()).y();
+        if(posx)mMousex= posx;
+        if(posy)mMousey= posy;
 #ifndef THEON
         if(!isInsideViewZone(mMousex,mMousey))return;
         double azid,rg;
@@ -436,13 +442,18 @@ bool Mainwindow::isInsideViewZone(int x, int y)
 }
 void Mainwindow::mousePressEvent(QMouseEvent *event)
 {
-    mMouseLastX = (event->x());
-    mMouseLastY = (event->y());
+    //mMouseLastX = (event->x());
+    //mMouseLastY = (event->y());
+    int posx = (QCursor::pos()).x();
+    int posy = (QCursor::pos()).y();
+    if(posx)mMouseLastX= posx;
+    if(posy)mMouseLastY= posy;
+
     if(!isInsideViewZone(mMouseLastX,mMouseLastY))return;
     if(event->buttons() & Qt::LeftButton) {
 
-        mMousex=this->mapFromGlobal(QCursor::pos()).x();
-        mMousey=this->mapFromGlobal(QCursor::pos()).y();
+        if(posx)mMousex= posx;
+        if(posy)mMousey= posy;
         if(isInsideViewZone(mMousex,mMousey))
         {
             if(!isHeadUp)setMouseMode(MouseDrag,true);
@@ -587,6 +598,7 @@ Mainwindow::Mainwindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    pMap = new QPixmap(SCR_H,SCR_H);
 
     degreeSymbol= QString::fromLocal8Bit("\260");
     //ui->frame_RadarViewOptions->hide();
@@ -604,7 +616,7 @@ Mainwindow::Mainwindow(QWidget *parent) :
     InitTimer();
     setFocusPolicy(Qt::StrongFocus);
     InitSetting();
-
+    gotoCenter();
     setRadarState(DISCONNECTED);
     processCuda = new QProcess(this);
     RestartCuda();
@@ -713,7 +725,10 @@ void Mainwindow::DrawMap()
     if(!isMapOutdated)return;
 
     isMapOutdated = false;
-    if(!pMap) return;
+    if(!pMap)
+    {
+        pMap = new QPixmap(SCR_H,SCR_H);
+    }
     pMap->fill(Qt::black);
     dxMap = 0;
     dyMap = 0;
@@ -1075,7 +1090,10 @@ void Mainwindow::ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat)
 
 void Mainwindow::UpdateMouseStat(QPainter *p)
 {
-
+    int posx = (QCursor::pos()).x();
+    int posy = (QCursor::pos()).y();
+    if(posx)mMousex= posx;
+    if(posy)mMousey= posy;
     if(!isInsideViewZone(mMousex,mMousey))return;
     QPen penmousePointer(QColor(0x50ffffff));
     penmousePointer.setWidth(2);
@@ -1085,8 +1103,6 @@ void Mainwindow::UpdateMouseStat(QPainter *p)
 
     if((mouse_mode&MouseVRM)||(mouse_mode&MouseELB)||(mouse_mode&MouseAutoSelect1)||(mouse_mode&MouseAutoSelect2))
     {
-
-
         short r = sqrt((mMousex - radCtX)*(mMousex - radCtX)+(mMousey - radCtY)*(mMousey - radCtY));
 
 
@@ -1128,6 +1144,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
         p.drawPixmap(SCR_LEFT_MARGIN,SCR_TOP_MARGIN,SCR_H,SCR_H,
                      *pMap,
                      dxMap,dyMap,SCR_H,SCR_H);
+        //printf("drawmap");_flushall();
     }
     //draw signal
     QRectF screen(0,0,SCR_W,SCR_H);
@@ -1494,7 +1511,7 @@ void Mainwindow::RestartCuda()
         QFileInfo check_file("D:\\HR2D\\cudaFFT.exe");
         if (check_file.exists() && check_file.isFile())
         {
-            processCuda->start("D:\\HR2D\\cudaFFT.exe");
+            processCuda->startDetached("D:\\HR2D\\cudaFFT.exe");
             CConfig::AddMessage(QString::fromUtf8("Khởi động core FFT: OK"));
         }
         else
@@ -1989,8 +2006,10 @@ void Mainwindow::Update100ms()
     }
 
     DrawMap();
-    mMousex=this->mapFromGlobal(QCursor::pos()).x();
-    mMousey=this->mapFromGlobal(QCursor::pos()).y();
+    int posx = (QCursor::pos()).x();
+    int posy = (QCursor::pos()).y();
+    if(posx)mMousex= posx;
+    if(posy)mMousey= posy;
     CConfig::mStat.antennaAziDeg = degrees(pRadar->getCurAziRad());
 
     if(pRadar->init_time)
@@ -2426,7 +2445,7 @@ void Mainwindow::sync1S()//period 1 second
     ViewTrackInfo();
     // update rate
     int sampleTime = 10*paintTime/7;
-    if(sampleTime<20)sampleTime=20;
+    if(sampleTime<30)sampleTime=30;
     ui->label_frame_rate->setText("SFR:"+QString::number(1000/sampleTime));
 
     timerVideoUpdate.start(sampleTime);
@@ -3169,8 +3188,8 @@ void Mainwindow::on_toolButton_open_record_clicked()
 
 void Mainwindow::gotoCenter()
 {
-    dx = 0;
-    dy = 0;
+    dx = 100;
+    dy = 100;
     radCtX = scrCtX-dx;
     radCtY = scrCtY-dy;
     isMapOutdated = true;

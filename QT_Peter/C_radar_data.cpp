@@ -876,7 +876,7 @@ void C_radar_data::drawSgn(short azi_draw, short r_pos)
     short py = data_mem.ykm[azi_draw][r_pos];
     if(px<=0||py<=0)return;
     short pSize = 1;
-    if(r_pos<100)pSize=0;
+    if(r_pos<100)pSize=1;
     else if(r_pos>800)pSize=2;
     if((px<pSize)||(py<pSize)||(px>=img_ppi->width()-pSize)||(py>=img_ppi->height()-pSize))return;
     for(short x = -pSize;x <= pSize;x++)
@@ -1292,17 +1292,21 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
                 else if(dif>255)dif=255;
                 displayVal=dif;
             }
-            else
-                displayVal=(*pLevel);
-            if(!underThreshold)
+            else displayVal=(*pLevel);
+            if(cut_terrain)
+            {
+                 (*pLevel) = (data_mem.terrainMap[azi][r_pos]>300)?255:0;
+            }
+            else if(*pDetect)
             {
                 if(!init_time)if((*pSled)<(*pLevel)) (*pSled)= (*pLevel);
             }
             else
             {
-                if((*pSled)>0)  if((rand()%4)==0)    (*pSled)--;
-                if(cut_noise)displayVal= 0;
+                if((*pSled)>0)  if((rand()%20)==0)    (*pSled)--;
+
             }
+            if(cut_noise&&(!(*pDetect)))displayVal= 0;
             if(data_mem.may_hoi[azi][r_pos])displayVal+=80;
             if(displayVal>255)displayVal=255;
             data_mem.level_disp[azi][r_pos]=displayVal;
