@@ -588,12 +588,8 @@ void Mainwindow::checkClickAIS(int xclick, int yclick)
 //    DrawMap();
 //    update();
 }*/
-Mainwindow::Mainwindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+void Mainwindow::initCursor()
 {
-    ui->setupUi(this);
-
     QPixmap cursor_pixmap = QPixmap(31,31);
     cursor_pixmap.fill(Qt::transparent);
     QPainter paint(&cursor_pixmap);
@@ -605,18 +601,25 @@ Mainwindow::Mainwindow(QWidget *parent) :
     paint.drawLine(0,15,30,15);
     pen.setWidth(3);
     paint.setPen(pen);
-    paint.drawLine(15,0,15,8);
+    paint.drawLine(15,0,15,6);
     paint.drawLine(15,24,15,30);
-    paint.drawLine(0,15,8,15);
+    paint.drawLine(0,15,6,15);
     paint.drawLine(24,15,30,15);
-    cursor_default = QCursor(cursor_pixmap, 16, 16);
-
+    cursor_default = QCursor(cursor_pixmap, 15, 15);
+    setCursor(cursor_default);
+}
+Mainwindow::Mainwindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
+    initCursor();
     controlPressed = false;
     pMap = new QPixmap(SCR_H,SCR_H);
     processCuda = new QProcess(this);
     degreeSymbol= QString::fromLocal8Bit("\260");
 
-    setCursor(cursor_default);
+
 
     //cmLog = new DialogCommandLog();
     ppiRect = QRect(SCR_LEFT_MARGIN+SCR_BORDER_SIZE/2,
@@ -2053,7 +2056,8 @@ void Mainwindow::Update100ms()
     }
     if(isInsideViewZone(mMousex,mMousey))
     {
-        if(mouse_mode&MouseAutoSelect1||mouse_mode&MouseAutoSelect2)QApplication::setOverrideCursor(Qt::DragMoveCursor);
+        if(mouse_mode&MouseAutoSelect1||mouse_mode&MouseAutoSelect2)
+            QApplication::setOverrideCursor(Qt::DragMoveCursor);
         else QApplication::setOverrideCursor(cursor_default);
         double azi,rg;
         if(ui->toolButton_measuring->isChecked())

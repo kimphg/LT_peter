@@ -727,6 +727,7 @@ private:
     void showTrackContext();
     void DrawViewFrameSquared(QPainter *p);
     void RestartCuda();
+    void initCursor();
 };
 
 #endif // MAINWINDOW_H
