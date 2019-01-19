@@ -89,6 +89,7 @@ protected:
     void mouseDoubleClickEvent( QMouseEvent * e );
     enum radarSate   { DISCONNECTED,CONNECTED,CONNECTED_ROTATE9_TXOFF,CONNECTED_ROTATE12_TXOFF, CONNECTED_ROTATE9_TXON,CONNECTED_ROTATE12_TXON } radar_state;
 private:
+    QCursor cursor_default;
     QRect mIADrect;
     QRect ppiRect;
     QProcess *processCuda ;

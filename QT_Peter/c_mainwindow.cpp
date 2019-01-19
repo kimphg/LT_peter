@@ -593,13 +593,31 @@ Mainwindow::Mainwindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    QPixmap cursor_pixmap = QPixmap(31,31);
+    cursor_pixmap.fill(Qt::transparent);
+    QPainter paint(&cursor_pixmap);
+    QPen pen(QColor(255,255,0,0x7f));
+    pen.setStyle(Qt::SolidLine);
+    pen.setWidth(1);
+    paint.setPen(pen);
+    paint.drawLine(15,0,15,30);
+    paint.drawLine(0,15,30,15);
+    pen.setWidth(3);
+    paint.setPen(pen);
+    paint.drawLine(15,0,15,8);
+    paint.drawLine(15,24,15,30);
+    paint.drawLine(0,15,8,15);
+    paint.drawLine(24,15,30,15);
+    cursor_default = QCursor(cursor_pixmap, 16, 16);
+
     controlPressed = false;
     pMap = new QPixmap(SCR_H,SCR_H);
     processCuda = new QProcess(this);
     degreeSymbol= QString::fromLocal8Bit("\260");
-    //ui->frame_RadarViewOptions->hide();
-    QFont font;
-    font.setPointSize(12);
+
+    setCursor(cursor_default);
+
     //cmLog = new DialogCommandLog();
     ppiRect = QRect(SCR_LEFT_MARGIN+SCR_BORDER_SIZE/2,
                  SCR_TOP_MARGIN+SCR_BORDER_SIZE/2,
@@ -1236,7 +1254,7 @@ void Mainwindow::DrawIADArea(QPainter* p)
 
             p->setPen(QPen(QColor(255,255,255,200),0,Qt::DashLine));
             p->setBrush(Qt::NoBrush);
-            p->drawRect(mZoomCenterx-zoom!!_size/2.0,mZoomCentery-zoom_size/2.0,zoom_size,zoom_size);
+            p->drawRect(mZoomCenterx-zoom_size/2.0,mZoomCentery-zoom_size/2.0,zoom_size,zoom_size);
         }
 
     }
@@ -1562,7 +1580,7 @@ void Mainwindow::InitSetting()
     on_toolButton_signal_type_2_clicked();
     qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
     ui->tabWidget_iad->SetTransparent(true);
-    QApplication::setOverrideCursor(Qt::CrossCursor);
+//    QApplication::setOverrideCursor(Qt::CrossCursor);
 
     mMaxTapMayThu = CConfig::getInt("mMaxTapMayThu");
     mRangeIndex = CConfig::getInt("mRangeLevel");
@@ -2036,7 +2054,7 @@ void Mainwindow::Update100ms()
     if(isInsideViewZone(mMousex,mMousey))
     {
         if(mouse_mode&MouseAutoSelect1||mouse_mode&MouseAutoSelect2)QApplication::setOverrideCursor(Qt::DragMoveCursor);
-        else QApplication::setOverrideCursor(Qt::CrossCursor);
+        else QApplication::setOverrideCursor(cursor_default);
         double azi,rg;
         if(ui->toolButton_measuring->isChecked())
         {
