@@ -89,9 +89,18 @@ protected:
     void mouseDoubleClickEvent( QMouseEvent * e );
     enum radarSate   { DISCONNECTED,CONNECTED,CONNECTED_ROTATE9_TXOFF,CONNECTED_ROTATE12_TXOFF, CONNECTED_ROTATE9_TXON,CONNECTED_ROTATE12_TXON } radar_state;
 private:
+    QRect mIADrect;
     QRect ppiRect;
+    QProcess *processCuda ;
+    dataProcessingThread        *processing;// thread xu ly du lieu radar
+    c_radar_simulation          *simulator;// thread tao gia tin hieu
+    C_radar_data                *pRadar;
+    QThread                     *tprocessing;
+    QPixmap                     *pMap;// painter cho ban do
     QString degreeSymbol ;
+    bool controlPressed;
     c_target_manager mTargetMan;
+    int zoom_size;
     void DrawGrid(QPainter* p,short centerX,short centerY);
     void CameraControl(int x,int y, int zoom);
     void CameraControl(int direction);

@@ -9,9 +9,8 @@ static QPen penTargetEnemy(QBrush(Qt::magenta),2);
 static QPen penTargetFriend(QBrush(QColor(0,200,200 ,255)),2);
 static QPen penTargetEnemySelected(QBrush(Qt::magenta),3);
 static QPen penTargetFriendSelected(QBrush(QColor(50,255,255 ,255)),4);
-
 static QPen penCyan(QBrush(QColor(50,255,255 ,255)),1);//xoay mui tau
-
+static enum ZoomMode {ZoomHiden =0,ZoomIAD=1,ZoomHistogram=2,ZoomSpectre=3,ZoomRamp=4,ZoomZoom=5} zoom_mode=ZoomHiden;
 static PointAziRgkm AutoSelP1,AutoSelP2;
 //#ifdef THEON
 //static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),224+SCR_BORDER_SIZE);
@@ -22,7 +21,7 @@ static PointAziRgkm AutoSelP1,AutoSelP2;
 //static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),150+SCR_BORDER_SIZE);
 //QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
 //#endif
-static QRect mIADrect;
+
 static QPen penYellow(QBrush(QColor(255,255,50 ,255)),2);
 static QPen mGridViewPen1(QBrush(QColor(150,150,150,255)),1);
 static clock_t clkBegin = clock();
@@ -30,7 +29,7 @@ static clock_t clkEnd = clock();
 static clock_t paintTime = 20;
 static QStringList                 commandLogList;
 static QTransform                  mTrans;
-static QPixmap                     *pMap=nullptr;// painter cho ban do
+
 static bool isShowAIS =true;
 //QPixmap                     *pViewFrame=NULL;// painter cho ban do
 static CMap *osmap ;
@@ -46,10 +45,6 @@ static double                      mLat=DEFAULT_LAT,mLon = DEFAULT_LONG;
 static bool                        isMapOutdated = true;
 static bool isHeadUp = false;
 static int   mMousex =0,mMousey=0;
-static dataProcessingThread        *processing;// thread xu ly du lieu radar
-static c_radar_simulation          *simulator;// thread tao gia tin hieu
-static C_radar_data                *pRadar;
-static QThread                     *tprocessing;
 static QPoint points[6];
 static double                      mMapOpacity;
 static int                         mMaxTapMayThu=18;
@@ -71,12 +66,12 @@ static double                       rangeRatio = 1;
 static QString         strDistanceUnit;
 //short selectedTargetIndex;
 static mouseMode mouse_mode = MouseNormal;
-static DialogCommandLog *cmLog;
+//static DialogCommandLog *cmLog;
 static unsigned char commandMay22[]={0xaa,0x55,0x02,0x0c,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
 static enum TargetType{
     RADAR,AIS,NOTARGET
 }selectedTargetType  = NOTARGET;
-QProcess *processCuda ;
+
 
 //short config.getRangeView() = 1;
 static double ringStep = 1;
@@ -308,7 +303,7 @@ void Mainwindow::mouseMoveEvent(QMouseEvent *event) {
         }
     }
 }
-bool controlPressed = false;
+
 void Mainwindow::keyPressEvent(QKeyEvent *event)
 {
     this->setFocus();
@@ -598,8 +593,9 @@ Mainwindow::Mainwindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    controlPressed = false;
     pMap = new QPixmap(SCR_H,SCR_H);
-
+    processCuda = new QProcess(this);
     degreeSymbol= QString::fromLocal8Bit("\260");
     //ui->frame_RadarViewOptions->hide();
     QFont font;
@@ -618,7 +614,7 @@ Mainwindow::Mainwindow(QWidget *parent) :
     InitSetting();
     gotoCenter();
     setRadarState(DISCONNECTED);
-    processCuda = new QProcess(this);
+
     RestartCuda();
     //    GDALAllRegister();
     //    GDALDataset       *poDS;
@@ -1095,9 +1091,9 @@ void Mainwindow::UpdateMouseStat(QPainter *p)
     if(posx)mMousex= posx;
     if(posy)mMousey= posy;
     if(!isInsideViewZone(mMousex,mMousey))return;
-    QPen penmousePointer(QColor(0x50ffffff));
-    penmousePointer.setWidth(2);
-    p->setPen(penmousePointer);
+    //QPen penmousePointer(QColor(0x50ffffff));
+    //penmousePointer.setWidth(2);
+    p->setPen(penYellow);
     p->drawText(mMousex,mMousey+25,100,15,0,ui->label_cursor_range->text());
     p->drawText(mMousex,mMousey+15,100,15,0,ui->label_cursor_azi->text());
 
@@ -1196,16 +1192,18 @@ void Mainwindow::paintEvent(QPaintEvent *event)
 }
 void Mainwindow::DrawIADArea(QPainter* p)
 {
-    if(ui->tabWidget_iad->isHidden())return;
+    if(zoom_mode==ZoomHiden)return;
+
     p->setCompositionMode(QPainter::CompositionMode_SourceOver);
-    mIADrect = ui->tabWidget_iad->geometry();
-    mIADrect.adjust(4,30,-5,-5);
+
     p->setBrush(QBrush(Qt::black));
     p->setPen(Qt::black);
     p->drawRect(mIADrect);
-    if(ui->tabWidget_iad->currentIndex()==0)
+    if(zoom_mode==ZoomIAD)
     {
+//        printf("\nDraw IAD");
         if((pRadar->img_zoom_ar==nullptr)||(pRadar->img_zoom_ar->isNull()))return;
+//        printf("\nDraw IAD");
         p->setPen(QPen(Qt::white,2));
         QPoint p1(mIADrect.x(),mIADrect.y());
         //QPoint p2(rect.x(),rect.y());
@@ -1228,33 +1226,34 @@ void Mainwindow::DrawIADArea(QPainter* p)
 
 
     }
-    else if(ui->tabWidget_iad->currentIndex()==4)
+    else if(zoom_mode==ZoomZoom)
     {
+//        printf("\nDraw ZoomZoom");
         //if((!pRadar->img_zoom_ppi)||(pRadar->img_zoom_ppi->isNull()))return;
         p->drawImage(mIADrect,*pRadar->img_zoom_ppi,pRadar->img_zoom_ppi->rect());
         if(mRangeIndex>2)
         {
-            short zoom_size = ui->tabWidget_iad->width()/pRadar->scale_zoom_ppi*pRadar->scale_ppi;
+
             p->setPen(QPen(QColor(255,255,255,200),0,Qt::DashLine));
             p->setBrush(Qt::NoBrush);
-            p->drawRect(mZoomCenterx-zoom_size/2.0,mZoomCentery-zoom_size/2.0,zoom_size,zoom_size);
+            p->drawRect(mZoomCenterx-zoom!!_size/2.0,mZoomCentery-zoom_size/2.0,zoom_size,zoom_size);
         }
 
     }
-    else if(ui->tabWidget_iad->currentIndex()==1)
+    else if(zoom_mode==ZoomHistogram)
     {
 
         p->drawImage(mIADrect,*pRadar->img_histogram,
                      pRadar->img_histogram->rect());
 
     }
-    else if(ui->tabWidget_iad->currentIndex()==2)
+    else if(zoom_mode==ZoomSpectre)
     {
 
         p->drawImage(mIADrect,*pRadar->img_spectre,
                      pRadar->img_spectre->rect());
     }
-    else if(ui->tabWidget_iad->currentIndex()==3)
+    else if(zoom_mode==ZoomRamp)
     {
         if(ui->toolButton_scope_2->isChecked()==false)pRadar->drawRamp();
         QRect rect1 = mIADrect;
@@ -1502,12 +1501,12 @@ void Mainwindow::SetUpTheonGUILayout()
 }
 void Mainwindow::RestartCuda()
 {
-    if(processCuda->state()!=QProcess::Running)//processCuda->reset();
+    //if(processCuda->state()!=QProcess::Running)//processCuda->reset();
 //    QString file = "D:\\HR2D\\cudaFFT.exe";
     //else
     {
 
-        system("taskkill /f /im cudaFFT.exe");
+//        system("taskkill /f /im cudaFFT.exe");
         QFileInfo check_file("D:\\HR2D\\cudaFFT.exe");
         if (check_file.exists() && check_file.isFile())
         {
@@ -1981,15 +1980,29 @@ void Mainwindow::Update100ms()
     ui->label_head_ship->setText(QString::number(CConfig::mStat.shipHeadingDeg,'f',1));
     ui->label_course_ship->setText(QString::number(CConfig::mStat.shipCourseDeg,'f',1));
     ui->label_speed_ship->setText(QString::number(CConfig::mStat.shipSpeed,'f',1));
-    /*double headingDiff = CConfig::shipHeadingDeg-CConfig::mStat.shipHeadingDeg;
-    if(abs(headingDiff)>0.5)
-    {
-        if(headingDiff<-180)headingDiff+=360;
-        if(headingDiff>180)headingDiff-=360;
-        CConfig::mStat.shipHeadingDeg+=headingDiff/3.0;
-        isMapOutdated = true;
-    }else CConfig::mStat.shipHeadingDeg = CConfig::shipHeadingDeg;*/
 
+    mIADrect = ui->tabWidget_iad->geometry();
+    mIADrect.adjust(4,30,-5,-5);
+    zoom_size = mIADrect.width()/pRadar->scale_zoom_ppi*pRadar->scale_ppi;
+    if(ui->tabWidget_iad->isHidden())
+    {
+        zoom_mode = ZoomHiden;
+    }
+    else switch(ui->tabWidget_iad->currentIndex())
+    {
+    case 0 :
+        zoom_mode = ZoomIAD;break;
+    case 1 :
+        zoom_mode = ZoomHistogram;break;
+    case 2 :
+        zoom_mode = ZoomSpectre;break;
+    case 3 :
+        zoom_mode = ZoomRamp;break;
+    case 4 :
+        zoom_mode = ZoomZoom;break;
+    default:
+        break;
+    }
     //calculate heading
     if(isHeadUp)
     {
@@ -2414,19 +2427,19 @@ void Mainwindow::ViewTrackInfo()
 }
 void Mainwindow::sync1S()//period 1 second
 {
-    if(processCuda->state()!=QProcess::Running)
-    {
+//    if(processCuda->state()!=QProcess::Running)
+//    {
 
 
-    }
-    else
-    {
-        QByteArray ba = processCuda->readAllStandardOutput();
-        if(ba.size())
-        {
-            CConfig::AddMessage(QString::fromLatin1(ba));
-        }
-    }
+//    }
+//    else
+//    {
+//        QByteArray ba = processCuda->readAllStandardOutput();
+//        if(ba.size())
+//        {
+//            CConfig::AddMessage(QString::fromLatin1(ba));
+//        }
+//    }
     if(CConfig::getWarningList()->size())
     {
         std::queue<WarningMessage> * listMsg = (CConfig::getWarningList());
