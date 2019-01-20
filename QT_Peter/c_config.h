@@ -87,6 +87,7 @@ private:
 
 
 public:
+
     unsigned     long int       mFrameCount;
     double mLat,mLon;
     double shipSpeed;
@@ -153,7 +154,7 @@ public:
     //static QXmlStreamReader xml;
     static QHash<QString, QString> readFile();
     static std::queue<WarningMessage> *getWarningList();
-
+    static bool    isChanged;
 private:
     static std::queue<WarningMessage> mWarningList;
     static QHash<QString, QString> readFile(QString fileName);

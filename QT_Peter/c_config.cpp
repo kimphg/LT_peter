@@ -9,6 +9,7 @@ using namespace std;
 //double CConfig::shipSpeed=0;
 //double CConfig::antennaAziDeg=0;
 std::queue<WarningMessage> CConfig::mWarningList;
+bool CConfig::isChanged = false;
 radarStatus_3C CConfig::mStat ;
 radarStatus_3C::radarStatus_3C()
 {
@@ -27,6 +28,7 @@ radarStatus_3C::radarStatus_3C()
     shipHeadingDeg = 30;
     shipHeadingRate_dps=0;
     isGyro = false;
+
 }
 
 radarStatus_3C::~radarStatus_3C()
@@ -66,12 +68,14 @@ void CConfig::setValue(QString key, double value)
 {
     QString strValue = QString::number(value);
     mHashData.insert(key, strValue);
+    isChanged = true;
     //SaveToFile();
 }
 
 void CConfig::setValue(QString key, QString value)
 {
     mHashData.insert(key, value);
+    isChanged = true;
     //SaveToFile();
 }
 
@@ -120,6 +124,7 @@ CConfig::~CConfig(void)
 
 void CConfig::SaveToFile()
 {
+    if(isChanged)isChanged = false;else return;
     QHash<QString, QString>::const_iterator it = mHashData.constBegin();
     QXmlStreamAttributes attr;
     while (it != mHashData.constEnd()) {
@@ -127,18 +132,16 @@ void CConfig::SaveToFile()
         ++it;
     }
     QXmlStreamWriter writer;
-    if (QFile::exists(HR_CONFIG_FILE_BACKUP_2))
+    if(QFile::exists(HR_CONFIG_FILE_BACKUP_1))
     {
-        QFile::remove(HR_CONFIG_FILE_BACKUP_2);
-    }
-    if (QFile::exists(HR_CONFIG_FILE_BACKUP_1))
-    {
+        if (QFile::exists(HR_CONFIG_FILE_BACKUP_2))
+        {
+            QFile::remove(HR_CONFIG_FILE_BACKUP_2);
+
+        }
         QFile::rename(HR_CONFIG_FILE_BACKUP_1,HR_CONFIG_FILE_BACKUP_2);
     }
-    if (QFile::exists(HR_CONFIG_FILE))
-    {
-        QFile::rename(HR_CONFIG_FILE,HR_CONFIG_FILE_BACKUP_1);
-    }
+    QFile::rename(HR_CONFIG_FILE,HR_CONFIG_FILE_BACKUP_1);
     QFile xmlFile(HR_CONFIG_FILE);
     xmlFile.open(QIODevice::WriteOnly);
     writer.setDevice(&xmlFile);
@@ -222,10 +225,10 @@ QHash<QString, QString> CConfig::readFile(QString fileName)
             }
         }
     }
-    if(!nElement)
+    if((!hashData.contains("mLon"))||(!hashData.contains("mLat")))
     {
-        if(fileName==HR_CONFIG_FILE) readFile(HR_CONFIG_FILE_BACKUP_1);
-        else if(fileName==HR_CONFIG_FILE_BACKUP_1)readFile(HR_CONFIG_FILE_BACKUP_2);
+        if(fileName==HR_CONFIG_FILE)                readFile(HR_CONFIG_FILE_BACKUP_1);
+        else if(fileName==HR_CONFIG_FILE_BACKUP_1)  readFile(HR_CONFIG_FILE_BACKUP_2);
         else
         {
             ReportError("Config load failed");

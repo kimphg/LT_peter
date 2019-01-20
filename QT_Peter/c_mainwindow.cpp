@@ -593,14 +593,11 @@ void Mainwindow::initCursor()
     QPixmap cursor_pixmap = QPixmap(31,31);
     cursor_pixmap.fill(Qt::transparent);
     QPainter paint(&cursor_pixmap);
-    QPen pen(QColor(255,255,0,0x7f));
-    pen.setStyle(Qt::SolidLine);
-    pen.setWidth(1);
-    paint.setPen(pen);
+
+    paint.setPen(QPen(QColor(255,255,50,120),1,Qt::SolidLine,Qt::FlatCap));
     paint.drawLine(15,0,15,30);
     paint.drawLine(0,15,30,15);
-    pen.setWidth(3);
-    paint.setPen(pen);
+    paint.setPen(QPen(QColor(255,255,50,160),3,Qt::SolidLine,Qt::FlatCap));
     paint.drawLine(15,0,15,6);
     paint.drawLine(15,24,15,30);
     paint.drawLine(0,15,6,15);
@@ -618,8 +615,6 @@ Mainwindow::Mainwindow(QWidget *parent) :
     pMap = new QPixmap(SCR_H,SCR_H);
     processCuda = new QProcess(this);
     degreeSymbol= QString::fromLocal8Bit("\260");
-
-
 
     //cmLog = new DialogCommandLog();
     ppiRect = QRect(SCR_LEFT_MARGIN+SCR_BORDER_SIZE/2,
@@ -729,11 +724,9 @@ void MainWindow::openShpFile()
 
 Mainwindow::~Mainwindow()
 {
-    processing->stopThread();
-    processing->wait();
-    pRadar->saveTerrain();
+
     delete ui;
-    CConfig::SaveToFile();
+
     if(pMap)delete pMap;
 }
 
@@ -1666,7 +1659,6 @@ void Mainwindow::InitSetting()
     connect(ui->lineEdit_byte_7, SIGNAL(returnPressed()),ui->toolButton_send_command,SIGNAL(clicked()));
 
 
-
     //vnmap.setUp(config.m_config.lat(), config.m_config.lon(), 200,config.m_config.mapFilename.data());
     if(pMap)delete pMap;
     pMap = new QPixmap(SCR_H,SCR_H);
@@ -2154,7 +2146,10 @@ void Mainwindow::processARPA()
 //}
 void Mainwindow::ShutDown()
 {
-    //config.SaveToFile();
+    processing->stopThread();
+    processing->wait();
+    pRadar->saveTerrain();
+    CConfig::SaveToFile();
     QApplication::quit();
 #ifdef _WIN32
     system("shutdown -s -f -t 00");
@@ -3496,12 +3491,16 @@ void Mainwindow::on_toolButton_tx_clicked()
     //processing->radTxOn();
     sendToRadarString(CConfig::getString("mTxCommand"));
 }
+void Mainwindow::closeEvent (QCloseEvent *event)
+{
 
+}
 
 void Mainwindow::on_toolButton_tx_off_clicked()
 {
     //processing->radTxOff();
     sendToRadarString(CConfig::getString("mRxCommand"));
+    CConfig::SaveToFile();
 }
 
 //void Mainwindow::on_toolButton_filter2of3_clicked(bool checked)
@@ -5024,4 +5023,9 @@ void Mainwindow::on_toolButton_loc_dia_vat_clicked(bool checked)
 void Mainwindow::on_toolButton_loc_dia_vat_2_clicked()
 {
     pRadar->updateTerrain();
+}
+
+void Mainwindow::on_toolButton_tx_off_2_clicked()
+{
+    shutDown();
 }

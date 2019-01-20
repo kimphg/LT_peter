@@ -160,6 +160,8 @@ public slots:
     void setFriend();
     void removeTarget();
     void changeID();
+protected slots:
+    void closeEvent(QCloseEvent *event);
 private:
     void setRadarState(radarSate radarState);
     bool ProcDataAIS(BYTE *szBuff, int nLeng );
@@ -685,6 +687,8 @@ private slots:
     void on_toolButton_loc_dia_vat_clicked(bool checked);
 
     void on_toolButton_loc_dia_vat_2_clicked();
+
+    void on_toolButton_tx_off_2_clicked();
 
 private:
 
