@@ -5027,5 +5027,5 @@ void Mainwindow::on_toolButton_loc_dia_vat_2_clicked()
 
 void Mainwindow::on_toolButton_tx_off_2_clicked()
 {
-    shutDown();
+    ShutDown();
 }
