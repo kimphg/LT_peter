@@ -158,7 +158,7 @@ void Mainwindow::sendToRadar(unsigned char* hexdata)
 {
     m_udpSocket->writeDatagram((char*)hexdata,8,QHostAddress("192.168.0.44"),2572);
 }
-void Mainwindow::DrawAISMark(PointInt s ,double head,QPainter *p,bool isSelected)
+void Mainwindow::DrawAISMark(PointInt s ,double head,QPainter *p,bool isSelected,QString name)
 {
     QPolygon poly;
     QPoint point;
@@ -180,15 +180,15 @@ void Mainwindow::DrawAISMark(PointInt s ,double head,QPainter *p,bool isSelected
     poly<<point;
     if(isSelected)
     {
-        p->setPen(penSelectedtarget);
+        p->setPen(penTargetEnemySelected);
         p->drawPolygon(poly);
-        p->drawText(s.x,s.y,100,20,0,aisObj.mName);
+        p->drawText(s.x,s.y,100,20,0,name);
     }
     else
     {
-        p->setPen(penTarget);
+        p->setPen(penTargetEnemy);
         p->drawPolygon(poly);
-        p->drawText(s.x,s.y,100,20,0,aisObj.mName);
+        p->drawText(s.x,s.y,100,20,0,name);
     }
 
 }
@@ -196,11 +196,12 @@ void Mainwindow::DrawAISMark(PointInt s ,double head,QPainter *p,bool isSelected
 void Mainwindow::drawAisTarget(QPainter *p)
 {
     //draw targets
-    QPen penTarget(QColor(250,100,250));
-    penTarget.setWidth(1);
-    QPen penSelectedtarget = penTarget;
-    penSelectedtarget.setWidth(2);
+//    QPen penTarget(QColor(250,100,250));
+//    penTarget.setWidth(1);
+//    QPen penSelectedtarget = penTarget;
+//    penSelectedtarget.setWidth(2);
     p->setFont(QFont("Times", 6));
+    p->setBrush(Qt::NoBrush);
     QList<AIS_object_t>::iterator iter = processing->m_aisList.begin();
     while(iter!=processing->m_aisList.end())
     {
@@ -213,20 +214,23 @@ void Mainwindow::drawAisTarget(QPainter *p)
         short y = (fy*mScale);//+radCtY;
         rotateVector(trueShiftDeg,&x,&y);*/
         PointInt s = ConvWGSToScrPoint(aisObj.mLong,aisObj.mLat);
-
         if((aisObj.mType/10)==3)continue;
+        if(!isInsideViewZone(s.x,s.y))continue;
         if(aisObj.isNewest)
         {
-            DrawAISMark(s,radians(aisObj.mCog),p,aisObj.isSelected);
+            DrawAISMark(s,radians(aisObj.mCog),p,aisObj.isSelected,aisObj.mName);
             if(zoom_mode==ZoomZoom)
             {
-                int dx=mZoomCenterx-s.x;
-                int dy= mZoomCentery-s.y;
+                int dx= s.x-mZoomCenterx;
+                int dy= s.y-mZoomCentery;
                 if(abs(dx)<(zoom_size/2.0))
                 {
                     if(abs(dy)<(zoom_size/2.0))
                     {
-                        DrawAISMark(s,radians(aisObj.mCog),p,aisObj.isSelected);
+                        PointInt iadPoint;
+                        iadPoint.x = mIADCenter.x+dx*mZoomScale;
+                        iadPoint.y = mIADCenter.y+dy*mZoomScale;
+                        DrawAISMark(iadPoint,radians(aisObj.mCog),p,aisObj.isSelected,aisObj.mName);
                     }
                 }
 
@@ -1210,12 +1214,12 @@ void Mainwindow::paintEvent(QPaintEvent *event)
 
     UpdateMouseStat(&p);
 
-    if(isShowAIS)drawAisTarget(&p);
     //ve luoi cu ly phuong vi
     DrawDetectZones(&p);
     DrawViewFrame(&p);
 //    DrawViewFrameSquared(&p);
     DrawIADArea(&p);
+    if(isShowAIS)drawAisTarget(&p);
     clkEnd = clock();
     paintTime = (clkEnd-clkBegin);
     //printf("\npaint:%ldms",paintTime);
@@ -2012,6 +2016,9 @@ void Mainwindow::Update100ms()
 
     mIADrect = ui->tabWidget_iad->geometry();
     mIADrect.adjust(4,30,-5,-5);
+    mIADCenter.x = mIADrect.x()+(mIADrect.width())/2;
+    mIADCenter.y = mIADrect.y()+(mIADrect.height())/2;
+    mZoomScale = double(mIADrect.width())/zoom_size;
     zoom_size = mIADrect.width()/pRadar->scale_zoom_ppi*pRadar->scale_ppi;
     if(ui->tabWidget_iad->isHidden())
     {

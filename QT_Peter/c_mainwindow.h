@@ -91,6 +91,8 @@ protected:
 private:
     QCursor cursor_default;
     QRect mIADrect;
+    PointInt mIADCenter;
+    double mZoomScale;
     QRect ppiRect;
     QProcess *processCuda ;
     dataProcessingThread        *processing;// thread xu ly du lieu radar
@@ -732,7 +734,7 @@ private:
     void DrawViewFrameSquared(QPainter *p);
     void RestartCuda();
     void initCursor();
-    void DrawAISMark(PointInt s, double head, QPainter *p, bool isSelected);
+    void DrawAISMark(PointInt s, double head, QPainter *p, bool isSelected, QString name);
 };
 
 #endif // MAINWINDOW_H
