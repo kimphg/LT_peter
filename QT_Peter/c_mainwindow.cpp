@@ -158,6 +158,40 @@ void Mainwindow::sendToRadar(unsigned char* hexdata)
 {
     m_udpSocket->writeDatagram((char*)hexdata,8,QHostAddress("192.168.0.44"),2572);
 }
+void Mainwindow::DrawAISMark(PointInt s ,double head,QPainter *p,bool isSelected)
+{
+    QPolygon poly;
+    QPoint point;
+//    double head = aisObj.mCog*PI_NHAN2/360.0;
+    point.setX(s.x+8*sinFast(head));
+    point.setY(s.y-8*cosFast(head));
+    poly<<point;
+    point.setX(s.x+8*sinFast(head+2.3562f));
+    point.setY(s.y-8*cosFast(head+2.3562f));
+    poly<<point;
+    point.setX(s.x+8*sinFast(head-2.3562f));
+    point.setY(s.y-8*cosFast(head-2.3562f));
+    poly<<point;
+    point.setX(s.x+8*sinFast(head));
+    point.setY(s.y-8*cosFast(head));
+    poly<<point;
+    point.setX(s.x+16*sinFast(head));
+    point.setY(s.y-16*cosFast(head));
+    poly<<point;
+    if(isSelected)
+    {
+        p->setPen(penSelectedtarget);
+        p->drawPolygon(poly);
+        p->drawText(s.x,s.y,100,20,0,aisObj.mName);
+    }
+    else
+    {
+        p->setPen(penTarget);
+        p->drawPolygon(poly);
+        p->drawText(s.x,s.y,100,20,0,aisObj.mName);
+    }
+
+}
 //ham test ve tu AIS
 void Mainwindow::drawAisTarget(QPainter *p)
 {
@@ -183,37 +217,19 @@ void Mainwindow::drawAisTarget(QPainter *p)
         if((aisObj.mType/10)==3)continue;
         if(aisObj.isNewest)
         {
-            //printf("ais draw\n");
-            //draw ais mark
-            QPolygon poly;
-            QPoint point;
-            double head = aisObj.mCog*PI_NHAN2/360.0;
-            point.setX(s.x+8*sinFast(head));
-            point.setY(s.y-8*cosFast(head));
-            poly<<point;
-            point.setX(s.x+8*sinFast(head+2.3562f));
-            point.setY(s.y-8*cosFast(head+2.3562f));
-            poly<<point;
-            point.setX(s.x+8*sinFast(head-2.3562f));
-            point.setY(s.y-8*cosFast(head-2.3562f));
-            poly<<point;
-            point.setX(s.x+8*sinFast(head));
-            point.setY(s.y-8*cosFast(head));
-            poly<<point;
-            point.setX(s.x+16*sinFast(head));
-            point.setY(s.y-16*cosFast(head));
-            poly<<point;
-            if(aisObj.isSelected)
+            DrawAISMark(s,radians(aisObj.mCog),p,aisObj.isSelected);
+            if(zoom_mode==ZoomZoom)
             {
-                p->setPen(penSelectedtarget);
-                p->drawPolygon(poly);
-                p->drawText(s.x,s.y,100,20,0,aisObj.mName);
-            }
-            else
-            {
-                p->setPen(penTarget);
-                p->drawPolygon(poly);
-                p->drawText(s.x,s.y,100,20,0,aisObj.mName);
+                int dx=mZoomCenterx-s.x;
+                int dy= mZoomCentery-s.y;
+                if(abs(dx)<(zoom_size/2.0))
+                {
+                    if(abs(dy)<(zoom_size/2.0))
+                    {
+                        DrawAISMark(s,radians(aisObj.mCog),p,aisObj.isSelected);
+                    }
+                }
+
             }
         }
         else
