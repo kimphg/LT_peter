@@ -734,7 +734,8 @@ private:
     void DrawViewFrameSquared(QPainter *p);
     void RestartCuda();
     void initCursor();
-    void DrawAISMark(PointInt s, double head, QPainter *p, bool isSelected, QString name);
+    void DrawAISMark(PointInt s, double head, QPainter *p, bool isSelected, QString name, int size);
+    bool isInsideIADZone(int x, int y);
 };
 
 #endif // MAINWINDOW_H

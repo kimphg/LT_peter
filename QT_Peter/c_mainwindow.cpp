@@ -158,37 +158,40 @@ void Mainwindow::sendToRadar(unsigned char* hexdata)
 {
     m_udpSocket->writeDatagram((char*)hexdata,8,QHostAddress("192.168.0.44"),2572);
 }
-void Mainwindow::DrawAISMark(PointInt s ,double head,QPainter *p,bool isSelected,QString name)
+void Mainwindow::DrawAISMark(PointInt s ,double head,QPainter *p,bool isSelected,QString name,int size)
 {
+
     QPolygon poly;
     QPoint point;
 //    double head = aisObj.mCog*PI_NHAN2/360.0;
-    point.setX(s.x+8*sinFast(head));
-    point.setY(s.y-8*cosFast(head));
+    point.setX(s.x+size*sinFast(head));
+    point.setY(s.y-size*cosFast(head));
     poly<<point;
-    point.setX(s.x+8*sinFast(head+2.3562f));
-    point.setY(s.y-8*cosFast(head+2.3562f));
+    point.setX(s.x+size*sinFast(head+2.3562f));
+    point.setY(s.y-size*cosFast(head+2.3562f));
     poly<<point;
-    point.setX(s.x+8*sinFast(head-2.3562f));
-    point.setY(s.y-8*cosFast(head-2.3562f));
+    point.setX(s.x+size*sinFast(head-2.3562f));
+    point.setY(s.y-size*cosFast(head-2.3562f));
     poly<<point;
-    point.setX(s.x+8*sinFast(head));
-    point.setY(s.y-8*cosFast(head));
+    point.setX(s.x+size*sinFast(head));
+    point.setY(s.y-size*cosFast(head));
     poly<<point;
-    point.setX(s.x+16*sinFast(head));
-    point.setY(s.y-16*cosFast(head));
+    point.setX(s.x+size*2*sinFast(head));
+    point.setY(s.y-size*2*cosFast(head));
     poly<<point;
     if(isSelected)
     {
+        p->setFont(QFont("Times", size+2));
         p->setPen(penTargetEnemySelected);
         p->drawPolygon(poly);
-        p->drawText(s.x,s.y,100,20,0,name);
+        p->drawText(s.x,s.y,120,20,0,name);
     }
     else
     {
+        p->setFont(QFont("Times", size));
         p->setPen(penTargetEnemy);
         p->drawPolygon(poly);
-        p->drawText(s.x,s.y,100,20,0,name);
+        p->drawText(s.x,s.y,150,20,0,name);
     }
 
 }
@@ -200,7 +203,7 @@ void Mainwindow::drawAisTarget(QPainter *p)
 //    penTarget.setWidth(1);
 //    QPen penSelectedtarget = penTarget;
 //    penSelectedtarget.setWidth(2);
-    p->setFont(QFont("Times", 6));
+
     p->setBrush(Qt::NoBrush);
     QList<AIS_object_t>::iterator iter = processing->m_aisList.begin();
     while(iter!=processing->m_aisList.end())
@@ -218,7 +221,7 @@ void Mainwindow::drawAisTarget(QPainter *p)
         if(!isInsideViewZone(s.x,s.y))continue;
         if(aisObj.isNewest)
         {
-            DrawAISMark(s,radians(aisObj.mCog),p,aisObj.isSelected,aisObj.mName);
+            DrawAISMark(s,radians(aisObj.mCog),p,aisObj.isSelected,aisObj.mName,8);
             if(zoom_mode==ZoomZoom)
             {
                 int dx= s.x-mZoomCenterx;
@@ -230,7 +233,7 @@ void Mainwindow::drawAisTarget(QPainter *p)
                         PointInt iadPoint;
                         iadPoint.x = mIADCenter.x+dx*mZoomScale;
                         iadPoint.y = mIADCenter.y+dy*mZoomScale;
-                        DrawAISMark(iadPoint,radians(aisObj.mCog),p,aisObj.isSelected,aisObj.mName);
+                        DrawAISMark(iadPoint,radians(aisObj.mCog),p,aisObj.isSelected,aisObj.mName,12);
                     }
                 }
 
@@ -242,6 +245,18 @@ void Mainwindow::drawAisTarget(QPainter *p)
         }
     }
 
+}
+bool Mainwindow::checkInsideZoom(int x,int y)
+{
+    int dx= x-mZoomCenterx;
+    int dy= y-mZoomCentery;
+    if(abs(dx)<(zoom_size/2.0))
+    {
+        if(abs(dy)<(zoom_size/2.0))
+        {
+
+        }
+    }
 }
 void Mainwindow::mouseReleaseEvent(QMouseEvent *event)
 {
@@ -448,6 +463,7 @@ void Mainwindow::detectZone()
 }*/
 bool Mainwindow::isInsideViewZone(int x, int y)
 {
+
     short dx = x-scrCtX;
     short dy = y-scrCtY;
     if((dx*dx+dy*dy)>(SCR_H*SCR_H/4))
@@ -455,16 +471,21 @@ bool Mainwindow::isInsideViewZone(int x, int y)
     else
         return true;
 }
+bool Mainwindow::isInsideIADZone(int x, int y)
+{
+   return mIADrect.contains(x,y);
+}
+
 void Mainwindow::mousePressEvent(QMouseEvent *event)
 {
     //mMouseLastX = (event->x());
     //mMouseLastY = (event->y());
-    int posx = (QCursor::pos()).x();
-    int posy = (QCursor::pos()).y();
+    int posx = event->x();
+    int posy = event->y();
     if(posx)mMouseLastX= posx;
     if(posy)mMouseLastY= posy;
 
-    if(!isInsideViewZone(mMouseLastX,mMouseLastY))return;
+
     if(event->buttons() & Qt::LeftButton) {
 
         if(posx)mMousex= posx;
@@ -564,11 +585,19 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
             //mouse_mode=MouseDrag;//isDraging = true;
         }
     }
-    else
+    else if(event->buttons() & Qt::RightButton)
     {
+
         if(ui->toolButton_ais_show->isChecked())
         {
-            checkClickAIS(event->x(),event->y());
+            if(isInsideViewZone(posx,posy))
+            {
+                checkClickAIS(posx,posy);
+            }
+            else if(isInsideIADZone(posx,posy))
+            {
+
+            }
         }
     }
 
