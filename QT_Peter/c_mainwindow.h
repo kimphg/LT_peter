@@ -692,6 +692,8 @@ private slots:
 
     void on_toolButton_tx_off_2_clicked();
 
+    void on_toolButton_menu_2_clicked();
+
 private:
 
 //    bool mShowobjects,
@@ -736,6 +738,7 @@ private:
     void initCursor();
     void DrawAISMark(PointInt s, double head, QPainter *p, bool isSelected, QString name, int size);
     bool isInsideIADZone(int x, int y);
+    bool checkInsideZoom(int x, int y);
 };
 
 #endif // MAINWINDOW_H

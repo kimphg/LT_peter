@@ -224,19 +224,16 @@ void Mainwindow::drawAisTarget(QPainter *p)
             DrawAISMark(s,radians(aisObj.mCog),p,aisObj.isSelected,aisObj.mName,8);
             if(zoom_mode==ZoomZoom)
             {
-                int dx= s.x-mZoomCenterx;
-                int dy= s.y-mZoomCentery;
-                if(abs(dx)<(zoom_size/2.0))
+                if(checkInsideZoom(s.x,s.y))
                 {
-                    if(abs(dy)<(zoom_size/2.0))
-                    {
-                        PointInt iadPoint;
-                        iadPoint.x = mIADCenter.x+dx*mZoomScale;
-                        iadPoint.y = mIADCenter.y+dy*mZoomScale;
-                        DrawAISMark(iadPoint,radians(aisObj.mCog),p,aisObj.isSelected,aisObj.mName,12);
-                    }
+                    int dx= s.x-mZoomCenterx;
+                    int dy= s.y-mZoomCentery;
+                    PointInt iadPoint;
+                    iadPoint.x = mIADCenter.x+dx*mZoomScale;
+                    iadPoint.y = mIADCenter.y+dy*mZoomScale;
+                    DrawAISMark(iadPoint,radians(aisObj.mCog),p,aisObj.isSelected,aisObj.mName,12);
                 }
-
+                
             }
         }
         else
@@ -254,9 +251,10 @@ bool Mainwindow::checkInsideZoom(int x,int y)
     {
         if(abs(dy)<(zoom_size/2.0))
         {
-
+            return true;
         }
     }
+    return false;
 }
 void Mainwindow::mouseReleaseEvent(QMouseEvent *event)
 {
@@ -596,7 +594,7 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
             }
             else if(isInsideIADZone(posx,posy))
             {
-
+                checkClickAIS(posx,posy);//not work yet , todo: here
             }
         }
     }
@@ -624,6 +622,24 @@ void Mainwindow::checkClickAIS(int xclick, int yclick)
             dialog->setAisData(&processing->m_aisList,aisObj.mMMSI);
             dialog->show();
             break;
+        }
+        if(checkInsideZoom(x,y))
+        {
+            int dx= x-mZoomCenterx;
+            int dy= y-mZoomCentery;
+            PointInt iadPoint;
+            iadPoint.x = mIADCenter.x+dx*mZoomScale;
+            iadPoint.y = mIADCenter.y+dy*mZoomScale;
+            if(abs(iadPoint.x-xclick)<5&&abs(iadPoint.y-yclick)<5)
+            {
+                DialogAisInfo *dialog = new DialogAisInfo(this);
+                dialog->setAttribute( Qt::WA_DeleteOnClose, true );
+                dialog->setWindowFlags(dialog->windowFlags()&(~Qt::WindowContextHelpButtonHint));
+                dialog->setFixedSize(dialog->width(),dialog->height());
+                dialog->setAisData(&processing->m_aisList,aisObj.mMMSI);
+                dialog->show();
+                break;
+            }
         }
     }
 }
@@ -5080,4 +5096,11 @@ void Mainwindow::on_toolButton_loc_dia_vat_2_clicked()
 void Mainwindow::on_toolButton_tx_off_2_clicked()
 {
     ShutDown();
+}
+
+void Mainwindow::on_toolButton_menu_2_clicked()
+{
+    DialogConfig *dlg= new DialogConfig();
+    dlg->setModal(false);
+    dlg->showNormal();
 }
