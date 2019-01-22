@@ -1486,9 +1486,9 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
         range_max = RADAR_RESOLUTION;
     else if(len==MAX_FRAME_SIZE_HALF)
         range_max = RADAR_RESOLUTION_HALF;
+    else return;
     //check data valid
     if(data[0]!=0x55&&data[0]>10)return;
-
     memcpy(mHeader,data,FRAME_HEADER_SIZE);
     unsigned char n_clk_adc = data[4];
     sn_stat = (data[5]<<8)+data[6];

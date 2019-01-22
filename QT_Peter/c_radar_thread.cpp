@@ -22,6 +22,11 @@ dataProcessingThread::~dataProcessingThread()
 void dataProcessingThread::ReadDataBuffer()
 {
 
+    if(isPlaying)
+    {
+        playbackRadarData();
+        return;
+    }
     short nread = 0;
     if(iRec!=iRead)
     {
@@ -39,14 +44,11 @@ void dataProcessingThread::ReadDataBuffer()
         }
         uchar *pData = &(dataB[iRead].data[0]);
         unsigned short dataLen = dataB[iRead].len;
-        if(!isPlaying)
+        mRadarData->processSocketData(pData,dataLen);
+        if(isRecording)
         {
-            mRadarData->processSocketData(pData,dataLen);
-            if(isRecording)
-            {
-                signRecFile.write((char*)&dataLen,2);
-                signRecFile.write((char*)pData,dataLen);
-            }
+            signRecFile.write((char*)&dataLen,2);
+            signRecFile.write((char*)pData,dataLen);
         }
         iRead++;
         if(iRead>=MAX_IREC)iRead=0;
@@ -150,6 +152,7 @@ void dataProcessingThread::ReadNavData()
 }
 void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
 {
+
     if(len<7)return;
     if(isSimulationMode)return;
     if(mReceiveBuff[0]==0xaa&&mReceiveBuff[1]==0x55)//system messages
@@ -584,7 +587,7 @@ void dataProcessingThread::togglePlayPause(bool play)
     isPlaying = play;
 
 }
-QString messageStringbuffer;
+
 void dataProcessingThread::processARPAData(QByteArray inputdata)
 {
     messageStringbuffer.append(QString::fromLatin1(inputdata));
@@ -658,7 +661,8 @@ void dataProcessingThread::processRadarData()
 
 }
 static unsigned long int lastFrameCount=0;
-static uchar mReceiveBuff[1000];
+#define NAV_FRAME_LEN 2000
+static uchar mReceiveBuff[NAV_FRAME_LEN];
 void dataProcessingThread::CalculateRFR()
 {
     double fDrame = double(CConfig::mStat.mFrameCount-lastFrameCount);
@@ -674,8 +678,9 @@ void dataProcessingThread::run()
         while(radarSocket->hasPendingDatagrams())
         {
             int len = radarSocket->pendingDatagramSize();
-            if(len<2000)// system packets
+            if(len<NAV_FRAME_LEN)// system packets
             {
+
                 radarSocket->readDatagram((char*)&mReceiveBuff[0],len);
 
                 ProcessNavData((unsigned char*)mReceiveBuff,len);

@@ -5,7 +5,7 @@
 #include <QTimer>
 //#include <QGeoPositionInfo>
 #include "c_config.h"
-#include "c_radar_data.h"
+#include "C_radar_data.h"
 //#include "c_arpa_data.h"
 
 #include "c_gps.h"
@@ -100,6 +100,7 @@ public:
 signals:
     void HeadingDataReceived(double heading);
 private:
+    QString messageStringbuffer;
     void CalculateRFR();
     QSerialPort     mEncoderPort;
     double          mHeading ;

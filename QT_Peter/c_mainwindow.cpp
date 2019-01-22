@@ -50,7 +50,7 @@ static double                      mMapOpacity;
 static int                         mMaxTapMayThu=18;
 static QTimer                      timerVideoUpdate,timerMetaUpdate;
 static QTimer                      syncTimer1s,syncTimer5p ;
-static QTimer                      dataPlaybackTimer ;
+//static QTimer                      *dataPlaybackTimer ;
 static short                       dxMax,dyMax;
 //static C_ARPA_data                 arpa_data;
 static short                       scrCtX= SCR_H/2 + SCR_LEFT_MARGIN, scrCtY= SCR_H/2+SCR_TOP_MARGIN;
@@ -68,9 +68,9 @@ static QString         strDistanceUnit;
 static mouseMode mouse_mode = MouseNormal;
 //static DialogCommandLog *cmLog;
 static unsigned char commandMay22[]={0xaa,0x55,0x02,0x0c,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
-static enum TargetType{
-    RADAR,AIS,NOTARGET
-}selectedTargetType  = NOTARGET;
+//static enum TargetType{
+//    RADAR,AIS,NOTARGET
+//}selectedTargetType  = NOTARGET;
 
 
 //short config.getRangeView() = 1;
@@ -696,7 +696,7 @@ Mainwindow::Mainwindow(QWidget *parent) :
     gotoCenter();
     setRadarState(DISCONNECTED);
 
-    RestartCuda();
+
     //    GDALAllRegister();
     //    GDALDataset       *poDS;
 
@@ -1578,11 +1578,11 @@ void Mainwindow::SetUpTheonGUILayout()
    ui->groupBox_5->setGeometry(1430,270,160,100);
 
 }
-void Mainwindow::RestartCuda()
+void Mainwindow::StartCuda()
 {
-    //if(processCuda->state()!=QProcess::Running)//processCuda->reset();
+    if(processCuda->state()==QProcess::Running)return;
 //    QString file = "D:\\HR2D\\cudaFFT.exe";
-    //else
+    else
     {
 
 //        system("taskkill /f /im cudaFFT.exe");
@@ -1609,6 +1609,7 @@ void Mainwindow::InitSetting()
 {
 //    CalcAziContour(355,500);
     //hide iad
+//    system("taskkill /f /im cudaFFT.exe");
     pRadar->loadTerrain();
     ui->tabWidget_iad->setGeometry(200,-800,ui->tabWidget_iad->width(),ui->tabWidget_iad->height());
     ui->tabWidget_iad->hide();
@@ -1662,7 +1663,7 @@ void Mainwindow::InitSetting()
 
     //load map
     osmap = new CMap();
-    SetGPS(CConfig::getDouble("mLat"), CConfig::getDouble("mLon"));
+    SetGPS(CConfig::getDouble("mLat",DEFAULT_LAT), CConfig::getDouble("mLon",DEFAULT_LONG));
     CConfig::mStat.mLat = mLat;
     CConfig::mStat.mLon = mLon;
     osmap->setCenterPos(mLat,mLon);
@@ -2041,9 +2042,9 @@ void Mainwindow::InitTimer()
     timerVideoUpdate.start(60);//ENVDEP
     //scrUpdateTimer.moveToThread(t2);
     //connect(t2,SIGNAL(finished()),t2,SLOT(deleteLater()));
-
+//    dataPlaybackTimer = new QTimer(this);
     connect(this,SIGNAL(destroyed()),processing,SLOT(deleteLater()));
-    connect(&dataPlaybackTimer,SIGNAL(timeout()),processing,SLOT(playbackRadarData()));
+//    connect(dataPlaybackTimer,SIGNAL(timeout()),processing,SLOT(playbackRadarData()));
     processing->start(QThread::TimeCriticalPriority);
     tprocessing->start(QThread::HighPriority);
 
@@ -2255,64 +2256,26 @@ void Mainwindow::sync1p()//period 1 min
     if(clock()-pRadar->mUpdateTime<10000)pRadar->updateTerrain();
 
 }
-void Mainwindow::updateTargetInfo()
-{
-    if(selectedTargetType==RADAR)
-    {/*
-        trackList* trackListPt = &pRadar->mTrackList;
-        for(uint trackId=0;trackId<trackListPt->size();trackId++)
-        {
-
-            if(!trackListPt->at(trackId).isConfirmed)continue;
-            if(selectedTargetIndex == trackId)
-            {
-                //printf("\ntrackId:%d",trackId);
-                double mLat,mLon;
-                this->ConvKmToWGS(trackListPt->at(trackId).estX*pRadar->scale_ppi/mScale,trackListPt->at(trackId).estY*pRadar->scale_ppi/mScale,&mLon,&mLat);
-                //ui->label_data_id->setText(QString::number(trackListPt->at(trackId).idCount));
-                float tmpazi = trackListPt->at(trackId).estA*DEG_RAD;
-                if(tmpazi<0)tmpazi+=360;
-                //ui->label_data_type->setText("Radar");
-                ui->label_data_range->setText(QString::number(trackListPt->at(trackId).estR*pRadar->scale_ppi/mScale/1.852f,'f',2)+"Nm");
-                ui->label_data_azi->setText( QString::number(tmpazi,'f',2)+degreeSymbol);
-                ui->label_data_lat->setText( QString::number((short)mLat)+degreeSymbol+QString::number((mLat-(short)mLat)*60,'f',2)+"'N");
-                ui->label_data_long->setText(QString::number((short)mLon)+degreeSymbol+QString::number((mLon-(short)mLon)*60,'f',2)+"'E");
-                ui->label_data_speed->setText(QString::number(trackListPt->at(trackId).speed,'f',2)+"Kn");
-                ui->label_data_heading->setText(QString::number(trackListPt->at(trackId).heading*DEG_RAD)+degreeSymbol);
-                // ui->label_data_dopler->setText(QString::number(trackListPt->at(trackId).dopler));
-            }
-        }*/
-
-    }
-    else if(selectedTargetType == AIS){
-        /*
-    C2_Track *selectedTrack = &processing->m_AISList.at(selectedTargetIndex);
-    double azi,rg;
-    double fx,fy;
-    ConvWGSToKm(&fx,&fy,selectedTrack->getLon(),selectedTrack->getLat());
-    C_radar_data::kmxyToPolarDeg(fx,fy,&azi,&rg);
-    ui->label_data_id->setText(QString::fromUtf8((char*)(&selectedTrack->m_MMSI),9));
-    ui->label_data_range->setText(QString::number(rg,'f',2));
-    ui->label_data_azi->setText(QString::number(azi,'f',2));
-    ui->label_data_type->setText("AIS");
-    ui->label_data_lat->setText( QString::number((short)selectedTrack->getLat())+degreeSymbol+QString::number((selectedTrack->getLat()-(short)selectedTrack->getLat())*60,'f',2)+"N");
-    ui->label_data_long->setText(QString::number((short)selectedTrack->getLon())+degreeSymbol+QString::number((selectedTrack->getLon()-(short)selectedTrack->getLon())*60,'f',2)+"E");
-    ui->label_data_speed->setText(QString::number(selectedTrack->m_Speed,'f',2)+"Kn");
-    ui->label_data_heading->setText(QString::number(selectedTrack->getHead()*DEG_RAD)+degreeSymbol);
-    */}
-    else if(selectedTargetType==NOTARGET)
-    {
-        //ui->label_data_id->setText("--");
-        //ui->label_data_type->setText("--");
-        ui->label_data_range->setText("--");
-        ui->label_data_azi->setText( "--");
-        ui->label_data_lat->setText( "--");
-        ui->label_data_long->setText("--");
-        ui->label_data_speed->setText("--");
-        ui->label_data_heading->setText("--");
-        //ui->label_data_dopler->setText("--");
-    }
-}
+//void Mainwindow::updateTargetInfo()
+//{
+//    if(selectedTargetType==RADAR)
+//    {
+//    }
+//    else if(selectedTargetType == AIS){
+//        }
+//    else if(selectedTargetType==NOTARGET)
+//    {
+//        //ui->label_data_id->setText("--");
+//        //ui->label_data_type->setText("--");
+//        ui->label_data_range->setText("--");
+//        ui->label_data_azi->setText( "--");
+//        ui->label_data_lat->setText( "--");
+//        ui->label_data_long->setText("--");
+//        ui->label_data_speed->setText("--");
+//        ui->label_data_heading->setText("--");
+//        //ui->label_data_dopler->setText("--");
+//    }
+//}
 void Mainwindow::autoSwitchFreq()
 {
     int newFreq = rand()%6;
@@ -2744,7 +2707,7 @@ void Mainwindow::on_actionClear_data_triggered()
 void Mainwindow::on_actionPlayPause_toggled(bool arg1)
 {
     processing->togglePlayPause(arg1);
-    if(arg1)dataPlaybackTimer.start(25);else dataPlaybackTimer.stop();
+//    if(arg1)dataPlaybackTimer->start(25);else dataPlaybackTimer->stop();
 
 }
 
@@ -3557,6 +3520,7 @@ void Mainwindow::on_label_status_warning_clicked()
 void Mainwindow::on_toolButton_tx_clicked()
 {
     //processing->radTxOn();
+    StartCuda();
     sendToRadarString(CConfig::getString("mTxCommand"));
 }
 void Mainwindow::closeEvent (QCloseEvent *event)
@@ -3567,6 +3531,7 @@ void Mainwindow::closeEvent (QCloseEvent *event)
 void Mainwindow::on_toolButton_tx_off_clicked()
 {
     //processing->radTxOff();
+    system("taskkill /f /im cudaFFT.exe");
     sendToRadarString(CConfig::getString("mRxCommand"));
     CConfig::SaveToFile();
 }

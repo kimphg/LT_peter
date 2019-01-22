@@ -703,7 +703,7 @@ private:
 //    uint mSelectedTrackTime;
     void initActionsConnections();
     void initGraphicView();
-    void updateTargetInfo();
+//    void updateTargetInfo();
     void ConvWGSToKm(double *x, double *y, double m_Long, double m_Lat);
     void ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat);
     void setScaleRange(double srange);
@@ -734,7 +734,7 @@ private:
     PointAziRgkm ConvScrPointToAziRgkm(int x, int y);
     void showTrackContext();
     void DrawViewFrameSquared(QPainter *p);
-    void RestartCuda();
+    void StartCuda();
     void initCursor();
     void DrawAISMark(PointInt s, double head, QPainter *p, bool isSelected, QString name, int size);
     bool isInsideIADZone(int x, int y);
