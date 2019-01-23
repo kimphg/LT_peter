@@ -438,9 +438,12 @@ void C_primary_track::update()
 
             objectList.push_back(possibleObj);
             mDopler = possibleObj.dopler;
+            lastTimeMs = possibleObj.timeMs;
             if(mDopler>7)mDopler-=16;
             while(objectList.size()>TRACK_STABLE_LEN)
             {
+                if((lastTimeMs-objectHistory.back().timeMs)>60000)
+                    objectHistory.push_back(objectList[0]);
                 objectList.erase(objectList.begin());
                 if(mState==TrackState::newDetection)
                 {
@@ -459,14 +462,25 @@ void C_primary_track::update()
                     }
                 }
             }
-            lastTimeMs = possibleObj.timeMs;
-            if((lastTimeMs-objectHistory.back().timeMs)>60000)
-                objectHistory.push_back(possibleObj);
+
+
             possibleMaxScore = 0;
             if(mState==TrackState::newDetection)
             {
                 object_t* obj1  = &(objectList.back());
-                object_t* obj2  = &(objectList[0]);
+                object_t* obj2 ;
+                if(objectHistory.size()>2)
+                {
+                    obj2 = &(objectHistory.back())-2;
+                }
+                else if(objectHistory.size()>1)
+                {
+                    obj2 = &(objectHistory.back())-1;
+                }
+                else
+                {
+                    obj2 = &(objectHistory.back());
+                }
                 double dx       = obj1->xkm - obj2->xkm;
                 double dy       = obj1->ykm - obj2->ykm;
                 double dtime    = (obj1->timeMs - obj2->timeMs)/3600000.0;
@@ -1976,7 +1990,11 @@ void C_radar_data::procPLot(plot_t* mPlot)
     if(ctA >= MAX_AZIR)ctA -= MAX_AZIR;
     if(mTerrainAvailable)
     {
-        if(data_mem.terrainMap[int(ctA)][int(ctR)]>150)return;
+        if(data_mem.terrainMap[int(ctA)][int(ctR)]>150)
+        {
+            printf("\nPlot terrain rejected:%d",data_mem.terrainMap[int(ctA)][int(ctR)]);
+            return;
+        }
     }
     //double objSizeAz = (dAz*PI_NHAN2/MAX_AZIR)*ctR*sn_scale;
     if(dAz<2||dAz>30)
@@ -2056,8 +2074,6 @@ void C_radar_data::procPLot(plot_t* mPlot)
 
     if(ctR<mPlot->minR||ctR>mPlot->maxR+1)printf("\nWrong ctR");
     //todo: tinh dopler histogram
-
-
     newobject.size = mPlot->size;
     newobject.energy = mPlot->sumEnergy;
     newobject.drg = (mPlot->maxR-mPlot->minR)+1;

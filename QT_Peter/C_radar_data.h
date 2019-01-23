@@ -48,7 +48,7 @@
 #define MAX_FRAME_SIZE_HALF RADAR_RESOLUTION_HALF*2+FRAME_HEADER_SIZE
 #define CONST_E 2.71828182846
 #define MAX_TRACK_LEN               400
-#define MAX_TRACKS                  200
+#define MAX_TRACKS                  300
 #define ENCODER_RES                 5000
 #define MAX_AZIR                    2048
 #define MAX_AZIR_DRAW               6144
