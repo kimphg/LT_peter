@@ -297,8 +297,6 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
 void dataProcessingThread::initSerialComm()
 {
     int serialBaud ;
-
-
     // baudrate at 4800 standart for low speed encoder and ais
     serialBaud = 38400;
     QList<QSerialPortInfo> portlist = QSerialPortInfo::availablePorts();
@@ -312,8 +310,7 @@ void dataProcessingThread::initSerialComm()
             newport->setBaudRate(serialBaud);
             newport->open(QIODevice::ReadWrite);
             serialPorts.push_back(newport);
-            printf("\nOpen serial %d:",portlist.size());
-            printf((char*)qstr.data());
+            CConfig::AddMessage("Open serial:"+qstr+" at:"+QString::number(serialBaud));
         }
     }
 

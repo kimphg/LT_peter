@@ -1572,7 +1572,7 @@ void Mainwindow::SetUpTheonGUILayout()
    ui->bt_rg_5->setChecked(true);
    on_bt_rg_5_clicked();
    ui->textBrowser_message->setStyleSheet("background-color:black");
-   ui->textBrowser_message->setFont(QFont("Times", 4));
+   ui->textBrowser_message->setFont(QFont("Times", 8));
    ui->groupBox_8->setGeometry(1230,10,360,250);
    ui->groupBox_14->setGeometry(1430,390,160,120);
    ui->groupBox_5->setGeometry(1430,270,160,100);
@@ -2217,7 +2217,7 @@ void Mainwindow::ShutDown()
 {
     processing->stopThread();
     processing->wait();
-    pRadar->saveTerrain();
+
     CConfig::SaveToFile();
     QApplication::quit();
 #ifdef _WIN32

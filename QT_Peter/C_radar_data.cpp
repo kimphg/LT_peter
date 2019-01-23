@@ -767,8 +767,8 @@ double C_radar_data::getArcMinAziRad() const
 void C_radar_data::addDetectionZoneAZ(double az, double rg, double dazi, double drg,bool isOneTime)
 {
 
-    DetectionWindow dw;
-    dw.isOneTime = false;
+    DetectionWindow dw;//todo: save dw to config
+    dw.isOneTime = isOneTime;
     dw.isRemoved = false;
     dw.timeStart=CConfig::time_now_ms;
     dw.xkm=rg*sin((az));
@@ -1284,7 +1284,6 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
         // display value
         if(!isManualTune)
         {
-
             if(noise_nornalize&&(!cut_noise))
             {
                 short dif = ((*pLevel)+32+ noiseVar*kgain_auto -threshRay[r_pos]);
@@ -1295,7 +1294,7 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
             else displayVal=(*pLevel);
             if(cut_terrain)
             {
-                 (*pLevel) = (data_mem.terrainMap[azi][r_pos]>300)?255:0;
+                 (*pLevel) = (data_mem.terrainMap[azi][r_pos]>150)?255:0;
             }
             else if(*pDetect)
             {
@@ -2785,10 +2784,11 @@ void C_radar_data::UpdateTrackStatistic()
         printf("\ntracks statistic: sumSize:%f sumDazi:%f sumDrg:%f sumEng:%f",sumSize,sumDazi,sumDrg,sumEng);
     }
 }
-
+#define MAX_TERAIN 300
 void C_radar_data::updateTerrain()
 {
     maxTer=0;
+
     for(short azi=0;azi<MAX_AZIR;azi++)
     {
         for(short r_pos=0;r_pos<RADAR_RESOLUTION;r_pos++)
@@ -2801,9 +2801,9 @@ void C_radar_data::updateTerrain()
             }
         }
     }
-    if((maxTer/300)>1)
+    if((maxTer/MAX_TERAIN)>1)
     {
-        int k=maxTer/300;
+        int k=maxTer/MAX_TERAIN;
         for(short azi=0;azi<MAX_AZIR;azi++)
         {
             for(short r_pos=0;r_pos<RADAR_RESOLUTION;r_pos++)
@@ -2812,8 +2812,9 @@ void C_radar_data::updateTerrain()
             }
         }
     }
-    mTerrainAvailable = maxTer>300;
+    mTerrainAvailable = maxTer>MAX_TERAIN;
     CConfig::AddMessage(QString::fromUtf8("Địa vật:")+QString::number(maxTer));
+    saveTerrain();
 }
 
 void C_radar_data::saveTerrain()
