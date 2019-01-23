@@ -112,8 +112,8 @@ void Mainwindow::mouseDoubleClickEvent( QMouseEvent * e )
 {
     if ( e->button() == Qt::LeftButton )
     {
-        int posx = (QCursor::pos()).x();
-        int posy = (QCursor::pos()).y();
+        int posx = e->x();
+        int posy = e->y();
         if(posx)mMousex= posx;
         if(posy)mMousey= posy;
         if(isInsideViewZone(mMousex,mMousey))
