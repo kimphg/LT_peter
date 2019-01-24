@@ -9,6 +9,17 @@
  * http://catb.org/gpsd/AIVDM.html#_types_1_2_and_3_position_report_class_a
  * http://catb.org/gpsd/AIVDM.html#_type_18_standard_class_b_cs_position_report'
  */
+ enum ObjNationality {
+    Vietnam = 574,
+    China = 412,
+    China1 = 413,
+    Malaysia,
+    Indonesia,
+    Philipine,
+    USA,
+    India,
+    AIS_MSG_MAX,
+};
 class AIS_object_t {
 public:
     AIS_object_t();

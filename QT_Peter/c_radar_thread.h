@@ -131,7 +131,7 @@ private slots:
     void ReadDataBuffer();
     void Timer200ms();
     void processRadarData();
-    void processARPAData(QByteArray inputdata);
+    void inputAISData(QByteArray inputdata);
     void playbackRadarData();
     void SerialDataRead();
 //    void gpsupdate(QGeoPositionInfo geo);
