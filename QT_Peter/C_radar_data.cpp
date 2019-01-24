@@ -507,8 +507,20 @@ void C_primary_track::update()
             {
 
                 LinearFit(TRACK_STABLE_LEN);
-                object_t* obj1  = &(objectList.back());
-                object_t* obj2  = &(objectList[0]);
+                object_t* obj1  = &(objectList[0]);
+                object_t* obj2  ;
+                if(objectHistory.size()>2)
+                {
+                    obj2 = &(objectHistory.back())-2;
+                }
+                else if(objectHistory.size()>1)
+                {
+                    obj2 = &(objectHistory.back())-1;
+                }
+                else
+                {
+                    obj2 = &(objectHistory.back());
+                }
                 double dx       = obj1->xkm - obj2->xkm;
                 double dy       = obj1->ykm - obj2->ykm;
                 double dtime    = (obj1->timeMs-obj2->timeMs)/3600000.0;
