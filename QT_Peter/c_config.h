@@ -20,7 +20,7 @@
 #include <time.h>
 #include <QDateTime>
 
-#include <QSettings>
+
 #include <queue>
 struct WarningMessage
 {
@@ -137,7 +137,7 @@ public:
     CConfig(void);
     ~CConfig(void);
     static radarStatus_3C mStat;
-    QSettings settings;
+
 //    static double shipHeadingDeg;
 //    static double shipCourseDeg;
 //    static double shipSpeed;

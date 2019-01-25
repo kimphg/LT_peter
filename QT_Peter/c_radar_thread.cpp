@@ -221,7 +221,7 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
     }
     else if(mReceiveBuff[0]=='!'&&mReceiveBuff[1]=='A')//AIS
     {
-        processARPAData(QByteArray((char*)mReceiveBuff,len));
+        inputAISData(QByteArray((char*)mReceiveBuff,len));
     }
     else if((mReceiveBuff[0]=='$')&&(mReceiveBuff[1]=='G')&&(mReceiveBuff[2]=='P'))//GPS
     {
@@ -393,7 +393,7 @@ void dataProcessingThread::processSerialData(QByteArray inputData)
     else
     {
 
-        processARPAData(inputData);
+        inputAISData(inputData);
         //printf("arpa ais\n");
 
     }
@@ -585,7 +585,7 @@ void dataProcessingThread::togglePlayPause(bool play)
 
 }
 
-void dataProcessingThread::processARPAData(QByteArray inputdata)
+void dataProcessingThread::inputAISData(QByteArray inputdata)
 {
     messageStringbuffer.append(QString::fromLatin1(inputdata));
     if(messageStringbuffer.size()>1500)messageStringbuffer = "";

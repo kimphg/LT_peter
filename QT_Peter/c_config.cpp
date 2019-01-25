@@ -66,7 +66,7 @@ QHash<QString, QString> CConfig::mHashData = CConfig::readFile();
 volatile long long int CConfig::time_now_ms = 0;
 void CConfig::setValue(QString key, double value)
 {
-    settings
+
     QString strValue = QString::number(value);
     mHashData.insert(key, strValue);
     isChanged = true;
