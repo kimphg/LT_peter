@@ -132,7 +132,15 @@ void CConfig::SaveToFile()
         attr.append(it.key(),it.value());
         ++it;
     }
+    QFile xmlFile(HR_CONFIG_FILE);
     QXmlStreamWriter writer;
+    xmlFile.open(QIODevice::WriteOnly);
+    writer.setDevice(&xmlFile);
+    writer.writeEmptyElement(XML_ELEM_NAME);
+    writer.writeAttributes(attr);
+    writer.writeEndElement();
+    xmlFile.close();
+
     if(QFile::exists(HR_CONFIG_FILE_BACKUP_1))
     {
         if (QFile::exists(HR_CONFIG_FILE_BACKUP_2))
@@ -142,14 +150,8 @@ void CConfig::SaveToFile()
         }
         QFile::rename(HR_CONFIG_FILE_BACKUP_1,HR_CONFIG_FILE_BACKUP_2);
     }
-    QFile::rename(HR_CONFIG_FILE,HR_CONFIG_FILE_BACKUP_1);
-    QFile xmlFile(HR_CONFIG_FILE);
-    xmlFile.open(QIODevice::WriteOnly);
-    writer.setDevice(&xmlFile);
-    writer.writeEmptyElement(XML_ELEM_NAME);
-    writer.writeAttributes(attr);
-    writer.writeEndElement();
-    xmlFile.close();
+    QFile::copy(HR_CONFIG_FILE,HR_CONFIG_FILE_BACKUP_1);
+
     //QFile xmlFile(HR_CONFIG_FILE_BACKUP_1);
     //xmlFile.copy(HR_CONFIG_FILE);
 }

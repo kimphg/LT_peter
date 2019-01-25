@@ -2243,7 +2243,7 @@ void Mainwindow::sync1p()//period 1 min
         {
             QDir().mkdir(dir);
         }
-        logFile.setFileName(dir+now.toString("message_log")+".log");
+        logFile.setFileName(dir+("message_log")+".log");
         logFile.open(QIODevice::WriteOnly);
         logFile.write(str.toUtf8());
 //        if(str.size()>200)
