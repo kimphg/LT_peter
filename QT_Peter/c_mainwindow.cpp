@@ -2234,10 +2234,16 @@ void Mainwindow::ShutDown()
 void Mainwindow::sync1p()//period 1 min
 {
     QString str = ui->textBrowser_message->toPlainText();
+    QDateTime now = QDateTime::currentDateTime();
+    QString dir = "D:\\HR2D\\logs\\"+now.toString("\\dd.MM\\");
+    if(!QDir(dir).exists())
+    {
+        QDir().mkdir(dir);
+    }
     if(str.size())
     {
         QFile logFile;
-        QDateTime now = QDateTime::currentDateTime();
+
         QString dir = "D:\\HR2D\\logs\\"+now.toString("\\dd.MM\\");
         if(!(QDir(dir).exists()))
         {
@@ -2246,15 +2252,22 @@ void Mainwindow::sync1p()//period 1 min
         logFile.setFileName(dir+("message_log")+".log");
         logFile.open(QIODevice::WriteOnly);
         logFile.write(str.toUtf8());
-//        if(str.size()>200)
-//        {
-//            ui->textBrowser_message->
-//        }
         logFile.close();
+    }
+    if(clock() - pRadar->mUpdateTime<10000)
+    {
+        pRadar->updateTerrain();
+        saveScreenShot(dir+now.toString("hh.mm")+".png");
 
     }
-    if(clock()-pRadar->mUpdateTime<10000)pRadar->updateTerrain();
 
+}
+void Mainwindow::saveScreenShot(QString fileName)
+{
+    QPixmap pixmap = QPixmap::grabWindow(QApplication::desktop()->winId());
+    QFile file(fileName);
+    file.open(QIODevice::WriteOnly);
+    pixmap.save(&file, "PNG");
 }
 //void Mainwindow::updateTargetInfo()
 //{

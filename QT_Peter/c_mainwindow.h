@@ -26,6 +26,7 @@
 #include <QDesktopWidget>
 #include "C_radar_data.h"
 #include <QFileDialog>
+#include <QFile>
 #include <QImage>
 #include <QHostAddress>
 //#include <jtarget.h>
@@ -739,6 +740,7 @@ private:
     void DrawAISMark(PointInt s, double head, QPainter *p, bool isSelected, QString name, int size);
     bool isInsideIADZone(int x, int y);
     bool checkInsideZoom(int x, int y);
+    void saveScreenShot(QString fileName);
 };
 
 #endif // MAINWINDOW_H
