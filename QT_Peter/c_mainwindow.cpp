@@ -3534,7 +3534,7 @@ void Mainwindow::on_toolButton_tx_clicked()
 {
     //processing->radTxOn();
     StartCuda();
-    sendToRadarString(CConfig::getString("mTxCommand"));
+    sendToRadarString(CConfig::getString("mTxCommand","aaab0201;aaab0001;16ab0b00ff;13ab0c;08ab02;01ab0104;27ab01"));
 }
 void Mainwindow::closeEvent (QCloseEvent *event)
 {

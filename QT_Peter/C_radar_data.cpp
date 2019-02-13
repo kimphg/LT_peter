@@ -684,7 +684,7 @@ C_radar_data::C_radar_data()
     mTerrainAvailable = false;
     mShipHeading = 0;
     aziViewOffset = 0;
-    antennaHeadOffset=int((CConfig::getDouble("antennaHeadOffset",0))/360.0*MAX_AZIR);
+    antennaHeadOffset=int((CConfig::getDouble("antennaHeadOffset",13))/360.0*MAX_AZIR);
     while((antennaHeadOffset)>=MAX_AZIR)antennaHeadOffset-=MAX_AZIR;
     while((antennaHeadOffset)<=0)antennaHeadOffset+=MAX_AZIR;
 
@@ -1305,7 +1305,7 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
         if((*pDetect))if(!init_time)if(r_pos>RANGE_MIN&&r_pos<(range_max-RANGE_MIN))procPix(azi,lastAzi,r_pos);
         if(cut_terrain&&mTerrainAvailable)
         {
-            if(data_mem.terrainMap[azi][r_pos]>150)underThreshold=true;
+            if(data_mem.terrainMap[azi][r_pos]>300)underThreshold=true;
         }
         // display value
         if(!isManualTune)

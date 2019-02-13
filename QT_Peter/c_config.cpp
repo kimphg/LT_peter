@@ -232,6 +232,7 @@ QHash<QString, QString> CConfig::readFile(QString fileName)
     {
         if(fileName==HR_CONFIG_FILE)                readFile(HR_CONFIG_FILE_BACKUP_1);
         else if(fileName==HR_CONFIG_FILE_BACKUP_1)  readFile(HR_CONFIG_FILE_BACKUP_2);
+        else if(fileName==HR_CONFIG_FILE_BACKUP_2)  readFile(HR_CONFIG_FILE_BACKUP_C);
         else
         {
             ReportError("Config load failed");
