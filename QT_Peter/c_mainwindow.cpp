@@ -341,13 +341,22 @@ void Mainwindow::keyPressEvent(QKeyEvent *event)
 {
     this->setFocus();
     int key = event->key();
+
     if(key == Qt::Key_Control)
     {
         controlPressed  = true;
     }
     else if(controlPressed)
     {
-        if(key==Qt::Key_1)
+        if(key==Qt::Key_F2)
+        {
+            this->setGeometry(0,-120,SCR_W,SCR_H);
+        }
+        else if(key==Qt::Key_F1)
+        {
+            this->setGeometry(0,0,SCR_W,SCR_H);
+        }
+        else if(key==Qt::Key_1)
         {
             int posx = (QCursor::pos()).x();
             int posy = (QCursor::pos()).y();
@@ -1574,7 +1583,7 @@ void Mainwindow::SetUpTheonGUILayout()
    ui->textBrowser_message->setStyleSheet("background-color:black");
    ui->textBrowser_message->setFont(QFont("Times", 8));
    ui->groupBox_8->setGeometry(1230,10,360,250);
-   ui->groupBox_14->setGeometry(1430,390,160,120);
+//   ui->groupBox_14->setGeometry(1450,390,160,120);
    ui->groupBox_5->setGeometry(1430,270,160,100);
 
 }
@@ -1691,6 +1700,10 @@ void Mainwindow::InitSetting()
         this->showFullScreen();
         this->setGeometry(QApplication::desktop()->screenGeometry(0));//show on first screen
     }
+    else if(rec.width()==SCR_W)
+    {
+        this->showFullScreen();
+    }
     else
     {
 
@@ -1703,7 +1716,9 @@ void Mainwindow::InitSetting()
             //setFixedSize(QApplication::desktop()->screenGeometry(1));
         }
 
+
     }
+
     dxMax = SCR_H/6-10;
     dyMax = SCR_H/6-10;
     mZoomCenterx = scrCtX ;
@@ -2976,76 +2991,6 @@ void Mainwindow::UpdateScale()
     mZoomCenterx = scrCtX+sdx-dx;
     mZoomCentery = scrCtY+sdy-dy;
 }
-
-
-
-
-//void MainWindow::on_toolButton_10_toggled(bool checked)
-//{
-
-//}
-
-//void MainWindow::on_actionRotateStart_toggled(bool arg1)
-//{
-//    if(arg1)
-//    {
-//        Command_Control new_com;
-//        new_com.bytes[0] = 0xaa;
-//        new_com.bytes[1] = 0xab;
-//        new_com.bytes[2] = 0x03;
-//        new_com.bytes[3] = 0x02;
-//        new_com.bytes[4] = 0x00;
-//        new_com.bytes[5] = 0x00;
-//        new_com.bytes[6] = 0x00;
-//        new_com.bytes[7] = 0;//new_com.bytes[0]+new_com.bytes[1]+new_com.bytes[2]+new_com.bytes[3]+new_com.bytes[4]+new_com.bytes[5]+new_com.bytes[6];
-//        command_queue.push(new_com);
-//    }
-//    else
-//    {
-
-//        Command_Control new_com;
-//        new_com.bytes[0] = 0xaa;
-//        new_com.bytes[1] = 0xab;
-//        new_com.bytes[2] = 0x03;
-//        new_com.bytes[3] = 0x00;
-//        new_com.bytes[4] = 0x00;
-//        new_com.bytes[5] = 0x00;
-//        new_com.bytes[6] = 0x00;
-//        new_com.bytes[7] = 0;//new_com.bytes[0]+new_com.bytes[1]+new_com.bytes[2]+new_com.bytes[3]+new_com.bytes[4]+new_com.bytes[5]+new_com.bytes[6];
-//        command_queue.push(new_com);
-//    }
-//}
-
-
-//void MainWindow::on_comboBox_temp_type_2_currentIndexChanged(int index)
-//{
-
-
-
-//}
-
-//void MainWindow::on_toolButton_11_toggled(bool checked)
-//{
-
-
-//}
-
-//void MainWindow::on_pushButton_removeTarget_2_clicked()
-//{
-
-//}
-
-//void MainWindow::on_pushButton_removeTarget_2_released()
-//{
-//    pRadar->resetTrack();
-//}
-
-//void MainWindow::on_pushButton_avtodetect_toggled(bool checked)
-//{
-//    isDrawSubTg = !checked;
-//    pRadar->avtodetect = checked;
-//    pRadar->terrain_init_time = 3;
-//}
 
 
 void Mainwindow::setCodeType(short index)// chuyen ma

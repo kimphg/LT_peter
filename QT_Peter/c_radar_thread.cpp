@@ -309,8 +309,9 @@ void dataProcessingThread::initSerialComm()
             newport->setPortName(qstr);
             newport->setBaudRate(serialBaud);
             newport->open(QIODevice::ReadWrite);
-            serialPorts.push_back(newport);
-            CConfig::AddMessage("Open serial:"+qstr+" at:"+QString::number(serialBaud));
+            if(newport->isOpen())
+            {serialPorts.push_back(newport);
+            CConfig::AddMessage("Open serial:"+qstr+" at:"+QString::number(serialBaud));}
         }
     }
 
@@ -334,27 +335,7 @@ void dataProcessingThread::SerialDataRead()
     for(std::vector<QSerialPort*>::iterator it = serialPorts.begin() ; it != serialPorts.end(); ++it)
     {
         QByteArray responseData = (*it)->readAll();
-        /*if(!geoLocation)
-        {
-            if(responseData.contains("$GP")&&(!responseData.contains("HDT")))
-            {
-                geoLocation = new QNmeaPositionInfoSource(QNmeaPositionInfoSource::RealTimeMode,this);
-                QString nameport( (*it)->portName() );
-                (*it)->close();
-                serialPorts.erase(it);
-                QSerialPort *newport = new QSerialPort();
-                newport->setPortName(nameport);
-                newport->setBaudRate(9600);
-                newport->open(QIODevice::ReadWrite);
-                geoLocation->setDevice(newport);
-                geoLocation->startUpdates();
-                //                //connect(&geoLocation, QNmeaPositionInfoSource::positionUpdated(), this, &dataProcessingThread::gpsupdate);
-                connect(geoLocation, SIGNAL(positionUpdated(QGeoPositionInfo)),
-                        this, SLOT(gpsupdate(QGeoPositionInfo)));
-                return;
 
-            }
-        }*/
         if(responseData.size())
         {
             processSerialData(responseData);
@@ -441,12 +422,17 @@ void dataProcessingThread::sendRATTM()
         int len = track->mTTM.size();
         if(len)
         {
-            std::string str=(track->mTTM.toStdString());
+            /*std::string str=(track->mTTM.toStdString());
             for(std::vector<QSerialPort*>::iterator it = serialPorts.begin() ; it != serialPorts.end(); ++it)
             {
                 (*it)->write(str.data(),len);
             }
-            signTTMFile.write(str.data());
+            signTTMFile.write(str.data());*/
+            std::string str=(track->mTTM.toStdString());
+            radarSocket->writeDatagram((char*)str.data(),
+                    len,
+                    QHostAddress("192.168.1.252"),30001
+                    );
             track->mTTM.clear();
         }
 
