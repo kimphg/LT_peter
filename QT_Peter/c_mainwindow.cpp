@@ -3207,8 +3207,8 @@ void Mainwindow::on_toolButton_open_record_clicked()
 
 void Mainwindow::gotoCenter()
 {
-    dx = 100;
-    dy = 100;
+    dx = 0;
+    dy = 0;
     radCtX = scrCtX-dx;
     radCtY = scrCtY-dy;
     isMapOutdated = true;

@@ -644,7 +644,7 @@ void dataProcessingThread::processRadarData()
 
 }
 static unsigned long int lastFrameCount=0;
-#define NAV_FRAME_LEN 2000
+#define NAV_FRAME_LEN 1500
 static uchar mReceiveBuff[NAV_FRAME_LEN];
 void dataProcessingThread::CalculateRFR()
 {
