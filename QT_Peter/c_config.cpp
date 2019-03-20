@@ -47,7 +47,11 @@ void radarStatus_3C::setShipCourse(double value)
     shipCourseDeg = value;
     cCourseUpdateTime = clock();
 }
-
+void radarStatus_3C::setShipSpeed2(double value)
+{
+    shipSpeed2 = value;
+    cVeloUpdateTime = clock();
+}
 void radarStatus_3C::setShipSpeed(double value)
 {
     shipSpeed = value;

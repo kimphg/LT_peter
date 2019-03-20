@@ -40048,7 +40048,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Hướng cđ:</string>
+        <string>Hướng:</string>
        </property>
       </widget>
      </item>
@@ -40060,7 +40060,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Vận tốc cđ:</string>
+        <string>V. tốc:</string>
        </property>
       </widget>
      </item>

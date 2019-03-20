@@ -177,9 +177,9 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
         QString message((char*)&mReceiveBuff[0]);
         QStringList tokens = message.split(',');
         if(tokens.size()<7)return;
-        if(tokens[6]=="A")CConfig::mStat.setShipSpeed( tokens[4].toDouble());
-        else
-            if(tokens[3]=="A")CConfig::mStat.setShipSpeed( tokens[1].toDouble());
+        if(tokens[6]=="A")CConfig::mStat.setShipSpeed2( tokens[4].toDouble());
+
+        if(tokens[3]=="A")CConfig::mStat.setShipSpeed( tokens[1].toDouble());
 
     }
     else if(mReceiveBuff[0]=='$'

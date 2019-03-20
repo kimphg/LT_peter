@@ -2075,7 +2075,9 @@ void Mainwindow::Update100ms()
     //smooth the heading
     ui->label_head_ship->setText(QString::number(CConfig::mStat.shipHeadingDeg,'f',1));
     ui->label_course_ship->setText(QString::number(CConfig::mStat.shipCourseDeg,'f',1));
-    ui->label_speed_ship->setText(QString::number(CConfig::mStat.shipSpeed,'f',1));
+    ui->label_speed_ship->setText(QString::number(CConfig::mStat.shipSpeed,'f',1)
+                                  +"/"
+                                  +QString::number(CConfig::mStat.shipSpeed2,'f',1));
 
     mIADrect = ui->tabWidget_iad->geometry();
     mIADrect.adjust(4,30,-5,-5);

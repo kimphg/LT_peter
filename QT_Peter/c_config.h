@@ -43,6 +43,7 @@ public:
 //        isStatChange = true;
 //        gConnected = 0;
         shipSpeed=0;
+        shipSpeed2=0;
         c22UpdateTime = clock();
     }
     void ReadStatusGlobal(uchar* mes)
@@ -92,7 +93,7 @@ public:
 
     unsigned     long int       mFrameCount;
     double mLat,mLon;
-    double shipSpeed;
+    double shipSpeed,shipSpeed2;
     double shipCourseDeg;
     double antennaAziDeg;
     double shipHeadingDeg;
@@ -131,6 +132,7 @@ public:
     void setShipSpeed(double value);
     void setShipCourse(double value);
     double getshipHeadingRate_dps();
+    void setShipSpeed2(double value);
 };
 class CConfig
 {
