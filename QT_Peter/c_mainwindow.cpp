@@ -1626,6 +1626,8 @@ void Mainwindow::InitSetting()
     ui->tabWidget_iad->raise();
 #ifdef THEON
     SetUpTheonGUILayout();
+#else
+    ui->toolButton_hdsd->hide();
 #endif
     ui->toolButton_xl_nguong_4->setChecked(CConfig::getInt("cut_noise"));
     ui->toolButton_sled->setChecked(CConfig::getInt("isShowSled"));
@@ -2680,10 +2682,10 @@ void Mainwindow::on_actionOpen_rec_file_triggered()
 
 
 
-void Mainwindow::on_actionOpen_map_triggered()
-{
-    //openShpFile();
-}
+//void Mainwindow::on_actionOpen_map_triggered()
+//{
+//    //openShpFile();
+//}
 void Mainwindow::showTime()
 {
     QDateTime time = QDateTime::currentDateTime();
@@ -2800,10 +2802,10 @@ void Mainwindow::SendCommandControl()
 
 }
 
-void Mainwindow::on_actionRecording_triggered()
-{
+//void Mainwindow::on_actionRecording_triggered()
+//{
 
-}
+//}
 
 
 //void Mainwindow::on_comboBox_temp_type_currentIndexChanged(int index)
@@ -2855,10 +2857,10 @@ void Mainwindow::on_horizontalSlider_brightness_valueChanged(int value)
 //    //else ui->toolBar_Main->hide();
 //}
 
-void Mainwindow::on_actionSector_Select_triggered()
-{
+//void Mainwindow::on_actionSector_Select_triggered()
+//{
 
-}
+//}
 
 
 //void MainWindow::on_toolButton_10_clicked()
@@ -3219,30 +3221,30 @@ void Mainwindow::on_toolButton_centerView_clicked()
     //    isScreenUp2Date = false;
 }
 
-void Mainwindow::on_comboBox_currentIndexChanged(int index)
-{
-    switch (index)
-    {
-    case 0:
-        pRadar->dataOver = m_only;
-        break;
-    case 1:
-        pRadar->dataOver = s_m_150;
-        break;
-    case 2:
-        pRadar->dataOver = s_m_200;
-        break;
-    case 3:
-        pRadar->dataOver = max_s_m_150;
-        break;
-    case 4:
-        pRadar->dataOver = max_s_m_200;
-        break;
-    default:
-        break;
-    }
+//void Mainwindow::on_comboBox_currentIndexChanged(int index)
+//{
+//    switch (index)
+//    {
+//    case 0:
+//        pRadar->dataOver = m_only;
+//        break;
+//    case 1:
+//        pRadar->dataOver = s_m_150;
+//        break;
+//    case 2:
+//        pRadar->dataOver = s_m_200;
+//        break;
+//    case 3:
+//        pRadar->dataOver = max_s_m_150;
+//        break;
+//    case 4:
+//        pRadar->dataOver = max_s_m_200;
+//        break;
+//    default:
+//        break;
+//    }
 
-}
+//}
 
 void Mainwindow::on_comboBox_img_mode_currentIndexChanged(int index)
 {

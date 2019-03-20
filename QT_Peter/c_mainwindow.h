@@ -171,6 +171,7 @@ private:
 //public:
 //    void setScaleNM(unsigned short rangeNM);
 //    void drawAisTarget2(QPainter *p);
+    void on_actionOpen_rec_file_triggered();
 private slots:
     void DrawMap();
     void readBuffer();
@@ -184,22 +185,22 @@ private slots:
     void PlaybackRecFile();
 
 //    void on_actionRecording_toggled(bool arg1);
-    void on_actionOpen_rec_file_triggered();
-    void on_actionOpen_map_triggered();
+//
+//    void on_actionOpen_map_triggered();
     void on_actionSaveMap_triggered();
     void on_actionSetting_triggered();
     void on_actionAddTarget_toggled(bool arg1);
     void on_actionClear_data_triggered();
 //    void on_actionView_grid_triggered(bool checked);
     void on_actionPlayPause_toggled(bool arg1);
-    void on_actionRecording_triggered();
+//    void on_actionRecording_triggered();
 //    void on_comboBox_temp_type_currentIndexChanged(int index);
 //    void on_horizontalSlider_brightness_actionTriggered(int action);
     void on_horizontalSlider_brightness_valueChanged(int value);
 
 //    void on_horizontalSlider_signal_scale_valueChanged(int value);
 
-    void on_actionSector_Select_triggered();
+//    void on_actionSector_Select_triggered();
 
     //void on_toolButton_13_clicked();
 
@@ -239,7 +240,7 @@ private slots:
 
     void on_toolButton_centerView_clicked();
 
-    void on_comboBox_currentIndexChanged(int index);
+//    void on_comboBox_currentIndexChanged(int index);
 
     void on_comboBox_img_mode_currentIndexChanged(int index);
 
