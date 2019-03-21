@@ -14,15 +14,19 @@
 #define TRACK_MAX_DTIME 60000
 #define TRACK_MIN_DTIME 500
 #define TRACK_STABLE_LEN          6
+#define TARGET_MAX_SPEED_MARINE     80.0
+#define AZI_ERROR_STD 0.026//1.5 deg
 #else
 #define TRACK_STABLE_LEN          3
 #define TRACK_MAX_DTIME 70000
 #define TRACK_MIN_DTIME 500
 #define TRACK_LOST_TIME 90000
 #define TRACK_DELETE_TIME 120000
+#define TARGET_MAX_SPEED_MARINE     100.0
+#define AZI_ERROR_STD 0.03
 #endif
 #define MAX_OBJ_SIZE 0.45//400m
-#define STABLE_TRACK_LEN 6
+
 #define ARMA_USE_LAPACK
 #define ARMA_USE_BLAS
 #define ARMA_BLAS_UNDERSCORE
@@ -69,7 +73,7 @@
 #define TERRAIN_GAIN                0.9f
 #define TERRAIN_GAIN_1              0.1f
 #define TERRAIN_THRESH              0.5f
-#define TARGET_MAX_SPEED_MARINE     80.0
+
 #define ZOOM_SIZE                   550
 #define DISPLAY_RES_ZOOM            8192
 #define DISPLAY_SCALE_ZOOM          4

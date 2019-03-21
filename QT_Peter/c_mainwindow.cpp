@@ -1589,9 +1589,10 @@ void Mainwindow::SetUpTheonGUILayout()
 }
 void Mainwindow::StartCuda()
 {
-    if(processCuda->state()==QProcess::Running)return;
+    system("taskkill /f /im cudaFFT.exe");
+    if(processCuda->state()==QProcess::Running)processCuda->close();
 //    QString file = "D:\\HR2D\\cudaFFT.exe";
-    else
+
     {
 
 //        system("taskkill /f /im cudaFFT.exe");
@@ -3549,7 +3550,7 @@ void Mainwindow::closeEvent (QCloseEvent *event)
 void Mainwindow::on_toolButton_tx_off_clicked()
 {
     //processing->radTxOff();
-    system("taskkill /f /im cudaFFT.exe");
+
     SetTx(false);
     unsigned char command[]={0xaa,0x55,0x67,0x12,
                              0x00,
@@ -5102,3 +5103,12 @@ void Mainwindow::on_toolButton_menu_2_clicked()
 //{
 //    ui->textEdit_headingAdjustInverse->text().toDouble()
 //}
+
+void Mainwindow::on_toolButton_dk_18_clicked()
+{
+    unsigned char command[]={0xaa,0x55,0x67,0x12,
+                             01,
+                             00,
+                             0x00,0x00,0x00,0x00,0x00,0x00};
+    processing->sendCommand(command,12,false);
+}

@@ -698,6 +698,8 @@ private slots:
 
 //    void on_toolButton_antennaConfigUpdate_clicked();
 
+    void on_toolButton_dk_18_clicked();
+
 private:
 
 //    bool mShowobjects,
