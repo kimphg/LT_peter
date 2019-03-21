@@ -55,5 +55,5 @@ void DialogConfig::on_pushButton_save_clicked()
 
 void DialogConfig::on_lineEdit_textChanged(const QString &arg1)
 {
-    if(ui->lineEdit->text()=="cndt3108")ui->pushButton_save->setEnabled(true);
+    if(ui->lineEdit->text()=="4444")ui->pushButton_save->setEnabled(true);
 }

@@ -77,9 +77,9 @@ void StatusWindow::readConectionStat()
     item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAgeGps()<3000)));   ui->tableWidget_connection->setItem(3,1,item);
     item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAgeAis()<3000)));   ui->tableWidget_connection->setItem(4,1,item);
     item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAgeGyro()<3000)));  ui->tableWidget_connection->setItem(5,1,item);
-    item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAgeVelo()<3000)));  ui->tableWidget_connection->setItem(6,1,item);
+    item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAgeVelo()<10000)));  ui->tableWidget_connection->setItem(6,1,item);
     item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAge21()<3000)));    ui->tableWidget_connection->setItem(7,1,item);
-    item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAge22()<3000)));    ui->tableWidget_connection->setItem(8,1,item);
+    item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAge22()<10000)));    ui->tableWidget_connection->setItem(8,1,item);
     item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAgeBH()<3000)));    ui->tableWidget_connection->setItem(9,1,item);
 }
 void StatusWindow::readGlobalStatus()

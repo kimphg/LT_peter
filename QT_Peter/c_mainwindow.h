@@ -696,6 +696,8 @@ private slots:
 
     void on_toolButton_menu_2_clicked();
 
+//    void on_toolButton_antennaConfigUpdate_clicked();
+
 private:
 
 //    bool mShowobjects,
@@ -742,6 +744,7 @@ private:
     bool isInsideIADZone(int x, int y);
     bool checkInsideZoom(int x, int y);
     void saveScreenShot(QString fileName);
+    void SetTx(bool onoff);
 };
 
 #endif // MAINWINDOW_H

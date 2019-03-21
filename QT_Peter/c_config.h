@@ -42,8 +42,7 @@ public:
         mCaoApKetNoi = mes[4];
 //        isStatChange = true;
 //        gConnected = 0;
-        shipSpeed=0;
-        shipSpeed2=0;
+
         c22UpdateTime = clock();
     }
     void ReadStatusGlobal(uchar* mes)
@@ -84,6 +83,7 @@ public:
     int     mSuyGiam;
     int     mMaHieu;
     bool    mMayPhatOK;
+    bool isTransmitting;
 private:
     bool    isGyro;
     double shipHeadingRate_dps;
@@ -96,6 +96,9 @@ public:
     double shipSpeed,shipSpeed2;
     double shipCourseDeg;
     double antennaAziDeg;
+    double antennaBearingDeg;
+    double antennaBearingTxStopDeg;
+    double antennaBearingTxStartDeg;
     double shipHeadingDeg;
     //global Status
     char msgGlobal[32];

@@ -16,7 +16,7 @@ dataProcessingThread::~dataProcessingThread()
 {
     delete mRadarData;
     signTTMFile.close();
-//    delete arpaData;
+    //    delete arpaData;
 }
 
 void dataProcessingThread::ReadDataBuffer()
@@ -96,11 +96,11 @@ dataProcessingThread::dataProcessingThread()
     isXuLyThuCap = false;
     dataBuff = &dataB[0];
     iRec=0;iRead=0;
-//    pIsDrawn = &isDrawn;
-//    isDrawn = true;
+    //    pIsDrawn = &isDrawn;
+    //    isDrawn = true;
     pIsPlaying = &isPlaying;
     playRate = 10;
-//    arpaData = new C_ARPA_data();
+    //    arpaData = new C_ARPA_data();
     isRecording = false;
     mRadarData = new C_radar_data();
     isPlaying = false;
@@ -150,151 +150,146 @@ void dataProcessingThread::ReadNavData()
 
     return;
 }
+bool dataProcessingThread::readGyroMsg(unsigned char *mReceiveBuff,int len)
+{
+    int n=0;
+    while(n<len-32)
+    {
+
+        unsigned char *databegin =&mReceiveBuff[n];
+        n++;
+        if(databegin[0]==0x5a&&databegin[1]==0xa5&&databegin[31]==0xAA)
+        {
+            CConfig::mStat.cGyroUpdateTime = clock();
+            double heading = (((databegin[6])<<8)|databegin[7])/182.044444444;//deg
+            //double headingRate = degrees((((mReceiveBuff[12])<<8)|mReceiveBuff[13])/10430.21919552736);//deg per sec
+            double headingRate = ((databegin[12])<<8)+databegin[13];
+            if(headingRate>32768.0)headingRate=headingRate-65536.0;
+            headingRate/=32768.0;
+            CConfig::mStat.inputGyro(heading,degrees(headingRate));
+            mRadarData->setShipHeadingDeg(heading);
+            return true;
+        }
+    }
+    return false;
+}
+bool dataProcessingThread::readNmea(unsigned char *mReceiveBuff,int len)
+{
+    int n=0;
+    while(n<len-10)
+    {
+
+        unsigned char *databegin =&mReceiveBuff[n];
+        n++;
+        if(databegin[0]=='$')
+        {
+            if(databegin[3]=='V'
+                    &&databegin[4]=='B'
+                    &&databegin[5]=='W')//speed message
+            {
+                QString message((char*)&databegin[0]);
+                QStringList tokens = message.split(',');
+                if(tokens.size()<7)return true;
+                if(tokens[6]=="A")CConfig::mStat.setShipSpeed2( tokens[4].toDouble());
+
+                if(tokens[3]=="A")CConfig::mStat.setShipSpeed( tokens[1].toDouble());
+                return true;
+            }
+            else if(databegin[3]=='V'
+                    &&databegin[4]=='H'
+                    &&databegin[5]=='W')//speed message
+            {
+                QString message((char*)&databegin[0]);
+                QStringList tokens = message.split(',');
+                if(tokens.size()<9)return true;
+                if(tokens[6]=="N")CConfig::mStat.setShipSpeed( tokens[4].toDouble());
+                if(tokens[2]=="T")CConfig::mStat.setShipCourse( tokens[1].toDouble());
+                return true;
+            }
+            else if(databegin[3]=='H'
+                    &&databegin[4]=='D'
+                    &&databegin[5]=='T')//true heading message xxHDT
+            {
+                //if(mStat.getAgeGyro()<10000)return;// only work when no gyro available
+                QString message((char*)&databegin[0]);
+                QStringList tokens = message.split(',');
+                if(tokens.size()<3)return true;
+                CConfig::mStat.inputHDT(tokens[1].toDouble());
+                return true;
+            }
+            else if((databegin[1]=='G')&&(databegin[2]=='P'))//GPS
+            {
+                for(int i = 0;i<len;i++)
+                {
+                    if(mGPS.decode(databegin[i]))
+                    {
+                        //mStat.cGpsUpdateTime = clock();
+                        double mLat,mLon;
+                        mGPS.get_position(&mLat,&mLon);
+                        CConfig::mStat.setGPSLocation(mLat,mLon);
+                        return true;
+                    }
+
+                }
+            }
+        }
+        if(databegin[0]=='!'&&databegin[1]=='A')//AIS
+        {
+            inputAISData(QByteArray((char*)databegin,len));
+            return true;
+        }
+
+    }
+    return false;
+
+}
+bool dataProcessingThread::readMay22Msg(unsigned char *mReceiveBuff,int len)
+{
+    int n=0;
+    while(n<len-8)
+    {
+
+        unsigned char *databegin =&mReceiveBuff[n];
+        n++;
+        if(databegin[0]==0xaa&&databegin[1]==0x55)//system messages
+        {
+            if(databegin[2]==0x65)// trang thai may 2-2
+            {
+
+                CConfig::mStat.ReadStatus22(&databegin[4]);
+                return true;
+            }
+            if(databegin[2]==0x03)// trang thai bao hong toan dai
+            {
+                if(len<24)return false;
+                CConfig::mStat.ReadStatusGlobal(&databegin[4]);
+                return true;
+
+            }
+
+        }
+    }
+    return false;
+}
 void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
 {
 
     if(len<7)return;
     if(isSimulationMode)return;
-    if(mReceiveBuff[0]==0xaa&&mReceiveBuff[1]==0x55)//system messages
+    if(readNmea(mReceiveBuff,len))
     {
-        if(mReceiveBuff[2]==0x65)// trang thai may 2-2
-        {
-
-            CConfig::mStat.ReadStatus22(&mReceiveBuff[4]);
-        }
-        if(mReceiveBuff[2]==0x03)// trang thai may 2-2
-        {
-            if(len<24)return;
-            CConfig::mStat.ReadStatusGlobal(&mReceiveBuff[4]);
-
-        }
+        return;
     }
-    else if(mReceiveBuff[0]=='$'
-            &&mReceiveBuff[3]=='V'
-            &&mReceiveBuff[4]=='B'
-            &&mReceiveBuff[5]=='W')//speed message
+    else if(readMay22Msg(mReceiveBuff,len))//system messages
     {
-        QString message((char*)&mReceiveBuff[0]);
-        QStringList tokens = message.split(',');
-        if(tokens.size()<7)return;
-        if(tokens[6]=="A")CConfig::mStat.setShipSpeed2( tokens[4].toDouble());
-
-        if(tokens[3]=="A")CConfig::mStat.setShipSpeed( tokens[1].toDouble());
-
-    }
-    else if(mReceiveBuff[0]=='$'
-            &&mReceiveBuff[3]=='V'
-            &&mReceiveBuff[4]=='H'
-            &&mReceiveBuff[5]=='W')//speed message
-    {
-        QString message((char*)&mReceiveBuff[0]);
-        QStringList tokens = message.split(',');
-        if(tokens.size()<9)return;
-        if(tokens[6]=="N")CConfig::mStat.setShipSpeed( tokens[4].toDouble());
-        if(tokens[2]=="T")CConfig::mStat.setShipCourse( tokens[1].toDouble());
-    }
-    else if(mReceiveBuff[0]=='$'
-            &&mReceiveBuff[3]=='H'
-            &&mReceiveBuff[4]=='D'
-            &&mReceiveBuff[5]=='T')//true heading message xxHDT
-    {
-        //if(mStat.getAgeGyro()<10000)return;// only work when no gyro available
-        QString message((char*)&mReceiveBuff[0]);
-        QStringList tokens = message.split(',');
-        if(tokens.size()<3)return;
-        CConfig::mStat.inputHDT(tokens[1].toDouble());
-        //CConfig::shipHeadingDeg = tokens[1].toDouble();
-        //clock_t time_now = clock();
-        //mStat.cHDTUpdateTime = clock();
-    }
-    else if(mReceiveBuff[0]==0x5a&&mReceiveBuff[1]==0xa5&&mReceiveBuff[31]==0xAA&&len>=32)//gyro messages
-    {
-        CConfig::mStat.cGyroUpdateTime = clock();
-        double heading = (((mReceiveBuff[6])<<8)|mReceiveBuff[7])/182.044444444;//deg
-        //double headingRate = degrees((((mReceiveBuff[12])<<8)|mReceiveBuff[13])/10430.21919552736);//deg per sec
-        double headingRate = ((mReceiveBuff[12])<<8)+mReceiveBuff[13];
-        if(headingRate>32768.0)headingRate=headingRate-65536.0;
-        headingRate/=32768.0;
-        CConfig::mStat.inputGyro(heading,degrees(headingRate));
-        mRadarData->setShipHeadingDeg(heading);
-        //int vy = (((mReceiveBuff[18])<<8)|mReceiveBuff[19]);
-        //int vx = (((mReceiveBuff[20])<<8)|mReceiveBuff[21]);
-        //CConfig::mStat.sh = sqrt(vy*vy+vx*vx)*0.00388768898488120950323974082073;//*2/1000000/CONST_NM*36000; kn
-    }
-    else if(mReceiveBuff[0]=='!'&&mReceiveBuff[1]=='A')//AIS
-    {
-        inputAISData(QByteArray((char*)mReceiveBuff,len));
-    }
-    else if((mReceiveBuff[0]=='$')&&(mReceiveBuff[1]=='G')&&(mReceiveBuff[2]=='P'))//GPS
-    {
-        for(int i = 0;i<len;i++)
-        {
-            if(mGPS.decode(mReceiveBuff[i]))
-            {
-               //mStat.cGpsUpdateTime = clock();
-               double mLat,mLon;
-               mGPS.get_position(&mLat,&mLon);
-               CConfig::mStat.setGPSLocation(mLat,mLon);
-               /*GPSData newGPSPoint;
-               mGPS.get_position(&(newGPSPoint.lat),&(newGPSPoint.lon));
-               newGPSPoint.heading =  mGPS.course()/100.0;
-               while(mGpsData.size()>10)
-               {
-                   mGpsData.pop();
-               }
-               mGpsData.push(newGPSPoint);
-               if(mGpsData.size()>=5)
-               {
-                   double dLat = mGpsData.back().lat - mGpsData.front().lat;
-                   double dLon = mGpsData.back().lon - mGpsData.front().lon;
-                   newGPSPoint.heading = degrees(ConvXYToAziRd(dLon,dLat));
-               }*/
-            }
-
-        }
+        return;
     }
 
-    /*CGPSParser gpsParser(data.toStdString());
-    if(gpsParser.isDataValid)
+    else if(readGyroMsg(mReceiveBuff,len)) //gyro messages
     {
-        if(gpsParser.latitude)
-        {
+        return;
+    }
 
-            if(gpsParser.longitude)
-            {
-                GPSData newGPSPoint;
-
-                newGPSPoint.lat = gpsParser.latitude;
-                newGPSPoint.lon = gpsParser.longitude;
-                newGPSPoint.isFixed = true;
-                while(mGpsData.size()>10)
-                {
-                    mGpsData.pop();
-                }
-                if(gpsParser.heading)
-                {
-                    newGPSPoint.heading = gpsParser.heading;
-                    //printf("\nheading:%f",newGPSPoint.heading);
-                }
-                else if(mGpsData.size()>3)
-                {
-                    double dLat = mGpsData.back().lat - mGpsData.front().lat;
-                    double dLon = mGpsData.back().lon - mGpsData.front().lon;
-                    if(dLat!=0)
-                    {
-                        newGPSPoint.heading = atan(dLon/dLat)/3.1415926535489*180.0;
-                        if(dLat<0)newGPSPoint.heading+=180;
-                    }
-                    else
-                        newGPSPoint.heading = 180-90*(dLon>0);
-                    if(newGPSPoint.heading<0)newGPSPoint.heading+=360;
-                    if(newGPSPoint.heading>360)newGPSPoint.heading-=360;
-                }
-                else newGPSPoint.heading = 0;
-                mGpsData.push(newGPSPoint);
-            }
-        }
-    }*/
 }
 void dataProcessingThread::initSerialComm()
 {
@@ -313,7 +308,7 @@ void dataProcessingThread::initSerialComm()
             newport->open(QIODevice::ReadWrite);
             if(newport->isOpen())
             {serialPorts.push_back(newport);
-            CConfig::AddMessage("Open serial:"+qstr+" at:"+QString::number(serialBaud));}
+                CConfig::AddMessage("Open serial:"+qstr+" at:"+QString::number(serialBaud));}
         }
     }
 
@@ -414,6 +409,7 @@ void dataProcessingThread::sendAziData()
     sendBuf[7]=bearing;
     sendBuf[8]=0;
     sendCommand(&sendBuf[0],9,false);
+
 }
 void dataProcessingThread::sendRATTM()
 {
@@ -432,9 +428,9 @@ void dataProcessingThread::sendRATTM()
             signTTMFile.write(str.data());*/
             std::string str=(track->mTTM.toStdString());
             radarSocket->writeDatagram((char*)str.data(),
-                    len,
-                    QHostAddress("192.168.1.252"),30001
-                    );
+                                       len,
+                                       QHostAddress("192.168.1.252"),30001
+                                       );
             track->mTTM.clear();
         }
 
@@ -479,7 +475,7 @@ void dataProcessingThread::Timer200ms()
 
     }
 
-//    mRadarData->ProcessObjects();
+    //    mRadarData->ProcessObjects();
     /*while(false)// no sophia yet
     {
         object_t obj= mRadarData->ProcesstRadarObjects();
@@ -891,33 +887,33 @@ void dataProcessingThread::sendCommand(unsigned char *commandBuff, short len,boo
     else// realtime command
     {
         radarSocket->writeDatagram((char*)commandBuff,
-                len,
-                QHostAddress("192.168.1.71"),31000
-                );
+                                   len,
+                                   QHostAddress("192.168.1.71"),31000
+                                   );
         radarSocket->writeDatagram((char*)commandBuff,
-                len,
-                QHostAddress("192.168.1.72"),31000
-                );
+                                   len,
+                                   QHostAddress("192.168.1.72"),31000
+                                   );
         radarSocket->writeDatagram((char*)commandBuff,
-                len,
-                QHostAddress("192.168.1.253"),30001
-                );
+                                   len,
+                                   QHostAddress("192.168.1.253"),30001
+                                   );
         radarSocket->writeDatagram((char*)commandBuff,
-                len,
-                QHostAddress("192.168.1.253"),30002
-                );
+                                   len,
+                                   QHostAddress("192.168.1.253"),30002
+                                   );
         radarSocket->writeDatagram((char*)commandBuff,
-                len,
-                QHostAddress("192.168.1.253"),30003
-                );
+                                   len,
+                                   QHostAddress("192.168.1.253"),30003
+                                   );
         radarSocket->writeDatagram((char*)commandBuff,
-                len,
-                QHostAddress("192.168.1.253"),30004
-                );
-//        radarSocket->writeDatagram((char*)commandBuff,
-//                len,
-//                QHostAddress("127.0.0.1"),30002
-//                );
+                                   len,
+                                   QHostAddress("192.168.1.253"),30004
+                                   );
+        //        radarSocket->writeDatagram((char*)commandBuff,
+        //                len,
+        //                QHostAddress("127.0.0.1"),30002
+        //                );
     }
 }
 void dataProcessingThread::startRecord(QString fileName)

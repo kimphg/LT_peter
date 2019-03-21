@@ -1598,7 +1598,7 @@ void Mainwindow::StartCuda()
         QFileInfo check_file("D:\\HR2D\\cudaFFT.exe");
         if (check_file.exists() && check_file.isFile())
         {
-            processCuda->startDetached("D:\\HR2D\\cudaFFT.exe");
+            processCuda->start("D:\\HR2D\\cudaFFT.exe");
             CConfig::AddMessage(QString::fromUtf8("Khởi động core FFT: OK"));
         }
         else
@@ -1619,11 +1619,15 @@ void Mainwindow::InitSetting()
 //    CalcAziContour(355,500);
     //hide iad
 //    system("taskkill /f /im cudaFFT.exe");
-    pRadar->loadTerrain();
+#ifndef THEON
+    StartCuda();
+#endif
     ui->tabWidget_iad->setGeometry(200,-800,ui->tabWidget_iad->width(),ui->tabWidget_iad->height());
     ui->tabWidget_iad->hide();
     ui->tabWidget_iad->mMoveable = true;
     ui->tabWidget_iad->raise();
+    CConfig::mStat.antennaBearingTxStopDeg = CConfig::getDouble("antennaBearingTxStopDeg",150.0);
+    CConfig::mStat.antennaBearingTxStartDeg = CConfig::getDouble("antennaBearingTxStartDeg",210.0);
 #ifdef THEON
     SetUpTheonGUILayout();
 #else
@@ -2069,6 +2073,25 @@ void Mainwindow::InitTimer()
     timerMetaUpdate.start(100);//ENVDEP
 
 }
+void Mainwindow::SetTx(bool isOn)
+{
+    CConfig::mStat.isTransmitting = isOn;
+    if(!isOn)
+    {
+        sendToRadarString(CConfig::getString("mRxCommand","aaab0000; aaab0100"));
+    }
+    if(isOn)
+    {
+#ifdef THEON
+        sendToRadarString(CConfig::getString("mTxCommand","aaab0201;aaab0001;16ab0b00ff;13ab0c;08ab02;01ab0104;27ab01"));
+#else
+        sendToRadarString(CConfig::getString("mTxCommand",
+"aaab0001;aaab0101;17ab0100;24ab0064;24ab0163;24ab0262;24ab035e;24ab035e;24ab045d;24ab055c;24ab0658;24ab0757;24ab0856;24ab0952;24ab0a51;24ab0b50;24ab0064"));
+#endif
+    }
+
+
+}
 void Mainwindow::Update100ms()
 {
 
@@ -2125,7 +2148,29 @@ void Mainwindow::Update100ms()
     if(posx)mMousex= posx;
     if(posy)mMousey= posy;
     CConfig::mStat.antennaAziDeg = degrees(pRadar->getCurAziRad());
-
+    if(ui->toolButton_tx->isChecked())
+    {
+        CConfig::mStat.antennaBearingDeg = CConfig::mStat.antennaAziDeg - CConfig::mStat.shipHeadingDeg;
+        //check if bearing is inside the prohibited sector
+        if(CConfig::mStat.antennaBearingDeg<0)CConfig::mStat.antennaBearingDeg+=360;
+        else if(CConfig::mStat.antennaBearingDeg>360)CConfig::mStat.antennaBearingDeg-=360;
+        double a = CConfig::mStat.antennaBearingDeg;
+        radarStatus_3C stat = CConfig::mStat;
+        if(CConfig::mStat.antennaBearingDeg>CConfig::mStat.antennaBearingTxStopDeg
+                &&CConfig::mStat.antennaBearingDeg<CConfig::mStat.antennaBearingTxStartDeg)
+        {
+            if(CConfig::mStat.isTransmitting)
+            {
+                SetTx(false);
+            }
+        }
+        else
+            if(!CConfig::mStat.isTransmitting)
+            {
+                SetTx(true);
+            }
+        //
+    }
     if(pRadar->init_time)
     {
         ui->label_azi_antenna_head_true->setText(QString::number(int(CConfig::mStat.antennaAziDeg)));
@@ -2276,7 +2321,7 @@ void Mainwindow::sync1p()//period 1 min
     if(clock() - pRadar->mUpdateTime<10000)
     {
         pRadar->updateTerrain();
-        saveScreenShot(dir+now.toString("hh.mm")+".png");
+        //saveScreenShot(dir+now.toString("hh.mm")+".png");
 
     }
 
@@ -3483,7 +3528,8 @@ void Mainwindow::on_toolButton_tx_clicked()
 {
     //processing->radTxOn();
     StartCuda();
-    sendToRadarString(CConfig::getString("mTxCommand","aaab0201;aaab0001;16ab0b00ff;13ab0c;08ab02;01ab0104;27ab01"));
+    SetTx(true);
+
 }
 void Mainwindow::closeEvent (QCloseEvent *event)
 {
@@ -3494,7 +3540,7 @@ void Mainwindow::on_toolButton_tx_off_clicked()
 {
     //processing->radTxOff();
     system("taskkill /f /im cudaFFT.exe");
-    sendToRadarString(CConfig::getString("mRxCommand"));
+    SetTx(false);
     CConfig::SaveToFile();
 }
 
@@ -5031,3 +5077,8 @@ void Mainwindow::on_toolButton_menu_2_clicked()
     dlg->setModal(false);
     dlg->showNormal();
 }
+
+//void Mainwindow::on_toolButton_antennaConfigUpdate_clicked()
+//{
+//    ui->textEdit_headingAdjustInverse->text().toDouble()
+//}

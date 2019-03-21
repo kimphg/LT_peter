@@ -127,6 +127,9 @@ private:
     void ProcessNavData(unsigned char *mReceiveBuff, int len);
     void sendAziData();
     void sendRATTM();
+    bool readGyroMsg(unsigned char *mReceiveBuff, int len);
+    bool readNmea(unsigned char *mReceiveBuff,int len);
+    bool readMay22Msg(unsigned char *mReceiveBuff, int len);
 private slots:
     void ReadDataBuffer();
     void Timer200ms();
