@@ -2236,7 +2236,7 @@ void Mainwindow::InitNetwork()
             this, SLOT(processARPA()));
 }
 void Mainwindow::processARPA()
-{
+{// !!todo here
 
     while (m_udpSocket->hasPendingDatagrams())
     {
@@ -3529,6 +3529,16 @@ void Mainwindow::on_toolButton_tx_clicked()
     //processing->radTxOn();
     StartCuda();
     SetTx(true);
+    unsigned char command[]={0xaa,0x55,0x67,0x12,
+                             0x00,
+                             0x01,
+                             0x00,
+                             0x00,
+                             0x00,
+                             0x00,
+                             0x00,
+                             0x00};
+    processing->sendCommand(command,12,false);
 
 }
 void Mainwindow::closeEvent (QCloseEvent *event)
@@ -3541,6 +3551,16 @@ void Mainwindow::on_toolButton_tx_off_clicked()
     //processing->radTxOff();
     system("taskkill /f /im cudaFFT.exe");
     SetTx(false);
+    unsigned char command[]={0xaa,0x55,0x67,0x12,
+                             0x00,
+                             0x00,
+                             0x00,
+                             0x00,
+                             0x00,
+                             0x00,
+                             0x00,
+                             0x00};
+    processing->sendCommand(command,12,false);
     CConfig::SaveToFile();
 }
 

@@ -98,7 +98,7 @@ double CConfig::getDouble(QString key,double defaultValue )
     else
     {
         setValue(key,defaultValue);
-        SaveToFile();
+        //SaveToFile();
         return defaultValue;
     }
 }
@@ -119,6 +119,7 @@ QString CConfig::getString(QString key,QString defaultValue )
     else
     {
         setValue(key,defaultValue);
+        SaveToFile();
         return defaultValue;
     }
 }

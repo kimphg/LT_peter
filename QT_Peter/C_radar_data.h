@@ -13,7 +13,9 @@
 #define TRACK_DELETE_TIME 90000
 #define TRACK_MAX_DTIME 60000
 #define TRACK_MIN_DTIME 500
+#define TRACK_STABLE_LEN          6
 #else
+#define TRACK_STABLE_LEN          3
 #define TRACK_MAX_DTIME 70000
 #define TRACK_MIN_DTIME 500
 #define TRACK_LOST_TIME 90000
@@ -25,7 +27,7 @@
 #define ARMA_USE_BLAS
 #define ARMA_BLAS_UNDERSCORE
 #define MODE_MARINE
-#define TRACK_STABLE_LEN          6
+
 #define MIN_TERRAIN                 10
 #define TRACK_CONFIRMED_SIZE        3
 #define TRACK_INIT_STATE            3
