@@ -5,7 +5,16 @@ c_target_manager::c_target_manager()
 {
     memset(trackTable,0,sizeof(TrackPointer)*TRACK_TABLE_SIZE);
     memset(targetTable,0,sizeof(TrackPointer)*TARGET_TABLE_SIZE);
-    udpSocketSend = new QUdpSocket();
+    udpSocketKasu = new QUdpSocket();
+    int port =30000;
+    while(port<31100)
+    {
+        if(udpSocketKasu->bind(port))
+        {
+            break;
+        }
+        port++;
+    }
     initDataGram();
 
 }
@@ -426,11 +435,18 @@ void c_target_manager::OutputTargetToKasu()
     {
 
     }*/
-    udpSocketSend->connectToHost(QHostAddress(CConfig::getString("KASU_IP_1","192.168.1.20")),30000,QIODevice::ReadWrite);
-    udpSocketSend->write(reinterpret_cast<char*>(&kasudatagram[0]),KASU_DATA_SIZE);
-    udpSocketSend->connectToHost(QHostAddress(CConfig::getString("KASU_IP_2","192.168.1.21")),30000,QIODevice::ReadWrite);
-    udpSocketSend->write(reinterpret_cast<char*>(&kasudatagram[0]),KASU_DATA_SIZE);
-    udpSocketSend->connectToHost(QHostAddress(CConfig::getString("KASU_IP_3","192.168.1.72")),30000,QIODevice::ReadWrite);
-    udpSocketSend->write(reinterpret_cast<char*>(&kasudatagram[0]),KASU_DATA_SIZE);
-    udpSocketSend->disconnectFromHost();
+
+    udpSocketKasu->writeDatagram((char*)(&kasudatagram[0]),
+                               KASU_DATA_SIZE,
+                               QHostAddress("192.168.1.20"),30000
+                               );
+    udpSocketKasu->writeDatagram((char*)(&kasudatagram[0]),
+                               KASU_DATA_SIZE,
+                               QHostAddress("192.168.1.21"),30000
+                               );
+    udpSocketKasu->writeDatagram((char*)(&kasudatagram[0]),
+                               KASU_DATA_SIZE,
+                               QHostAddress("192.168.1.71"),30000
+                               );
+
 }

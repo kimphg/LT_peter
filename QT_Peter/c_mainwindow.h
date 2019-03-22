@@ -747,6 +747,7 @@ private:
     bool checkInsideZoom(int x, int y);
     void saveScreenShot(QString fileName);
     void SetTx(bool onoff);
+    bool checkStatusGlobal();
 };
 
 #endif // MAINWINDOW_H

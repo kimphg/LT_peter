@@ -9,7 +9,7 @@ StatusWindow::StatusWindow(dataProcessingThread *radar,QWidget *parent) :
     ansTrue = false;
     ui->setupUi(this);
     mRadar = radar;
-    timerId = startTimer(600);
+    timerId = startTimer(500);
     moduleId = 0;
     paramId = 0xaa;
     command[0]=0xaa;
@@ -84,7 +84,6 @@ void StatusWindow::readConectionStat()
 }
 void StatusWindow::readGlobalStatus()
 {
-
     radarStatus_3C* mRadarStat = &(CConfig::mStat);
     unsigned long gAge = (clock()-mRadarStat->cBHUpdateTime)/1000;
     if(gAge>3)
@@ -154,7 +153,7 @@ void StatusWindow::sendReq()
     }
     mRadar->sendCommand(&command[0],8);
     mRadar->sendCommand(&command[0],8);
-    mRadar->sendCommand(&command[0],8);
+//    mRadar->sendCommand(&command[0],8);
 }
 /*
 1. DDS: aaab03cc

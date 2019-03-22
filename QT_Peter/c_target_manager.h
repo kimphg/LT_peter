@@ -41,7 +41,7 @@ public:
 private:
     static TrackPointer    *trackTable;
     static TrackPointer    *targetTable;
-    QUdpSocket      *udpSocketSend;
+    QUdpSocket      *udpSocketKasu;
 };
 
 #endif // C_TARGET_MANAGER_H

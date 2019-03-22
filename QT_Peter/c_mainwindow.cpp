@@ -163,7 +163,7 @@ void Mainwindow::DrawAISMark(PointInt s ,double head,QPainter *p,bool isSelected
 
     QPolygon poly;
     QPoint point;
-//    double head = aisObj.mCog*PI_NHAN2/360.0;
+    //    double head = aisObj.mCog*PI_NHAN2/360.0;
     point.setX(s.x+size*sinFast(head));
     point.setY(s.y-size*cosFast(head));
     poly<<point;
@@ -199,10 +199,10 @@ void Mainwindow::DrawAISMark(PointInt s ,double head,QPainter *p,bool isSelected
 void Mainwindow::drawAisTarget(QPainter *p)
 {
     //draw targets
-//    QPen penTarget(QColor(250,100,250));
-//    penTarget.setWidth(1);
-//    QPen penSelectedtarget = penTarget;
-//    penSelectedtarget.setWidth(2);
+    //    QPen penTarget(QColor(250,100,250));
+    //    penTarget.setWidth(1);
+    //    QPen penSelectedtarget = penTarget;
+    //    penSelectedtarget.setWidth(2);
 
     p->setBrush(Qt::NoBrush);
     QList<AIS_object_t>::iterator iter = processing->m_aisList.begin();
@@ -480,7 +480,7 @@ bool Mainwindow::isInsideViewZone(int x, int y)
 }
 bool Mainwindow::isInsideIADZone(int x, int y)
 {
-   return mIADrect.contains(x,y);
+    return mIADrect.contains(x,y);
 }
 
 void Mainwindow::mousePressEvent(QMouseEvent *event)
@@ -692,12 +692,12 @@ Mainwindow::Mainwindow(QWidget *parent) :
 
     //cmLog = new DialogCommandLog();
     ppiRect = QRect(SCR_LEFT_MARGIN+SCR_BORDER_SIZE/2,
-                 SCR_TOP_MARGIN+SCR_BORDER_SIZE/2,
-                 SCR_H -SCR_BORDER_SIZE,
-                 SCR_H -SCR_BORDER_SIZE);
+                    SCR_TOP_MARGIN+SCR_BORDER_SIZE/2,
+                    SCR_H -SCR_BORDER_SIZE,
+                    SCR_H -SCR_BORDER_SIZE);
     //    mShowobjects = false;
     //    mShowLines = false;
-//    mShowTracks = false;
+    //    mShowTracks = false;
     InitNetwork();
     InitTimer();
     setFocusPolicy(Qt::StrongFocus);
@@ -1005,8 +1005,8 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
     //QPen penARPATrack(Qt::darkYellow);
     //draw radar targets
     //float x,y;
-//    short sx,sy;
-//    short sx1=0,sy1=0;
+    //    short sx,sy;
+    //    short sx1=0,sy1=0;
     //float scale_ppi = pRadar->scale_ppi;
     //short targetId = 0;
     p->setPen(penCyan);
@@ -1271,7 +1271,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     //ve luoi cu ly phuong vi
     DrawDetectZones(&p);
     DrawViewFrame(&p);
-//    DrawViewFrameSquared(&p);
+    //    DrawViewFrameSquared(&p);
     DrawIADArea(&p);
     if(isShowAIS)drawAisTarget(&p);
     clkEnd = clock();
@@ -1289,9 +1289,9 @@ void Mainwindow::DrawIADArea(QPainter* p)
     p->drawRect(mIADrect);
     if(zoom_mode==ZoomIAD)
     {
-//        printf("\nDraw IAD");
+        //        printf("\nDraw IAD");
         if((pRadar->img_zoom_ar==nullptr)||(pRadar->img_zoom_ar->isNull()))return;
-//        printf("\nDraw IAD");
+        //        printf("\nDraw IAD");
         p->setPen(QPen(Qt::white,2));
         QPoint p1(mIADrect.x(),mIADrect.y());
         //QPoint p2(rect.x(),rect.y());
@@ -1316,7 +1316,7 @@ void Mainwindow::DrawIADArea(QPainter* p)
     }
     else if(zoom_mode==ZoomZoom)
     {
-//        printf("\nDraw ZoomZoom");
+        //        printf("\nDraw ZoomZoom");
         //if((!pRadar->img_zoom_ppi)||(pRadar->img_zoom_ppi->isNull()))return;
         p->drawImage(mIADrect,*pRadar->img_zoom_ppi,pRadar->img_zoom_ppi->rect());
         if(mRangeIndex>2)
@@ -1458,7 +1458,7 @@ void Mainwindow::showTrackContext()
     connect(&action6, SIGNAL(triggered()), this, SLOT(removeTarget()));
     contextMenu.addAction(&action6);
 #endif
-//        //change id
+    //        //change id
     QAction action4(QString::fromUtf8("Đổi số hiệu"), this);
     connect(&action4, &QAction::triggered, this, &Mainwindow::changeID);
     contextMenu.addAction(&action4);
@@ -1562,40 +1562,40 @@ void Mainwindow::addToTargets()
 }
 void Mainwindow::SetUpTheonGUILayout()
 {
-   ui->groupBox_gps_3->hide();
-   ui->groupBox_statuses->setGeometry(1430,1165,480,30);
-   ui->groupBox_25->setGeometry(10,1010,130,100);
-   ui->groupBox_gps->setGeometry(10,1120,211,70);
+    ui->groupBox_gps_3->hide();
+    ui->groupBox_statuses->setGeometry(1430,1165,480,30);
+    ui->groupBox_25->setGeometry(10,1010,130,100);
+    ui->groupBox_gps->setGeometry(10,1120,211,70);
 
-   ui->groupBox_15->setGeometry(10,50,310,65);
-   ui->groupBox_16->setGeometry(10,120,160,170);
-   ui->groupBox_24->setGeometry(10,10,490,40);
-   ui->tabWidget_iad->setGeometry(1380,610,530,540);
-   ui->tabWidget_iad->show();
-   ui->tabWidget_iad->setTabEnabled(5,false);
-   ui->tabWidget_iad->mMoveable = false;
-   ui->tabWidget_menu_2->setGeometry(1600,10,310,590);
-   ui->tableWidgetTarget->setGeometry(0,0,308,450);
-   ui->groupBox_3->setGeometry(10,460,280,100);
-   ui->tabWidget_iad->setCurrentIndex(4);
-   ui->bt_rg_5->setChecked(true);
-   on_bt_rg_5_clicked();
-   ui->textBrowser_message->setStyleSheet("background-color:black");
-   ui->textBrowser_message->setFont(QFont("Times", 8));
-   ui->groupBox_8->setGeometry(1230,10,360,250);
-//   ui->groupBox_14->setGeometry(1450,390,160,120);
-   ui->groupBox_5->setGeometry(1430,270,160,100);
+    ui->groupBox_15->setGeometry(10,50,310,65);
+    ui->groupBox_16->setGeometry(10,120,160,170);
+    ui->groupBox_24->setGeometry(10,10,490,40);
+    ui->tabWidget_iad->setGeometry(1380,610,530,540);
+    ui->tabWidget_iad->show();
+    ui->tabWidget_iad->setTabEnabled(5,false);
+    ui->tabWidget_iad->mMoveable = false;
+    ui->tabWidget_menu_2->setGeometry(1600,10,310,590);
+    ui->tableWidgetTarget->setGeometry(0,0,308,450);
+    ui->groupBox_3->setGeometry(10,460,280,100);
+    ui->tabWidget_iad->setCurrentIndex(4);
+    ui->bt_rg_5->setChecked(true);
+    on_bt_rg_5_clicked();
+    ui->textBrowser_message->setStyleSheet("background-color:black");
+    ui->textBrowser_message->setFont(QFont("Times", 8));
+    ui->groupBox_8->setGeometry(1230,10,360,250);
+    //   ui->groupBox_14->setGeometry(1450,390,160,120);
+    ui->groupBox_5->setGeometry(1430,270,160,100);
 
 }
 void Mainwindow::StartCuda()
 {
     system("taskkill /f /im cudaFFT.exe");
     if(processCuda->state()==QProcess::Running)processCuda->close();
-//    QString file = "D:\\HR2D\\cudaFFT.exe";
+    //    QString file = "D:\\HR2D\\cudaFFT.exe";
 
     {
 
-//        system("taskkill /f /im cudaFFT.exe");
+        //        system("taskkill /f /im cudaFFT.exe");
         QFileInfo check_file("D:\\HR2D\\cudaFFT.exe");
         if (check_file.exists() && check_file.isFile())
         {
@@ -1617,9 +1617,9 @@ void Mainwindow::StartCuda()
 }
 void Mainwindow::InitSetting()
 {
-//    CalcAziContour(355,500);
+    //    CalcAziContour(355,500);
     //hide iad
-//    system("taskkill /f /im cudaFFT.exe");
+    //    system("taskkill /f /im cudaFFT.exe");
 #ifndef THEON
     StartCuda();
 #endif
@@ -1658,7 +1658,7 @@ void Mainwindow::InitSetting()
     on_toolButton_signal_type_2_clicked();
     qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
     ui->tabWidget_iad->SetTransparent(true);
-//    QApplication::setOverrideCursor(Qt::CrossCursor);
+    //    QApplication::setOverrideCursor(Qt::CrossCursor);
 
     mMaxTapMayThu = CConfig::getInt("mMaxTapMayThu");
     mRangeIndex = CConfig::getInt("mRangeLevel");
@@ -1670,8 +1670,8 @@ void Mainwindow::InitSetting()
     mHeadingT = CConfig::getDouble("mHeadingT",0);
     mAziCorrecting = CConfig::getDouble("mAziCorrecting",0);
     //pRadar->setAziOffset(mHeadingT);
-//    ui->textEdit_heading->setText(CConfig::getString("mHeadingT"));
-//    ui->textEdit_heading_2->setText(CConfig::getString("mHeadingT2"));
+    //    ui->textEdit_heading->setText(CConfig::getString("mHeadingT"));
+    //    ui->textEdit_heading_2->setText(CConfig::getString("mHeadingT2"));
     mZoomSizeAz = CConfig::getDouble("mZoomSizeAz",5);
     ui->textEdit_size_ar_a->setText(QString::number(mZoomSizeAz));
     mZoomSizeRg = CConfig::getDouble("mZoomSizeRg",2);
@@ -1737,7 +1737,7 @@ void Mainwindow::InitSetting()
     //    ui->horizontalSlider_rain->setValue(ui->horizontalSlider_rain->minimum());
     //    ui->horizontalSlider_sea->setValue(ui->horizontalSlider_sea->minimum());
     //ui->comboBox_radar_resolution->setCurrentIndex(0);
-//    connect(ui->textEdit_heading, SIGNAL(returnPressed()),ui->toolButton_set_heading,SIGNAL(clicked()));
+    //    connect(ui->textEdit_heading, SIGNAL(returnPressed()),ui->toolButton_set_heading,SIGNAL(clicked()));
     connect(ui->lineEdit_byte_1, SIGNAL(returnPressed()),ui->toolButton_send_command,SIGNAL(clicked()));
     connect(ui->lineEdit_byte_2, SIGNAL(returnPressed()),ui->toolButton_send_command,SIGNAL(clicked()));
     connect(ui->lineEdit_byte_3, SIGNAL(returnPressed()),ui->toolButton_send_command,SIGNAL(clicked()));
@@ -1880,8 +1880,8 @@ void Mainwindow::DrawViewFrame(QPainter* p)
             {
                 p->drawLine(points[1],points[2]);
                 p->drawText(points[0].x()-25,points[0].y()-10,50,20,
-                    Qt::AlignHCenter|Qt::AlignVCenter,
-                    QString::number(theta));
+                        Qt::AlignHCenter|Qt::AlignVCenter,
+                        QString::number(theta));
             }
             else p->drawPoint(points[1]);
         }
@@ -2064,9 +2064,9 @@ void Mainwindow::InitTimer()
     timerVideoUpdate.start(60);//ENVDEP
     //scrUpdateTimer.moveToThread(t2);
     //connect(t2,SIGNAL(finished()),t2,SLOT(deleteLater()));
-//    dataPlaybackTimer = new QTimer(this);
+    //    dataPlaybackTimer = new QTimer(this);
     connect(this,SIGNAL(destroyed()),processing,SLOT(deleteLater()));
-//    connect(dataPlaybackTimer,SIGNAL(timeout()),processing,SLOT(playbackRadarData()));
+    //    connect(dataPlaybackTimer,SIGNAL(timeout()),processing,SLOT(playbackRadarData()));
     processing->start(QThread::TimeCriticalPriority);
     tprocessing->start(QThread::HighPriority);
 
@@ -2087,7 +2087,7 @@ void Mainwindow::SetTx(bool isOn)
         sendToRadarString(CConfig::getString("mTxCommand","aaab0201;aaab0001;16ab0b00ff;13ab0c;08ab02;01ab0104;27ab01"));
 #else
         sendToRadarString(CConfig::getString("mTxCommand",
-"aaab0001;aaab0101;17ab0100;24ab0064;24ab0163;24ab0262;24ab035e;24ab035e;24ab045d;24ab055c;24ab0658;24ab0757;24ab0856;24ab0952;24ab0a51;24ab0b50;24ab0064"));
+                                             "aaab0001;aaab0101;17ab0100;24ab0064;24ab0163;24ab0262;24ab035e;24ab035e;24ab045d;24ab055c;24ab0658;24ab0757;24ab0856;24ab0952;24ab0a51;24ab0b50;24ab0064"));
 #endif
     }
 
@@ -2099,9 +2099,9 @@ void Mainwindow::Update100ms()
     //smooth the heading
     ui->label_head_ship->setText(QString::number(CConfig::mStat.shipHeadingDeg,'f',1));
     ui->label_course_ship->setText(QString::number(CConfig::mStat.shipCourseDeg,'f',1));
-    ui->label_speed_ship->setText(QString::number(CConfig::mStat.shipSpeed,'f',1)
+    ui->label_speed_ship->setText(QString::number(CConfig::mStat.shipSpeedWater,'f',1)
                                   +"/"
-                                  +QString::number(CConfig::mStat.shipSpeed2,'f',1));
+                                  +QString::number(CConfig::mStat.shipSpeedGround,'f',1));
 
     mIADrect = ui->tabWidget_iad->geometry();
     mIADrect.adjust(4,30,-5,-5);
@@ -2133,7 +2133,7 @@ void Mainwindow::Update100ms()
     {
         trueShiftDeg = -CConfig::mStat.shipHeadingDeg;
         headShift = 0;
-//        pRadar->setAziViewOffsetDeg(trueShiftDeg);
+        //        pRadar->setAziViewOffsetDeg(trueShiftDeg);
         mTrans.reset();
         mTrans = mTrans.rotate((-CConfig::mStat.shipHeadingDeg));
     }
@@ -2386,8 +2386,27 @@ void Mainwindow::autoSwitchFreq()
 }//label_data_range_2
 void Mainwindow::UpdateMay22Status()
 {
+#ifndef THEON
+    //check Tx condition
+    if(ui->toolButton_tx->isChecked())
+    if(!ui->toolButton_work_forced->isChecked())
+    {
+        if(!checkStatusGlobal())SetTx(false);
+    }
+//    else
+//    {
+//        if(CConfig::mStat.getAgeTempOk()>1500000)
+//        {
+//            QMessageBox msgBox;
+//            msgBox.setText(QString::fromUtf8("Máy phát quá nhiệt quá 15 phút, cấm phát tuyệt đối!"));
+//            msgBox.exec();
+//            ui->toolButton_tx_off->setChecked(true);
+//            return false;
+//        }
+//    }
+#endif
     clock_t ageMay22 = CConfig::mStat.getAge22();
-    if(ageMay22<3000)
+    if(ageMay22<5000)
     {
         if(CConfig::mStat.mMayPhatOK)
         {
@@ -2428,8 +2447,8 @@ void Mainwindow::ViewTrackInfo()
     {
         C_primary_track* track = &(pRadar->mTrackList[i]);
         if(track->isConfirmed())
-        if(!mTargetMan.checkIDExist(pRadar->mTrackList[i].uniqId))
-            mTargetMan.addTrack(&pRadar->mTrackList[i]);
+            if(!mTargetMan.checkIDExist(pRadar->mTrackList[i].uniqId))
+                mTargetMan.addTrack(&pRadar->mTrackList[i]);
     }
     //track table
     int row = 0;
@@ -2553,26 +2572,26 @@ void Mainwindow::ViewTrackInfo()
 }
 void Mainwindow::sync1S()//period 1 second
 {
-//    if(processCuda->state()!=QProcess::Running)
-//    {
+    //    if(processCuda->state()!=QProcess::Running)
+    //    {
 
 
-//    }
-//    else
-//    {
-//        QByteArray ba = processCuda->readAllStandardOutput();
-//        if(ba.size())
-//        {
-//            CConfig::AddMessage(QString::fromLatin1(ba));
-//        }
-//    }
+    //    }
+    //    else
+    //    {
+    //        QByteArray ba = processCuda->readAllStandardOutput();
+    //        if(ba.size())
+    //        {
+    //            CConfig::AddMessage(QString::fromLatin1(ba));
+    //        }
+    //    }
     if(CConfig::getWarningList()->size())
     {
         std::queue<WarningMessage> * listMsg = (CConfig::getWarningList());
 
         while(listMsg->size())
         {
-//            printf("warning added");
+            //            printf("warning added");
             WarningMessage msg = listMsg->front();
             ui->textBrowser_message->append(msg.message);
             listMsg->pop();
@@ -2785,7 +2804,7 @@ void Mainwindow::on_actionClear_data_triggered()
 void Mainwindow::on_actionPlayPause_toggled(bool arg1)
 {
     processing->togglePlayPause(arg1);
-//    if(arg1)dataPlaybackTimer->start(25);else dataPlaybackTimer->stop();
+    //    if(arg1)dataPlaybackTimer->start(25);else dataPlaybackTimer->stop();
 
 }
 
@@ -3524,10 +3543,68 @@ void Mainwindow::on_label_status_warning_clicked()
 //            else*/
 //    //    pRadar->mTrackList.at(targetDisplayList.at(selected_target_index)->trackId).isManual = false;
 //}
-
+bool Mainwindow::checkStatusGlobal()
+{
+    if(CConfig::mStat.getAgeBH()>5000)
+    {
+        QMessageBox msgBox;
+        msgBox.setText(QString::fromUtf8("Mất kết nối đến mô đun báo hỏng, cấm phát!"));
+        msgBox.exec();
+        ui->toolButton_tx_off->setChecked(true);
+        return false;
+    }
+    if(!CConfig::mStat.isTxSwModeOk)
+    {
+        QMessageBox msgBox;
+        msgBox.setText(QString::fromUtf8("Vị trí chuyển mạch ăng ten không đúng, cấm phát!"));
+        msgBox.exec();
+        ui->toolButton_tx_off->setChecked(true);
+        return false;
+    }
+    if(CConfig::mStat.getAge22()>5000)
+    {
+        QMessageBox msgBox;
+        msgBox.setText(QString::fromUtf8("Mất kết nối điều khiển máy phát, cấm phát!"));
+        msgBox.exec();
+        ui->toolButton_tx_off->setChecked(true);
+        return false;
+    }
+    else if(!CConfig::mStat.mMayPhatOK)
+    {
+        QMessageBox msgBox;
+        msgBox.setText(QString::fromUtf8("Có báo hỏng máy phát, cấm phát!"));
+        msgBox.exec();
+        ui->toolButton_tx_off->setChecked(true);
+        return false;
+    }
+    if(CConfig::mStat.getAgeTempOk()>300000)
+    {
+        QMessageBox msgBox;
+        msgBox.setText(QString::fromUtf8("Máy phát quá nhiệt quá 5 phút, cấm phát!"));
+        msgBox.exec();
+        ui->toolButton_tx_off->setChecked(true);
+        return false;
+    }
+    return true;
+}
 void Mainwindow::on_toolButton_tx_clicked()
 {
-    //processing->radTxOn();
+#ifndef THEON
+    //check Tx condition
+    if(!ui->toolButton_tx_forced->isChecked())
+    {
+        if(!checkStatusGlobal())return;
+    }
+#endif
+    if(CConfig::mStat.getAge21()>1000)
+    {
+        QMessageBox msgBox;
+        msgBox.setText(QString::fromUtf8("Mất kết nối đến máy thu ra đa!"));
+        msgBox.exec();
+        ui->toolButton_tx_off->setChecked(true);
+        return;
+    }
+    //restart cuda
     StartCuda();
     SetTx(true);
     unsigned char command[]={0xaa,0x55,0x67,0x12,

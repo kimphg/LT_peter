@@ -33,6 +33,7 @@ class radarStatus_3C
 public:
     radarStatus_3C();
     ~radarStatus_3C();
+    bool isTxSwModeOk;
     void ReadStatus22(uchar* mes)
     {
         mTaiAngTen = mes[0];
@@ -49,6 +50,20 @@ public:
     {
         cBHUpdateTime = clock();
         memcpy(&(msgGlobal[0]),(char*)(mes),32);
+        if(msgGlobal[0]==1
+                &&msgGlobal[1]==1
+                &&msgGlobal[2]==0
+                )
+        {
+            isTxSwModeOk = true;
+        }
+        else
+        {
+            isTxSwModeOk = true;
+        }
+        if(msgGlobal[17]==0
+                &&msgGlobal[18]==0)cTempOkTime = clock();
+
     }
     void setGPSLocation(double lat, double lon);
     void inputGyro(double heading,double headingRateDps)
@@ -88,12 +103,11 @@ private:
     bool    isGyro;
     double shipHeadingRate_dps;
 
-
 public:
 
     unsigned     long int       mFrameCount;
     double mLat,mLon;
-    double shipSpeed,shipSpeed2;
+    double shipSpeedWater,shipSpeedGround;
     double shipCourseDeg;
     double antennaAziDeg;
     double antennaBearingDeg;
@@ -113,6 +127,7 @@ public:
     clock_t cVeloUpdateTime;
     clock_t cHDTUpdateTime;
     clock_t cCourseUpdateTime;
+    clock_t cTempOkTime;
 //    bool isStatChanged()
 //    {
 //        if(isStatChange)
@@ -125,12 +140,13 @@ public:
 
     clock_t getAgeAis(){return clock()-cAisUpdateTime;}
     clock_t getAgeGps(){return clock()-cGpsUpdateTime;}
-    clock_t getAge22(){return clock()-c22UpdateTime;}
-    clock_t getAge21(){return clock()-c21UpdateTime;}
-    clock_t getAgeBH(){return clock()-cBHUpdateTime;}
+    clock_t getAge22(){return clock()- c22UpdateTime;}
+    clock_t getAge21(){return clock()- c21UpdateTime;}
+    clock_t getAgeBH(){return clock()- cBHUpdateTime;}
     clock_t getAgeGyro(){return clock()-cGyroUpdateTime;}
     clock_t getAgeVelo(){return clock()-cVeloUpdateTime;}
     clock_t getAgeHDT(){return clock()-cHDTUpdateTime;}
+    clock_t getAgeTempOk(){return clock()-cTempOkTime;}
     double getShipHeadingDeg();
     void setShipSpeed(double value);
     void setShipCourse(double value);

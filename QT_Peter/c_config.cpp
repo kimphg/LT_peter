@@ -15,8 +15,8 @@ radarStatus_3C::radarStatus_3C()
 {
 //    isStatChange = false;
     mFrameCount = 0;
-    shipSpeed=0;
-    shipSpeed2=0;
+    shipSpeedWater=0;
+    shipSpeedGround=0;
     memset(&(msgGlobal[0]),0,32);
     cAisUpdateTime      = clock();
     cGpsUpdateTime      = clock();
@@ -27,6 +27,7 @@ radarStatus_3C::radarStatus_3C()
     cVeloUpdateTime     = clock();
     cHDTUpdateTime      = clock();
     cCourseUpdateTime   = clock();
+    cTempOkTime = clock();
     shipHeadingDeg = 0;
     shipHeadingRate_dps=0;
     antennaBearingDeg = 0;
@@ -55,13 +56,13 @@ void radarStatus_3C::setShipCourse(double value)
 void radarStatus_3C::setShipSpeed2(double value)
 {
     if(abs(value)<0.01)return;
-    shipSpeed2 = value;
+    shipSpeedGround = value;
     cVeloUpdateTime = clock();
 }
 void radarStatus_3C::setShipSpeed(double value)
 {
     if(abs(value)<0.01)return;
-    shipSpeed = value;
+    shipSpeedWater = value;
     cVeloUpdateTime = clock();
 }
 
