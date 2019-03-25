@@ -16,6 +16,8 @@
 #define TRACK_STABLE_LEN          6
 #define TARGET_MAX_SPEED_MARINE     80.0
 #define AZI_ERROR_STD 0.026//1.5 deg
+#define MAX_TRACKS_COUNT          300
+#define RAD_DISPLAY_RES             700//768
 #else
 #define TRACK_STABLE_LEN          3
 #define TRACK_MAX_DTIME 70000
@@ -24,6 +26,8 @@
 #define TRACK_DELETE_TIME 120000
 #define TARGET_MAX_SPEED_MARINE     100.0
 #define AZI_ERROR_STD 0.03
+#define MAX_TRACKS_COUNT                  99
+#define RAD_DISPLAY_RES             650//768
 #endif
 #define MAX_OBJ_SIZE 0.45//400m
 
@@ -33,8 +37,8 @@
 #define MODE_MARINE
 
 #define MIN_TERRAIN                 10
-#define TRACK_CONFIRMED_SIZE        3
-#define TRACK_INIT_STATE            3
+//#define TRACK_CONFIRMED_SIZE        3
+//#define TRACK_INIT_STATE            3
 #define DEG_RAD 57.295779513
 #define sq(x) (x*x)
 #define degrees(x) ((x)*57.295779513)
@@ -54,13 +58,12 @@
 #define MAX_FRAME_SIZE_HALF RADAR_RESOLUTION_HALF*2+FRAME_HEADER_SIZE
 #define CONST_E 2.71828182846
 #define MAX_TRACK_LEN               400
-#define MAX_TRACKS                  300
 #define ENCODER_RES                 5000
 #define MAX_AZIR                    2048
 #define MAX_AZIR_DRAW               6144
 //#define RAD_M_PULSE_RES             1536
 #define RAD_S_PULSE_RES             256
-#define RAD_DISPLAY_RES             750//768
+#define RAD_DISPLAY_RES             700//768
 #define RAD_FULL_RES                1792
 #define SIGNAL_SCALE_7              0.24113 //215.38461538461538461538461538461
 #define SIGNAL_SCALE_6              0.24113//184.61538461538461538461538461538
@@ -414,8 +417,8 @@ public:
     C_radar_data();
     ~C_radar_data();
 //    float k_vet;// !!!!
-
-    bool                       isInverseRotation;
+    bool                        isTxOn;
+    bool                        isInverseRotation;
     bool                        cut_terrain;
     double                      mInverseRotAziCorrection;
     double                      rotation_per_min ;

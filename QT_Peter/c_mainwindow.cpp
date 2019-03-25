@@ -21,7 +21,7 @@ static PointAziRgkm AutoSelP1,AutoSelP2;
 //static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),150+SCR_BORDER_SIZE);
 //QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
 //#endif
-
+static bool isInsideProtected = false;
 static QPen penYellow(QBrush(QColor(255,255,50 ,255)),2);
 static QPen mGridViewPen1(QBrush(QColor(150,150,150,255)),1);
 static clock_t clkBegin = clock();
@@ -35,7 +35,6 @@ static bool isShowAIS =true;
 static CMap *osmap ;
 static bool toolButton_grid_checked = true;
 static StatusWindow                *mstatWin;
-static double                      mHeadingT2,mHeadingT,mAziCorrecting;
 static int                         mRangeIndex = 0;
 static int                         mDistanceUnit=0;//0:NM;1:KM
 static double                      mZoomSizeRg = 2;
@@ -668,10 +667,10 @@ void Mainwindow::initCursor()
     cursor_pixmap.fill(Qt::transparent);
     QPainter paint(&cursor_pixmap);
 
-    paint.setPen(QPen(QColor(255,255,50,120),1,Qt::SolidLine,Qt::FlatCap));
+    paint.setPen(QPen(QColor(255,255,50,150),1,Qt::SolidLine,Qt::FlatCap));
     paint.drawLine(15,0,15,30);
     paint.drawLine(0,15,30,15);
-    paint.setPen(QPen(QColor(255,255,50,160),3,Qt::SolidLine,Qt::FlatCap));
+    paint.setPen(QPen(QColor(255,255,0,255),3,Qt::SolidLine,Qt::FlatCap));
     paint.drawLine(15,0,15,6);
     paint.drawLine(15,24,15,30);
     paint.drawLine(0,15,6,15);
@@ -1589,8 +1588,8 @@ void Mainwindow::SetUpTheonGUILayout()
 }
 void Mainwindow::StartCuda()
 {
-    system("taskkill /f /im cudaFFT.exe");
-    if(processCuda->state()==QProcess::Running)processCuda->close();
+    //system("taskkill /f /im cudaFFT.exe");
+    if(processCuda->state()==QProcess::Running)return;
     //    QString file = "D:\\HR2D\\cudaFFT.exe";
 
     {
@@ -1656,19 +1655,19 @@ void Mainwindow::InitSetting()
     ui->tableWidgetTarget_2->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->tableWidgetTarget_2, SIGNAL(cellClicked(int ,int)), this, SLOT(targetTableItemMenu(int,int)));
     on_toolButton_signal_type_2_clicked();
+    ui->toolButton_signal_type_2->setChecked(true);
     qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
     ui->tabWidget_iad->SetTransparent(true);
     //    QApplication::setOverrideCursor(Qt::CrossCursor);
 
     mMaxTapMayThu = CConfig::getInt("mMaxTapMayThu");
-    mRangeIndex = CConfig::getInt("mRangeLevel");
+    //mRangeIndex = CConfig::getInt("mRangeIndex");
+    ui->bt_rg_3->setChecked(true);on_bt_rg_3_clicked();
+    UpdateScale();
     //assert(mRangeLevel>=0&&mRangeLevel<8);
     setDistanceUnit(CConfig::getInt("mDistanceUnit"));
     //assert(mDistanceUnit>=0&&mDistanceUnit<2);
 
-    mHeadingT2 = CConfig::getDouble("mHeadingT2",0);
-    mHeadingT = CConfig::getDouble("mHeadingT",0);
-    mAziCorrecting = CConfig::getDouble("mAziCorrecting",0);
     //pRadar->setAziOffset(mHeadingT);
     //    ui->textEdit_heading->setText(CConfig::getString("mHeadingT"));
     //    ui->textEdit_heading_2->setText(CConfig::getString("mHeadingT2"));
@@ -2149,27 +2148,23 @@ void Mainwindow::Update100ms()
     if(posx)mMousex= posx;
     if(posy)mMousey= posy;
     CConfig::mStat.antennaAziDeg = degrees(pRadar->getCurAziRad());
-    if(ui->toolButton_tx->isChecked())
+
     {
         CConfig::mStat.antennaBearingDeg = CConfig::mStat.antennaAziDeg - CConfig::mStat.shipHeadingDeg;
         //check if bearing is inside the prohibited sector
         if(CConfig::mStat.antennaBearingDeg<0)CConfig::mStat.antennaBearingDeg+=360;
         else if(CConfig::mStat.antennaBearingDeg>360)CConfig::mStat.antennaBearingDeg-=360;
-        double a = CConfig::mStat.antennaBearingDeg;
-        radarStatus_3C stat = CConfig::mStat;
-        if(CConfig::mStat.antennaBearingDeg>CConfig::mStat.antennaBearingTxStopDeg
-                &&CConfig::mStat.antennaBearingDeg<CConfig::mStat.antennaBearingTxStartDeg)
+//        radarStatus_3C stat = CConfig::mStat;
+        bool isInsideProtectedNew =(CConfig::mStat.antennaBearingDeg>CConfig::mStat.antennaBearingTxStopDeg&&CConfig::mStat.antennaBearingDeg<CConfig::mStat.antennaBearingTxStartDeg);
+        if(isInsideProtectedNew!=isInsideProtected)
         {
-            if(CConfig::mStat.isTransmitting)
-            {
-                SetTx(false);
-            }
+            if(isInsideProtectedNew)sendToRadarString(CConfig::getString("mTxStopCommand",
+                                                                         "17ab0000;17ab0000"));
+            else
+                sendToRadarString(CConfig::getString("mTxStartCommand",
+                                                     "17ab0100;17ab0100"));
         }
-        else
-            if(!CConfig::mStat.isTransmitting)
-            {
-                SetTx(true);
-            }
+        isInsideProtected =isInsideProtectedNew;
         //
     }
     if(pRadar->init_time)
@@ -2184,7 +2179,8 @@ void Mainwindow::Update100ms()
     {
         if(mouse_mode&MouseAutoSelect1||mouse_mode&MouseAutoSelect2)
             QApplication::setOverrideCursor(Qt::DragMoveCursor);
-        else QApplication::setOverrideCursor(cursor_default);
+        else if(this->hasFocus())QApplication::setOverrideCursor(cursor_default);
+        else QApplication::setOverrideCursor(Qt::ArrowCursor);
         double azi,rg;
         if(ui->toolButton_measuring->isChecked())
         {
@@ -2300,7 +2296,7 @@ void Mainwindow::sync1p()//period 1 min
 {
     QString str = ui->textBrowser_message->toPlainText();
     QDateTime now = QDateTime::currentDateTime();
-    QString dir = "D:\\HR2D\\logs\\"+now.toString("\\dd.MM\\");
+    /*QString dir = "D:\\HR2D\\logs\\"+now.toString("\\dd.MM\\");
     if(!QDir(dir).exists())
     {
         QDir().mkdir(dir);
@@ -2318,10 +2314,11 @@ void Mainwindow::sync1p()//period 1 min
         logFile.open(QIODevice::WriteOnly);
         logFile.write(str.toUtf8());
         logFile.close();
-    }
+    }*/
     if(clock() - pRadar->mUpdateTime<10000)
     {
-        pRadar->updateTerrain();
+        CConfig::SaveToFile();
+        //pRadar->updateTerrain();
         //saveScreenShot(dir+now.toString("hh.mm")+".png");
 
     }
@@ -2384,15 +2381,28 @@ void Mainwindow::autoSwitchFreq()
 
 
 }//label_data_range_2
-void Mainwindow::UpdateMay22Status()
+void Mainwindow::CheckRadarStatus()
 {
 #ifndef THEON
     //check Tx condition
-    if(ui->toolButton_tx->isChecked())
-    if(!ui->toolButton_work_forced->isChecked())
+    bool isStatOk = CheckTxCondition(false);
+//    ui->toolButton_tx->setEnabled((CConfig::mStat.getAge21()<1000));
+    ui->toolButton_tx->highLight(isStatOk);
+    if(pRadar->isTxOn)
+        ui->toolButton_tx->setChecked(true);
+    else
+        ui->toolButton_tx_off->setChecked(true);
+
+    //tat phat khi bao hong
+    if(pRadar->isTxOn&&(!isStatOk))
     {
-        if(!checkStatusGlobal())SetTx(false);
+        if(!ui->toolButton_tx_forced->isChecked())
+        {
+
+            //SetTx(false);
+        }
     }
+
 //    else
 //    {
 //        if(CConfig::mStat.getAgeTempOk()>1500000)
@@ -2430,6 +2440,10 @@ void Mainwindow::UpdateMay22Status()
         else if(CConfig::mStat.mSuyGiam==3)ui->toolButton_dk_7->setChecked(true);//suy giam
         else if(CConfig::mStat.mSuyGiam==2)ui->toolButton_dk_8->setChecked(true);//suy giam
         else if(CConfig::mStat.mSuyGiam==1)ui->toolButton_dk_9->setChecked(true);//suy giam
+        ui->groupBox_20->setTitle(QString::fromUtf8("Cao ap san sang:")+QString::number(CConfig::mStat.mCaoApReady));
+        if(CConfig::mStat.mCaoApReady==2)ui->groupBox_20->setStyleSheet("background-color: rgb(255, 10, 10);");
+        else if(CConfig::mStat.mCaoApReady==1)ui->groupBox_20->setStyleSheet("background-color: rgb(150, 150, 10);");
+        else if(CConfig::mStat.mCaoApReady==0)ui->groupBox_20->setStyleSheet("background-color: rgb(24, 32, 64);");
         if(CConfig::mStat.mCaoApKetNoi==0)ui->toolButton_dk_15->setChecked(true);//cao ap
         else if(CConfig::mStat.mCaoApKetNoi==1)ui->toolButton_dk_10->setChecked(true);//cao ap
         else if(CConfig::mStat.mCaoApKetNoi==2)ui->toolButton_dk_14->setChecked(true);//cao ap
@@ -2517,9 +2531,9 @@ void Mainwindow::ViewTrackInfo()
                 else item->setFont(QFont("Times", 12));
                 if(col==0)      item->setText(QString::number(trackPt->track->uniqId));
                 else if (col==1)item->setText(QString::number(trackPt->track->aziDeg,'f',1));
-                else if (col==2)item->setText(QString::number(nm(trackPt->track->rgKm),'f',2));
+                else if (col==2)item->setText(QString::number((trackPt->track->rgKm),'f',2));
                 else if (col==3)item->setText(QString::number(trackPt->track->courseDeg,'f',1));
-                else if (col==4)item->setText(QString::number(nm(trackPt->track->mSpeedkmhFit),'f',1));
+                else if (col==4)item->setText(QString::number((trackPt->track->mSpeedkmhFit)/3.6,'f',1));
                 //ui->tableWidgetTarget_2->setItem(i,col,item);
             }
 
@@ -2598,7 +2612,7 @@ void Mainwindow::sync1S()//period 1 second
         }
     }
 
-    UpdateMay22Status();
+    CheckRadarStatus();
     UpdateGpsData();
     ViewTrackInfo();
     // update rate
@@ -3394,7 +3408,7 @@ void Mainwindow::SendScaleCommand()
 void Mainwindow::on_toolButton_zoom_out_clicked()
 {
     if(mRangeIndex <7) mRangeIndex+=1;
-    CConfig::setValue("mRangeLevel",mRangeIndex);
+    CConfig::setValue("mRangeIndex",mRangeIndex);
     UpdateScale();
     isMapOutdated = true;
 }
@@ -3457,12 +3471,12 @@ void Mainwindow::SetGPS(double lat,double lon)
 
 //}
 
-void Mainwindow::on_toolButton_gps_update_clicked()
-{
+//void Mainwindow::on_toolButton_gps_update_clicked()
+//{
 
-    SetGPS(ui->text_latInput_2->text().toFloat(),ui->text_longInput_2->text().toFloat());
+//    SetGPS(ui->text_latInput_2->text().toFloat(),ui->text_longInput_2->text().toFloat());
 
-}
+//}
 
 
 
@@ -3543,71 +3557,85 @@ void Mainwindow::on_label_status_warning_clicked()
 //            else*/
 //    //    pRadar->mTrackList.at(targetDisplayList.at(selected_target_index)->trackId).isManual = false;
 //}
-bool Mainwindow::checkStatusGlobal()
+bool Mainwindow::CheckTxCondition(bool isMsgOut)
 {
-    if(CConfig::mStat.getAgeBH()>5000)
+    if(CConfig::mStat.getAge21()>1000)
     {
-        QMessageBox msgBox;
-        msgBox.setText(QString::fromUtf8("Mất kết nối đến mô đun báo hỏng, cấm phát!"));
+        if(isMsgOut){QMessageBox msgBox;
+        msgBox.setText(QString::fromUtf8("Mất kết nối đến Máy 2-1!"));
         msgBox.exec();
-        ui->toolButton_tx_off->setChecked(true);
+//        ui->toolButton_tx_off->setChecked(true);
+        }
+        return false;
+    }
+    if(CConfig::mStat.getAgeBH()>20000)
+    {
+        if(isMsgOut){
+            QMessageBox msgBox;
+            msgBox.setText(QString::fromUtf8("Mất kết nối đến mô đun báo hỏng, cấm phát!"));
+            msgBox.exec();
+//            ui->toolButton_tx_off->setChecked(true);
+        }
         return false;
     }
     if(!CConfig::mStat.isTxSwModeOk)
     {
-        QMessageBox msgBox;
-        msgBox.setText(QString::fromUtf8("Vị trí chuyển mạch ăng ten không đúng, cấm phát!"));
-        msgBox.exec();
-        ui->toolButton_tx_off->setChecked(true);
+        if(isMsgOut){
+            QMessageBox msgBox;
+            msgBox.setText(QString::fromUtf8("Vị trí chuyển mạch ăng ten không đúng, cấm phát!"));
+            msgBox.exec();
+//            ui->toolButton_tx_off->setChecked(true);
+        }
         return false;
     }
-    if(CConfig::mStat.getAge22()>5000)
+    if(CConfig::mStat.getAge22()>20000)
     {
-        QMessageBox msgBox;
-        msgBox.setText(QString::fromUtf8("Mất kết nối điều khiển máy phát, cấm phát!"));
-        msgBox.exec();
-        ui->toolButton_tx_off->setChecked(true);
+        if(isMsgOut){
+            QMessageBox msgBox;
+            msgBox.setText(QString::fromUtf8("Mất kết nối điều khiển máy phát, cấm phát!"));
+            msgBox.exec();
+//            ui->toolButton_tx_off->setChecked(true);
+        }
         return false;
     }
     else if(!CConfig::mStat.mMayPhatOK)
     {
-        QMessageBox msgBox;
-        msgBox.setText(QString::fromUtf8("Có báo hỏng máy phát, cấm phát!"));
-        msgBox.exec();
-        ui->toolButton_tx_off->setChecked(true);
+        if(isMsgOut){
+            QMessageBox msgBox;
+            msgBox.setText(QString::fromUtf8("Có báo hỏng máy phát, cấm phát!"));
+            msgBox.exec();
+//            ui->toolButton_tx_off->setChecked(true);
+        }
+
         return false;
     }
     if(CConfig::mStat.getAgeTempOk()>300000)
     {
-        QMessageBox msgBox;
-        msgBox.setText(QString::fromUtf8("Máy phát quá nhiệt quá 5 phút, cấm phát!"));
-        msgBox.exec();
-        ui->toolButton_tx_off->setChecked(true);
+        {
+            QMessageBox msgBox;
+            msgBox.setText(QString::fromUtf8("Máy phát quá nhiệt trên 5 phút, cấm phát!"));
+            msgBox.exec();
+        }
+//        ui->toolButton_tx_off->setChecked(true);
         return false;
     }
     return true;
 }
 void Mainwindow::on_toolButton_tx_clicked()
 {
+
 #ifndef THEON
     //check Tx condition
     if(!ui->toolButton_tx_forced->isChecked())
     {
-        if(!checkStatusGlobal())return;
+        if(!CheckTxCondition(true))return;
     }
 #endif
-    if(CConfig::mStat.getAge21()>1000)
-    {
-        QMessageBox msgBox;
-        msgBox.setText(QString::fromUtf8("Mất kết nối đến máy thu ra đa!"));
-        msgBox.exec();
-        ui->toolButton_tx_off->setChecked(true);
-        return;
-    }
+
     //restart cuda
     StartCuda();
     SetTx(true);
-    unsigned char command[]={0xaa,0x55,0x67,0x12,
+    unsigned char command[]={0xaa,0x55,0x67,0x0c,
                              0x00,
                              0x01,
                              0x00,
@@ -3629,7 +3657,7 @@ void Mainwindow::on_toolButton_tx_off_clicked()
     //processing->radTxOff();
 
     SetTx(false);
-    unsigned char command[]={0xaa,0x55,0x67,0x12,
+    unsigned char command[]={0xaa,0x55,0x67,0x0c,
                              0x00,
                              0x00,
                              0x00,
@@ -4054,15 +4082,15 @@ void Mainwindow::on_toolButton_sled_reset_clicked()
 
 
 
-void Mainwindow::on_toolButton_dobupsong_toggled(bool checked)
-{
-    pRadar->is_do_bup_song = checked;
-    if(checked)
-    {
-        pRadar->setTb_tap_k(ui->textEdit_dobupsongk->text().toDouble());
+//void Mainwindow::on_toolButton_dobupsong_toggled(bool checked)
+//{
+//    pRadar->is_do_bup_song = checked;
+//    if(checked)
+//    {
+//        pRadar->setTb_tap_k(ui->textEdit_dobupsongk->text().toDouble());
 
-    }
-}
+//    }
+//}
 
 
 void Mainwindow::on_toolButton_set_commands_clicked()
@@ -4990,14 +5018,14 @@ void Mainwindow::on_toolButton_sim_target_autogenerate_clicked()
     ui->doubleSpinBox_61->setValue((rand()%720)/2.0);
     ui->doubleSpinBox_71->setValue((rand()%720)/2.0);
 
-    ui->doubleSpinBox_2->setValue(5+(rand()%300)/2.0);
-    ui->doubleSpinBox_12->setValue(5+(rand()%300)/2.0);
-    ui->doubleSpinBox_22->setValue(5+(rand()%300)/2.0);
-    ui->doubleSpinBox_32->setValue(5+(rand()%300)/2.0);
-    ui->doubleSpinBox_42->setValue((rand()%300)/2.0);
-    ui->doubleSpinBox_52->setValue((rand()%300)/2.0);
-    ui->doubleSpinBox_62->setValue((rand()%300)/2.0);
-    ui->doubleSpinBox_72->setValue((rand()%300)/2.0);
+    ui->doubleSpinBox_2->setValue(2+(rand()%100)/2.0);
+    ui->doubleSpinBox_12->setValue(2+(rand()%100)/2.0);
+    ui->doubleSpinBox_22->setValue(2+(rand()%100)/2.0);
+    ui->doubleSpinBox_32->setValue(2+(rand()%100)/2.0);
+    ui->doubleSpinBox_42->setValue(2+(rand()%100)/2.0);
+    ui->doubleSpinBox_52->setValue(2+(rand()%100)/2.0);
+    ui->doubleSpinBox_62->setValue(2+(rand()%100)/2.0);
+    ui->doubleSpinBox_72->setValue(2+(rand()%100)/2.0);
 
     ui->doubleSpinBox_3->setValue((rand()%720)/2.0);
     ui->doubleSpinBox_13->setValue((rand()%720)/2.0);
@@ -5188,4 +5216,28 @@ void Mainwindow::on_toolButton_dk_18_clicked()
                              00,
                              0x00,0x00,0x00,0x00,0x00,0x00};
     processing->sendCommand(command,12,false);
+}
+
+void Mainwindow::on_toolButton_exit_3_clicked(bool checked)
+{
+    if(checked)
+    {
+        sendToRadarString(CConfig::getString("mGosZaprosOn"));
+    }
+    else
+    {
+        sendToRadarString(CConfig::getString("mGosZaprosOff"));
+    }
+}
+
+void Mainwindow::on_toolButton_passive_mode_clicked(bool checked)
+{
+    if(checked)
+    {
+        sendToRadarString(CConfig::getString("mPassiveModeOn"));
+    }
+    else
+    {
+        sendToRadarString(CConfig::getString("mPassiveModeOff"));
+    }
 }

@@ -12,7 +12,7 @@ QCustomButton::QCustomButton(QWidget *parent) : QToolButton(parent)
 void QCustomButton::hoverEnter(QHoverEvent *)
 {
 
-    highLight();
+//    highLight();
 }
 
 void QCustomButton::hoverLeave(QHoverEvent *)
@@ -25,8 +25,21 @@ void QCustomButton::hoverMove(QHoverEvent *)
     //highLight();
 
 }
-void QCustomButton::highLight()
+void QCustomButton::highLight(bool isHighLight)
 {
+    if(isHighLight)setStyleSheet("\
+                    QCustomButton {   \
+                        color:white; background-color: rgb(60, 120, 60);   \
+                    }   \
+                    QCustomButton:checked{\
+                        color:white; background-color: rgb(72, 120, 72);\
+                    }\
+                    QCustomButton:hover{  \
+                        color:white; background-color: grey; \
+                    }  \
+                    ");
+                                 else
+                                 resetView();
 
 }
 void QCustomButton::resetView()

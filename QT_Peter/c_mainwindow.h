@@ -264,7 +264,7 @@ private slots:
 
 //    void on_toolButton_set_heading_clicked();
 
-    void on_toolButton_gps_update_clicked();
+//    void on_toolButton_gps_update_clicked();
 
     //void on_comboBox_code_type_currentIndexChanged(const QString &arg1);
 
@@ -419,7 +419,7 @@ private slots:
 
 //    void on_toolButton_dobupsong_clicked();
 
-    void on_toolButton_dobupsong_toggled(bool checked);
+//    void on_toolButton_dobupsong_toggled(bool checked);
 
 //    void on_toolButton_set_commands_toggled(bool checked);
 
@@ -700,6 +700,10 @@ private slots:
 
     void on_toolButton_dk_18_clicked();
 
+    void on_toolButton_exit_3_clicked(bool checked);
+
+    void on_toolButton_passive_mode_clicked(bool checked);
+
 private:
 
 //    bool mShowobjects,
@@ -725,7 +729,7 @@ private:
     void autoSwitchFreq();
     void checkClickAIS(int xclick, int yclick);
     void UpdateGpsData();
-    void UpdateMay22Status();
+    void CheckRadarStatus();
     void ViewTrackInfo();
     void gotoCenter();
     void rotateVector(double angle, int *x, int *y);
@@ -747,7 +751,7 @@ private:
     bool checkInsideZoom(int x, int y);
     void saveScreenShot(QString fileName);
     void SetTx(bool onoff);
-    bool checkStatusGlobal();
+    bool CheckTxCondition(bool isMsgOut);
 };
 
 #endif // MAINWINDOW_H

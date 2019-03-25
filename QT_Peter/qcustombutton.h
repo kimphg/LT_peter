@@ -9,9 +9,8 @@ class QCustomButton : public QToolButton
     Q_OBJECT
 public:
     explicit QCustomButton(QWidget *parent = 0);
-
+    void highLight(bool isHighLight);
 protected:
-    void highLight();
     void resetView();
     void hoverEnter(QHoverEvent *event);
     void hoverLeave(QHoverEvent *event);

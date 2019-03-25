@@ -151,8 +151,8 @@ void StatusWindow::sendReq()
         moduleId=0;
         return;
     }
-    mRadar->sendCommand(&command[0],8);
-    mRadar->sendCommand(&command[0],8);
+    mRadar->sendCommand(&command[0],8,true);
+    mRadar->sendCommand(&command[0],8,true);
 //    mRadar->sendCommand(&command[0],8);
 }
 /*

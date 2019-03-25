@@ -688,6 +688,7 @@ double xsum=0,x2sum=0,ysum=0,xysum=0;
 
 C_radar_data::C_radar_data()
 {
+    isTxOn = false;
     cut_terrain=false;
     mTerrainAvailable = false;
     mShipHeading = 0;
@@ -699,10 +700,9 @@ C_radar_data::C_radar_data()
     mInverseRotAziCorrection = CConfig::getDouble("mInverseRotAziCorrection",0)/360.0*MAX_AZIR;
     mRealAziRate = 0;
     mUpdateTime = clock();
-    aziRotCorrection = CConfig::getDouble("aziRotCorrection");
     cur_rot_timeMSecs = QDateTime::currentMSecsSinceEpoch();
     C_primary_track track;
-    mTrackList = std::vector<C_primary_track>(MAX_TRACKS,track);
+    mTrackList = std::vector<C_primary_track>(MAX_TRACKS_COUNT,track);
     giaQuayPhanCung = true;
     //    mShipHeading = 0;
     isTrueHeadingFromRadar = true;
@@ -1525,6 +1525,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     memcpy(mHeader,data,FRAME_HEADER_SIZE);
     unsigned char n_clk_adc = data[4];
     sn_stat = (data[5]<<8)+data[6];
+    isTxOn = (data[21])>>4;
     if(clk_adc != n_clk_adc)
     {
         // clock adc
@@ -1565,7 +1566,6 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
             newAzi = (data[9]<<24)|(data[10]<<16)|(data[11]<<8)|(data[12]);
             newAzi>>=3;
             newAzi&=    0xffff;
-            mShipHeading = ((data[15]<<8)|data[16])>>5;
             //if(newShipHeading!=mShipHeading)setShipHeading(newShipHeading);
             //CConfig::shipHeadingDeg = heading/double(MAX_AZIR)*180.0;
 
@@ -1584,6 +1584,8 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
 #endif
     }
     //    azi queue
+
+    if(isTrueHeadingFromRadar)mShipHeading = ((data[15]<<8)|data[16])>>5;
     newAzi+= (mShipHeading+antennaHeadOffset);
     while(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
     newAzi = approximateAzi(newAzi);
@@ -2217,7 +2219,7 @@ void C_radar_data::drawRamp(double azi)
     bool newtrack = true;
     short trackId = -1;
     short max_length = 0;
-    for(unsigned short i=0;i<mTrackList.size();i++)
+    for(unsigned short i=0;i<MAX_TRACKS_COUNT;i++)
     {
         if(mTrackList.at(i).isManual)continue;
         if(mTrackList.at(i).state&&(! mTrackList.at(i).isProcessed))
@@ -2252,7 +2254,7 @@ void C_radar_data::drawRamp(double azi)
 
     short trackId = -1;
     ushort max_length = 0;
-    for(unsigned short i=0;i<mTrackList.size();i++)
+    for(unsigned short i=0;i<MAX_TRACKS_COUNT;i++)
     {
         if(!mTrackList.at(i).isManual)continue;
         if(mTrackList.at(i).state&&(! mTrackList.at(i).isProcessed))
@@ -2743,7 +2745,7 @@ void C_radar_data::resetTrack()
 {
     init_time += 3;
     C_primary_track::IDCounter=1;
-    for(int i=0;i<mTrackList.size();i++)
+    for(int i=0;i<MAX_TRACKS_COUNT;i++)
     {
         C_primary_track* track=&(mTrackList[i]);
         track->mState = TrackState::removed;
@@ -2759,7 +2761,7 @@ void C_radar_data::resetTrack()
 void C_radar_data::ProcessTracks()
 {
     //processTracks
-    for (ushort j=0;j<mTrackList.size();j++)
+    for (ushort j=0;j<MAX_TRACKS_COUNT;j++)
     {
         C_primary_track* track = &(mTrackList[j]);
         if(track->mState==TrackState::removed)return;
@@ -2796,7 +2798,7 @@ void C_radar_data::UpdateTrackStatistic()
     double sumDazi=0;
     double sumDrg=0;
     double sumEng=0;
-    for (ushort j=0;j<mTrackList.size();j++)
+    for (ushort j=0;j<MAX_TRACKS_COUNT;j++)
     {
         C_primary_track* track = &(mTrackList[j]);
         if(!track->isConfirmed())continue;
@@ -2889,7 +2891,7 @@ void C_radar_data::loadTerrain()
 void C_radar_data::ProcessObject(object_t *obj1)
 {
     //check  if object_t belonging to tracks
-    if(mTrackList.size())
+    if(MAX_TRACKS_COUNT)
         if(checkBelongToTrack(obj1))
             return ;
     // check if object_t belonging to another obj
@@ -2918,7 +2920,7 @@ bool C_radar_data::checkBelongToTrack(object_t *obj1)
     bool isBelongingToTrack = false;
     C_primary_track* chosenTrack =nullptr;
     double maxScore=0.2;
-    for (ushort j=0;j<mTrackList.size();j++)
+    for (ushort j=0;j<MAX_TRACKS_COUNT;j++)
     {
         C_primary_track* track = &(mTrackList[j]);
 
@@ -3040,7 +3042,7 @@ bool C_radar_data::checkInsideDW(double aziDeg,double rgkm)
 }
 void C_radar_data::CreateTrack(object_t* obj1,object_t* obj2)
 {
-    for (ushort j=0;j<mTrackList.size();j++)
+    for (ushort j=0;j<MAX_TRACKS_COUNT;j++)
     {
         if(mTrackList[j].mState==TrackState::removed)
         {

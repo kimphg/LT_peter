@@ -404,9 +404,9 @@ void dataProcessingThread::sendAziData()
     int azi = (mRadarData->getCurAziRad()/3.1415926535*2048.0);
     sendBuf[4]=azi>>8;
     sendBuf[5]=azi;
-    int bearing =0;
-    sendBuf[6]=bearing>>8;
-    sendBuf[7]=bearing;
+    int heading =0;
+    sendBuf[6]=heading>>8;
+    sendBuf[7]=heading;
     sendBuf[8]=0;
     sendCommand(&sendBuf[0],9,false);
 
@@ -450,10 +450,7 @@ void dataProcessingThread::Timer200ms()
                     8,
                     QHostAddress("192.168.0.44"),2572
                     );
-            radarSocket->writeDatagram((char*)&radarComQ.front().bytes[0],
-                    8,
-                    QHostAddress("127.0.0.1"),30002
-                    );
+
         }
 
         radarComQ.pop();
@@ -654,7 +651,6 @@ void dataProcessingThread::run()
 {
     while(true)
     {
-
         //int nframe=0;
         while(radarSocket->hasPendingDatagrams())
         {
@@ -678,8 +674,7 @@ void dataProcessingThread::run()
             }
 
         }
-
-
+//        sleep(1);
 
     }
 

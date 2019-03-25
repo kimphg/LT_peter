@@ -360,9 +360,14 @@ void c_target_manager::OutputTargetToKasu()
     //targets:
     for(int i=0;i<6;i++)
     {
+        memset(dataPacket,0,22);
         C_primary_track* target = targetTable[i].track;
-        if(target==nullptr)continue;
-        dataPacket[0] = (unsigned char)(i+1);
+        if(target==nullptr)
+        {
+            memcpy(kasudatagram+10+i*22,dataPacket,22);
+            continue;
+        }
+        dataPacket[0] = (unsigned char)(target->uniqId);
         //distance
         int distance = int(target->rgKm*1000.0);
         if(distance<100||distance>260000)
@@ -378,7 +383,7 @@ void c_target_manager::OutputTargetToKasu()
         int peleng = int(target->aziDeg/180.0*16384);
         dataPacket[5] = (unsigned char)(peleng);
         dataPacket[6] = (unsigned char)(peleng>>8);
-        int course = int(target->courseRadFit/180.0*16384);
+        int course = int(target->courseDeg/180.0*16384);
         dataPacket[7] = (unsigned char)(course);
         dataPacket[8] = (unsigned char)(course>>8);
         int speed = int(target->mSpeedkmhFit/3.6*256);
@@ -414,10 +419,10 @@ void c_target_manager::OutputTargetToKasu()
         dataPacket[16] = (unsigned char)(skoCourse>>8);
         //sko speed
         int skoSpd = int(target->sko_spd/3.6*256);
-        if(skoSpd>5*256)
+        if(skoSpd>=50*256)
         {
             printf("\nTarget %d too big skoSpeed value: %f",i+1,target->sko_spd);
-            skoSpd = 5*256;
+            skoSpd = 50*256;
         }
         dataPacket[17] = (unsigned char)(skoSpd);
         dataPacket[18] = (unsigned char)(skoSpd>>8);

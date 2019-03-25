@@ -36,14 +36,11 @@ public:
     bool isTxSwModeOk;
     void ReadStatus22(uchar* mes)
     {
-        mTaiAngTen = mes[0];
-        mSuyGiam = mes[1];
-        mMayPhatOK = mes[2];
-        mCaoApReady = mes[3];
-        mCaoApKetNoi = mes[4];
-//        isStatChange = true;
-//        gConnected = 0;
-
+        mTaiAngTen =    mes[0];
+        mSuyGiam =      mes[1];
+        mMayPhatOK =    mes[2];
+        mCaoApReady =   mes[3];
+        mCaoApKetNoi =  mes[4];
         c22UpdateTime = clock();
     }
     void ReadStatusGlobal(uchar* mes)
@@ -59,7 +56,7 @@ public:
         }
         else
         {
-            isTxSwModeOk = true;
+            isTxSwModeOk = false;
         }
         if(msgGlobal[17]==0
                 &&msgGlobal[18]==0)cTempOkTime = clock();

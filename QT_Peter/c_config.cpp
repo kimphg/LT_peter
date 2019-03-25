@@ -28,7 +28,7 @@ radarStatus_3C::radarStatus_3C()
     cHDTUpdateTime      = clock();
     cCourseUpdateTime   = clock();
     cTempOkTime = clock();
-    shipHeadingDeg = 0;
+    shipHeadingDeg = 20;
     shipHeadingRate_dps=0;
     antennaBearingDeg = 0;
     isGyro = false;
