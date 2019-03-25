@@ -2149,7 +2149,7 @@ void Mainwindow::Update100ms()
     if(posy)mMousey= posy;
     CConfig::mStat.antennaAziDeg = degrees(pRadar->getCurAziRad());
 
-    {
+    if(CConfig::mStat.isTransmitting){
         CConfig::mStat.antennaBearingDeg = CConfig::mStat.antennaAziDeg - CConfig::mStat.shipHeadingDeg;
         //check if bearing is inside the prohibited sector
         if(CConfig::mStat.antennaBearingDeg<0)CConfig::mStat.antennaBearingDeg+=360;
@@ -2389,9 +2389,9 @@ void Mainwindow::CheckRadarStatus()
 //    ui->toolButton_tx->setEnabled((CConfig::mStat.getAge21()<1000));
     ui->toolButton_tx->highLight(isStatOk);
     if(pRadar->isTxOn)
-        ui->toolButton_tx->setChecked(true);
+        ui->label_am2->setText("AM2-ON");
     else
-        ui->toolButton_tx_off->setChecked(true);
+        ui->label_am2->setText("AM2-OFF");
 
     //tat phat khi bao hong
     if(pRadar->isTxOn&&(!isStatOk))
@@ -2441,9 +2441,9 @@ void Mainwindow::CheckRadarStatus()
         else if(CConfig::mStat.mSuyGiam==2)ui->toolButton_dk_8->setChecked(true);//suy giam
         else if(CConfig::mStat.mSuyGiam==1)ui->toolButton_dk_9->setChecked(true);//suy giam
         ui->groupBox_20->setTitle(QString::fromUtf8("Cao ap san sang:")+QString::number(CConfig::mStat.mCaoApReady));
-        if(CConfig::mStat.mCaoApReady==2)ui->groupBox_20->setStyleSheet("background-color: rgb(255, 10, 10);");
-        else if(CConfig::mStat.mCaoApReady==1)ui->groupBox_20->setStyleSheet("background-color: rgb(150, 150, 10);");
-        else if(CConfig::mStat.mCaoApReady==0)ui->groupBox_20->setStyleSheet("background-color: rgb(24, 32, 64);");
+        if(CConfig::mStat.mCaoApReady==2)ui->groupBox_20->setStyleSheet("background-color: rgb(255, 10, 10);color:rgb(255, 255, 255);");
+        else if(CConfig::mStat.mCaoApReady==1)ui->groupBox_20->setStyleSheet("background-color: rgb(150, 150, 10);color:rgb(255, 255, 255);");
+        else if(CConfig::mStat.mCaoApReady==0)ui->groupBox_20->setStyleSheet("background-color: rgb(24, 32, 64);color:rgb(255, 255, 255);");
         if(CConfig::mStat.mCaoApKetNoi==0)ui->toolButton_dk_15->setChecked(true);//cao ap
         else if(CConfig::mStat.mCaoApKetNoi==1)ui->toolButton_dk_10->setChecked(true);//cao ap
         else if(CConfig::mStat.mCaoApKetNoi==2)ui->toolButton_dk_14->setChecked(true);//cao ap
