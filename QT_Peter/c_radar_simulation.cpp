@@ -47,10 +47,10 @@ target_t::target_t()
     isManeuver = false;
 }
 
-void target_t::init(double tx, double ty, double tspeed, double tbearing, int dople)
+void target_t::init(double tx, double ty, double tspeedKmh, double tbearing, int dople)
 {
     enabled = true;
-    speed = tspeed;
+    speedKmh = tspeedKmh;
     x = tx;
     y = ty;
     bearing = radians(tbearing);
@@ -124,7 +124,7 @@ void target_t::update()
         }
         bearing += rot*elapsed_secs;
     }
-    double distance = elapsed_secs / 3600.0*speed;
+    double distance = elapsed_secs / 3600.0*speedKmh;
     x += distance*sin(bearing);
     y += distance*cos(bearing);
     //

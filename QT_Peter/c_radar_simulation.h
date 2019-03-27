@@ -26,7 +26,7 @@ class target_t
 public:
 
     target_t();
-    void init(double tx, double ty, double tspeed, double tbearing, int dople =5);
+    void init(double tx, double ty, double tspeedKmh, double tbearing, int dople =5);
     void generateSignal();
     void eraseSIgnal();
     void update();
@@ -41,7 +41,7 @@ public:
 private:
     bool isManeuver;
     bool enabled;
-    double speed, x, y, azi, range;
+    double speedKmh, x, y, azi, range;
     double bearing,rot;
     int dopler;
     int targetSize;

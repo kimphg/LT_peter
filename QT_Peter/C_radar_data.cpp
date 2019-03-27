@@ -1561,34 +1561,21 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
 #ifdef THEON
         newAzi =  ((data[11]<<8)|data[12])>>5;
 #else
-        if(isTrueHeadingFromRadar)
-        {
-            newAzi = (data[9]<<24)|(data[10]<<16)|(data[11]<<8)|(data[12]);
-            newAzi>>=3;
-            newAzi&=    0xffff;
-            //if(newShipHeading!=mShipHeading)setShipHeading(newShipHeading);
-            //CConfig::shipHeadingDeg = heading/double(MAX_AZIR)*180.0;
 
-            newAzi = ssiDecode(newAzi);
-        }
-        else
-        {
-            //int heading = (CConfig::mStat.getShipHeadingDeg())/360.0*MAX_AZIR;
             newAzi = (data[9]<<24)|(data[10]<<16)|(data[11]<<8)|(data[12]);
             newAzi>>=3;
             newAzi&=0xffff;
             newAzi = ssiDecode(newAzi);
-
-        }
+            if(isTrueHeadingFromRadar)mShipHeading = ((data[15]<<8)|data[16])>>5;
+            newAzi+= (mShipHeading+antennaHeadOffset);
+            while(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
+            newAzi = approximateAzi(newAzi);
 
 #endif
     }
     //    azi queue
 
-    if(isTrueHeadingFromRadar)mShipHeading = ((data[15]<<8)|data[16])>>5;
-    newAzi+= (mShipHeading+antennaHeadOffset);
-    while(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
-    newAzi = approximateAzi(newAzi);
+
 #ifndef THEON
     if(data[0]==4)// du lieu may hoi
     {

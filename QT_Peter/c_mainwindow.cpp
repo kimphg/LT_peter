@@ -4915,41 +4915,49 @@ void Mainwindow::updateSimTargetStatus()
 }
 void Mainwindow::on_checkBox_stateChanged(int arg1)
 {
+    arg1=arg1;
     updateSimTargetStatus();
 }
 
 void Mainwindow::on_checkBox_2_stateChanged(int arg1)
 {
+    arg1=arg1;
     updateSimTargetStatus();
 }
 
 void Mainwindow::on_checkBox_3_stateChanged(int arg1)
 {
+    arg1=arg1;
     updateSimTargetStatus();
 }
 
 void Mainwindow::on_checkBox_4_stateChanged(int arg1)
 {
+    arg1=arg1;
     updateSimTargetStatus();
 }
 
 void Mainwindow::on_checkBox_5_stateChanged(int arg1)
 {
+    arg1=arg1;
     updateSimTargetStatus();
 }
 
 void Mainwindow::on_checkBox_6_stateChanged(int arg1)
 {
+    arg1=arg1;
     updateSimTargetStatus();
 }
 
 void Mainwindow::on_checkBox_7_stateChanged(int arg1)
 {
+    arg1=arg1;
     updateSimTargetStatus();
 }
 
 void Mainwindow::on_checkBox_8_stateChanged(int arg1)
 {
+    arg1=arg1;
     updateSimTargetStatus();
 }
 
@@ -5115,7 +5123,6 @@ void Mainwindow::on_toolButton_chong_nhieu_ppy_clicked(bool checked)
         else        comand[2] = 63;
         if(gain<=63)comand[3] = 0;
         else        comand[3] = gain-63;
-
         comand[4] = 0;
         processing->sendCommand(&comand[0],8);
     }

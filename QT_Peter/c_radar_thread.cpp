@@ -153,15 +153,14 @@ void dataProcessingThread::ReadNavData()
 bool dataProcessingThread::readGyroMsg(unsigned char *mReceiveBuff,int len)
 {
     int n=0;
-    while(n<len-32)
+    while(n<len-31)
     {
 
         unsigned char *databegin =&mReceiveBuff[n];
         n++;
         if(databegin[0]==0x5a&&databegin[1]==0xa5&&databegin[31]==0xAA)
         {
-            CConfig::mStat.cGyroUpdateTime = clock();
-            double heading = (((databegin[6])<<8)|databegin[7])/182.044444444;//deg
+            double heading = (((databegin[6])<<8)|databegin[7])/182.04444444444444;//65536/360.0
             //double headingRate = degrees((((mReceiveBuff[12])<<8)|mReceiveBuff[13])/10430.21919552736);//deg per sec
             double headingRate = ((databegin[12])<<8)+databegin[13];
             if(headingRate>32768.0)headingRate=headingRate-65536.0;
