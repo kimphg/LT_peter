@@ -12,6 +12,7 @@ static QPen penTargetFriendSelected(QBrush(QColor(50,255,255 ,255)),4);
 static QPen penCyan(QBrush(QColor(50,255,255 ,255)),1);//xoay mui tau
 static enum ZoomMode {ZoomHiden =0,ZoomIAD=1,ZoomHistogram=2,ZoomSpectre=3,ZoomRamp=4,ZoomZoom=5} zoom_mode=ZoomHiden;
 static PointAziRgkm AutoSelP1,AutoSelP2;
+
 //#ifdef THEON
 //static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),224+SCR_BORDER_SIZE);
 //static QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
@@ -2147,7 +2148,7 @@ void Mainwindow::Update100ms()
     int posy = (QCursor::pos()).y();
     if(posx)mMousex= posx;
     if(posy)mMousey= posy;
-    CConfig::mStat.antennaAziDeg = degrees(pRadar->getCurAziRad());
+    CConfig::mStat.antennaAziDeg = degrees(pRadar->getCurAziTrueRad());//todo
 
     if(CConfig::mStat.isTransmitting){
         CConfig::mStat.antennaBearingDeg = CConfig::mStat.antennaAziDeg - CConfig::mStat.shipHeadingDeg;

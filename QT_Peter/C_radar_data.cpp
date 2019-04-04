@@ -691,7 +691,7 @@ C_radar_data::C_radar_data()
     isTxOn = false;
     cut_terrain=false;
     mTerrainAvailable = false;
-    mShipHeading = 0;
+    mShipHeading2048 = 0;
     aziViewOffset = 0;
     antennaHeadOffset=int((CConfig::getDouble("antennaHeadOffset",13))/360.0*MAX_AZIR);
     while((antennaHeadOffset)>=MAX_AZIR)antennaHeadOffset-=MAX_AZIR;
@@ -761,7 +761,7 @@ C_radar_data::C_radar_data()
     isShowSled = CConfig::getInt("isShowSled");
     init_time = 5;
     dataOver = max_s_m_200;
-    curAzir = 0;
+    curAzirTrue2048 = 0;
     arcMaxAzi = 0;
     arcMinAzi = 0;
     //    isSharpEye = false;
@@ -860,10 +860,10 @@ void C_radar_data::setSelfRotationAzi(int value)
     selfRotationAzi = value;
 
 }
-double C_radar_data::getCurAziRad() const
+double C_radar_data::getCurAziTrueRad() const
 {
 
-    double result = ((double)curAzir/(double)MAX_AZIR*PI_NHAN2);
+    double result = ((double)curAzirTrue2048/(double)MAX_AZIR*PI_NHAN2);
     if(result>PI_NHAN2)result-=PI_NHAN2;
     return ( result);
 }
@@ -1472,11 +1472,11 @@ int C_radar_data::ssiDecode(ushort nAzi)
 }
 void C_radar_data::setShipHeadingDeg(double headingDeg)
 {
-    //double headingDegOld = mShipHeading*360.0/MAX_AZIR;
-    mShipHeading = (headingDeg)/360.0*MAX_AZIR;
-    //mPPITrans.reset();
-    //mPPITrans = mPPITrans.rotate((headingDegOld-headingDeg));
-    //    isShipHeadingChanged = true;
+    if(!isTrueHeadingFromRadar)
+    {
+        mShipHeading2048 = (headingDeg)/360.0*MAX_AZIR;
+    }
+
 }
 void C_radar_data::ProcessGOData(unsigned char* data,short len, int azi)
 {
@@ -1534,7 +1534,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
         UpdateData();
         resetData();
     }
-    uint newAzi =0;
+    uint newAziTrue =0;
     if(isSelfRotation)
     {
         selfRotationAzi+=selfRotationDazi;
@@ -1548,28 +1548,32 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
             selfRotationAzi += MAX_AZIR;
             //ProcessRound();
         }
-        newAzi = selfRotationAzi;
+        newAziTrue = selfRotationAzi;
     }
     else if(data[0]==0x55)//TH tao gia
     {
-        newAzi = (data[2]<<8)|data[3];
+        newAziTrue = (data[2]<<8)|data[3];
         //printf("\nheading:%d",heading);
         //printf(" newAzi:%d",newAzi);
     }
     else
     {
 #ifdef THEON
-        newAzi =  ((data[11]<<8)|data[12])>>5;
+        newAziTrue =  ((data[11]<<8)|data[12])>>5;
 #else
 
-            newAzi = (data[9]<<24)|(data[10]<<16)|(data[11]<<8)|(data[12]);
-            newAzi>>=3;
-            newAzi&=0xffff;
-            newAzi = ssiDecode(newAzi);
-            if(isTrueHeadingFromRadar)mShipHeading = ((data[15]<<8)|data[16])>>5;
-            newAzi+= (mShipHeading+antennaHeadOffset);
-            while(newAzi>=MAX_AZIR)newAzi-=MAX_AZIR;
-            newAzi = approximateAzi(newAzi);
+            newAziTrue = (data[9]<<24)|(data[10]<<16)|(data[11]<<8)|(data[12]);
+            newAziTrue>>=3;
+            newAziTrue&=0xffff;
+            newAziTrue = ssiDecode(newAziTrue);
+            if(isTrueHeadingFromRadar)
+            {
+                mShipHeading2048 = ((data[15]<<8)|data[16])>>5;//get heading from radar frame
+                if(mShipHeading2048)CConfig::mStat.inputGyro(mShipHeading2048*360.0/MAX_AZIR,0);
+            }
+            newAziTrue+= (mShipHeading2048+antennaHeadOffset);
+            while(newAziTrue>=MAX_AZIR)newAziTrue-=MAX_AZIR;
+            newAziTrue = approximateAzi(newAziTrue);
 
 #endif
     }
@@ -1579,51 +1583,51 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
 #ifndef THEON
     if(data[0]==4)// du lieu may hoi
     {
-        ProcessGOData(data, len,newAzi);
+        ProcessGOData(data, len,newAziTrue);
         return;
     }
 #endif
-    if(curAzir==newAzi)return;
+    if(curAzirTrue2048==newAziTrue)return;
 
-    int dIntAzi = newAzi -curAzir;
+    int dIntAzi = newAziTrue -curAzirTrue2048;
     if(dIntAzi>=(MAX_AZIR/2))      dIntAzi = dIntAzi-MAX_AZIR;
     else if(dIntAzi<(-MAX_AZIR/2)) dIntAzi = dIntAzi+MAX_AZIR;
     if(abs(dIntAzi)>10)
     {
-        curAzir = newAzi;
+        curAzirTrue2048 = newAziTrue;
         return;
-        memcpy(&data_mem.level[curAzir][0],data+FRAME_HEADER_SIZE,range_max);
-        memcpy(&data_mem.dopler[curAzir][0],data+FRAME_HEADER_SIZE+range_max,range_max);
+        memcpy(&data_mem.level[curAzirTrue2048][0],data+FRAME_HEADER_SIZE,range_max);
+        memcpy(&data_mem.dopler[curAzirTrue2048][0],data+FRAME_HEADER_SIZE+range_max,range_max);
 
         indexCurrRecAzi++;
         if(indexCurrRecAzi>=AZI_QUEUE_SIZE)indexCurrRecAzi=0;
-        aziToProcess[indexCurrRecAzi]=curAzir;
+        aziToProcess[indexCurrRecAzi]=curAzirTrue2048;
     }
-    while (curAzir != newAzi)
+    while (curAzirTrue2048 != newAziTrue)
     {
         if(dIntAzi>0)
         {
-            curAzir++;if(curAzir>=MAX_AZIR)curAzir=0;
-            memcpy(&data_mem.level[curAzir][0],data+FRAME_HEADER_SIZE,range_max);
-            memcpy(&data_mem.dopler[curAzir][0],data+FRAME_HEADER_SIZE+range_max,range_max);
+            curAzirTrue2048++;if(curAzirTrue2048>=MAX_AZIR)curAzirTrue2048=0;
+            memcpy(&data_mem.level[curAzirTrue2048][0],data+FRAME_HEADER_SIZE,range_max);
+            memcpy(&data_mem.dopler[curAzirTrue2048][0],data+FRAME_HEADER_SIZE+range_max,range_max);
 
             indexCurrRecAzi++;
             if(indexCurrRecAzi>=AZI_QUEUE_SIZE)indexCurrRecAzi=0;
-            aziToProcess[indexCurrRecAzi]=curAzir;
+            aziToProcess[indexCurrRecAzi]=curAzirTrue2048;
         }
         else
         {
-            curAzir--;if(curAzir<0)        curAzir+=MAX_AZIR;
-            memcpy(&data_mem.level[curAzir][0],data+FRAME_HEADER_SIZE,range_max);
-            memcpy(&data_mem.dopler[curAzir][0],data+FRAME_HEADER_SIZE+range_max,range_max);
+            curAzirTrue2048--;if(curAzirTrue2048<0)        curAzirTrue2048+=MAX_AZIR;
+            memcpy(&data_mem.level[curAzirTrue2048][0],data+FRAME_HEADER_SIZE,range_max);
+            memcpy(&data_mem.dopler[curAzirTrue2048][0],data+FRAME_HEADER_SIZE+range_max,range_max);
 
             indexCurrRecAzi++;
             if(indexCurrRecAzi>=AZI_QUEUE_SIZE)indexCurrRecAzi=0;
-            aziToProcess[indexCurrRecAzi]=curAzir;
+            aziToProcess[indexCurrRecAzi]=curAzirTrue2048;
         }
     }
 
-    //if(curAzir==newAzi)return;
+    //if(curAzirTrue2048==newAzi)return;
 
     //if(newAzi==0)dir= !dir;
     /*double dazi = newAzi-mRealAzi;
@@ -1632,7 +1636,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
 //    {
 //        printf("\n newAzi:%4d dazi:%2.2f",newAzi,dazi);
 //        printf("   mRealAzi:%4.2f mRealAziRate:%2.2f",mRealAzi,mRealAziRate);
-//        printf("   curAzir:%d",curAzir);
+//        printf("   curAzirTrue2048:%d",curAzirTrue2048);
 //    }
     if((abs(dazi)>20))
     {
@@ -1654,24 +1658,24 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     if(intAzi>=MAX_AZIR){mRealAzi-=MAX_AZIR;intAzi-=MAX_AZIR;}
     else if(intAzi<=0)  {mRealAzi+=MAX_AZIR;intAzi+=MAX_AZIR;}*/
     /*
-    if(curAzir==newAzi)return;
-    curAzir =newAzi;
-    memcpy(&data_mem.level[curAzir][0],data+FRAME_HEADER_SIZE,range_max);
-    memcpy(&data_mem.dopler[curAzir][0],data+FRAME_HEADER_SIZE+range_max,range_max);
+    if(curAzirTrue2048==newAzi)return;
+    curAzirTrue2048 =newAzi;
+    memcpy(&data_mem.level[curAzirTrue2048][0],data+FRAME_HEADER_SIZE,range_max);
+    memcpy(&data_mem.dopler[curAzirTrue2048][0],data+FRAME_HEADER_SIZE+range_max,range_max);
     return;
 
-    int diff = intAzi -curAzir;
+    int diff = intAzi -curAzirTrue2048;
     if(diff>MAX_AZIR/2)diff = diff-MAX_AZIR;else if(diff<(-MAX_AZIR/2))diff = diff+MAX_AZIR;
     int nn=0;
-    while (curAzir != intAzi)
+    while (curAzirTrue2048 != intAzi)
     {
         nn++;if(nn>10)break;
-        if(abs(diff)>10)curAzir = intAzi;
-        else if(diff>0)  {curAzir++;if(curAzir>=MAX_AZIR)curAzir-=MAX_AZIR;}
-        else        {curAzir--;if(curAzir<0)        curAzir+=MAX_AZIR;}
-        memcpy(&data_mem.level[curAzir][0],data+FRAME_HEADER_SIZE,range_max);
-        memcpy(&data_mem.dopler[curAzir][0],data+FRAME_HEADER_SIZE+range_max,range_max);
-        //aziToProcess.push(curAzir);
+        if(abs(diff)>10)curAzirTrue2048 = intAzi;
+        else if(diff>0)  {curAzirTrue2048++;if(curAzirTrue2048>=MAX_AZIR)curAzirTrue2048-=MAX_AZIR;}
+        else        {curAzirTrue2048--;if(curAzirTrue2048<0)        curAzirTrue2048+=MAX_AZIR;}
+        memcpy(&data_mem.level[curAzirTrue2048][0],data+FRAME_HEADER_SIZE,range_max);
+        memcpy(&data_mem.dopler[curAzirTrue2048][0],data+FRAME_HEADER_SIZE+range_max,range_max);
+        //aziToProcess.push(curAzirTrue2048);
     }
 */
     return;
@@ -1722,14 +1726,14 @@ void C_radar_data::ProcessDataFrame()
 {/*
     int newAzi = getNewAzi();
 
-    int leftAzi = curAzir-1;if(leftAzi<0)leftAzi+=MAX_AZIR;
-    int rightAzi = curAzir +1; if(rightAzi>=MAX_AZIR)rightAzi-=MAX_AZIR;
+    int leftAzi = curAzirTrue2048-1;if(leftAzi<0)leftAzi+=MAX_AZIR;
+    int rightAzi = curAzirTrue2048 +1; if(rightAzi>=MAX_AZIR)rightAzi-=MAX_AZIR;
     if(newAzi == leftAzi )
     {
         if(rotDir==Right)
         {
             rotDir  = Left;
-            arcMaxAzi = curAzir;
+            arcMaxAzi = curAzirTrue2048;
             init_time =5;
 
         }
@@ -1738,13 +1742,13 @@ void C_radar_data::ProcessDataFrame()
         if(rotDir==Left)
         {
             rotDir = Right;
-            arcMinAzi = curAzir;
+            arcMinAzi = curAzirTrue2048;
             init_time =5;
         }
     }
-    else if(newAzi ==curAzir)
+    else if(newAzi ==curAzirTrue2048)
     {
-        //printf("\ncurAzir:%d",curAzir);
+        //printf("\ncurAzirTrue2048:%d",curAzirTrue2048);
         return;
     }
     else
@@ -1771,15 +1775,15 @@ void C_radar_data::ProcessDataFrame()
     tb_tap[newAzi] = dataBuff[18]<<8|dataBuff[19];
     memcpy(command_feedback,&dataBuff[RADAR_COMMAND_FEEDBACK],8);
     memcpy(noise_level,&dataBuff[RADAR_COMMAND_FEEDBACK+8],8);
-    curAzir = newAzi;
-    aziToProcess.push(curAzir);
-    decodeData(curAzir);
-    if(!((unsigned char)(curAzir<<3))){
-        procTracks(curAzir);
+    curAzirTrue2048 = newAzi;
+    aziToProcess.push(curAzirTrue2048);
+    decodeData(curAzirTrue2048);
+    if(!((unsigned char)(curAzirTrue2048<<3))){
+        procTracks(curAzirTrue2048);
         getNoiseLevel();
 
     }
-    if(curAzir==0)
+    if(curAzirTrue2048==0)
     {
         ProcessEach90Deg();
 
@@ -1883,7 +1887,7 @@ void C_radar_data::LeastSquareFit(C_primary_track* track)
 }
 void C_radar_data::setAziViewOffsetDeg(double angle)
 {
-    //printf("\ncurAzir:%d",curAzir);
+    //printf("\ncurAzirTrue2048:%d",curAzirTrue2048);
     aziViewOffset = (angle*MAX_AZIR)/360;
     while(aziViewOffset<0)aziViewOffset+=MAX_AZIR;
     while(aziViewOffset>=MAX_AZIR)aziViewOffset-=MAX_AZIR;
@@ -2131,8 +2135,8 @@ void C_radar_data::drawRamp()
     img_RAmp->fill(Qt::black);
     for (short r_pos = 0;r_pos<range_max;r_pos++)
     {
-        unsigned char value = data_mem.level[curAzir][r_pos];
-        char dopler = data_mem.dopler[curAzir][r_pos];
+        unsigned char value = data_mem.level[curAzirTrue2048][r_pos];
+        char dopler = data_mem.dopler[curAzirTrue2048][r_pos];
 
         uint color ;
         if(dopler==0)
@@ -2416,7 +2420,7 @@ void C_radar_data::setZoomRectXY(float ctx, float cty)
 
 //int C_radar_data::get_tb_tap(){
 
-//    hsTap += ((tb_tap[curAzir])-hsTap)/5.0;
+//    hsTap += ((tb_tap[curAzirTrue2048])-hsTap)/5.0;
 //    return int(hsTap);
 //}
 

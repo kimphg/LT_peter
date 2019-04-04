@@ -439,7 +439,7 @@ public:
     unsigned char           mHeader[FRAME_HEADER_SIZE];
     unsigned char           overload, init_time, clk_adc;
     float                   scale_ppi,scale_zoom_ppi;
-    short                   curAzir,arcMinAzi,arcMaxAzi,arcWidth;
+    short                   curAzirTrue2048,arcMinAzi,arcMaxAzi,arcWidth;
     double                  mRealAziRate,mRealAzi;
     void                    setZoomRectAR(float ctx, float cty, double sizeKM, double sizeDeg);
     void                    setZoomRectXY(float ctx, float cty);
@@ -514,7 +514,7 @@ public:
     void SelfRotationOff();
     void SelfRotationReset();
     void drawRamp(double azi);
-    double getCurAziRad() const;
+    double getCurAziTrueRad() const;
 
     bool getIsVtorih() const;
     void setIsVtorih(bool value);
@@ -530,7 +530,7 @@ private:
     int max_drange_plot;
     QTransform mPPITrans;
 //    bool isShipHeadingChanged;
-    int mShipHeading;
+    int mShipHeading2048;
     int mFalsePositiveCount;
     float hsTap ;
 //    std::queue<int>  aziToProcess;//hàng chờ các frame cần xử lý

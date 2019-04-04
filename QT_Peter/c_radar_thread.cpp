@@ -36,7 +36,6 @@ void dataProcessingThread::ReadDataBuffer()
     while(iRec!=iRead)
     {
         nread++;
-
         if(nread>=600)
         {
             mRadarData->resetData();
@@ -95,7 +94,8 @@ dataProcessingThread::dataProcessingThread()
     selsynEncoderAzi = 0;
     isXuLyThuCap = false;
     dataBuff = &dataB[0];
-    iRec=0;iRead=0;
+    iRec=0;
+    iRead=0;
     //    pIsDrawn = &isDrawn;
     //    isDrawn = true;
     pIsPlaying = &isPlaying;
@@ -160,7 +160,7 @@ bool dataProcessingThread::readGyroMsg(unsigned char *mReceiveBuff,int len)
         n++;
         if(databegin[0]==0x5a&&databegin[1]==0xa5&&databegin[31]==0xAA)
         {
-            double heading = (((databegin[6])<<8)|databegin[7])/182.04444444444444;//65536/360.0
+            double heading = (((databegin[6])<<8)|databegin[7])/182.0444444444444444444444444444444444444444444444444;//65536/360.0
             //double headingRate = degrees((((mReceiveBuff[12])<<8)|mReceiveBuff[13])/10430.21919552736);//deg per sec
             double headingRate = ((databegin[12])<<8)+databegin[13];
             if(headingRate>32768.0)headingRate=headingRate-65536.0;
@@ -209,7 +209,7 @@ bool dataProcessingThread::readNmea(unsigned char *mReceiveBuff,int len)
                     &&databegin[4]=='D'
                     &&databegin[5]=='T')//true heading message xxHDT
             {
-                //if(mStat.getAgeGyro()<10000)return;// only work when no gyro available
+                if(CConfig::mStat.getAgeGyro()<10000)return true;// only work when no gyro available
                 QString message((char*)&databegin[0]);
                 QStringList tokens = message.split(',');
                 if(tokens.size()<3)return true;
@@ -393,17 +393,22 @@ bool dataProcessingThread::checkFeedback()
     }
     else return false;
 }
+#define MAX_AZIR_SYSTEM 4096
 void dataProcessingThread::sendAziData()
 {
+    int azitrue = (mRadarData->getCurAziTrueRad()/PI_NHAN2*MAX_AZIR_SYSTEM);
+    int heading = CConfig::mStat.shipHeadingDeg/PI_NHAN2*MAX_AZIR_SYSTEM;
+    int azi=azitrue-heading;
+    if(azi<0)azi+=MAX_AZIR_SYSTEM;
     unsigned char sendBuf[9];
     sendBuf[0]=0xaa;
     sendBuf[1]=0x55;
     sendBuf[2]=0x6e;
     sendBuf[3]=0x09;
-    int azi = (mRadarData->getCurAziRad()/3.1415926535*2048.0);
+
     sendBuf[4]=azi>>8;
     sendBuf[5]=azi;
-    int heading =0;
+
     sendBuf[6]=heading>>8;
     sendBuf[7]=heading;
     sendBuf[8]=0;
