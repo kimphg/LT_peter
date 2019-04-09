@@ -3560,7 +3560,7 @@ void Mainwindow::on_label_status_warning_clicked()
 //}
 bool Mainwindow::CheckTxCondition(bool isPopupMsg)
 {
-    if(CConfig::mStat.getAge21()>1000)
+    if(CConfig::mStat.getAge21()>5000)
     {
         if(isPopupMsg){QMessageBox msgBox;
         msgBox.setText(QString::fromUtf8("Mất kết nối đến Máy 2-1!"));

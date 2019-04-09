@@ -2540,22 +2540,23 @@ void C_radar_data::raw_map_init_zoom()
 void C_radar_data::resetData()
 {
     rgStdErr = SIGNAL_SCALE_0*pow(2,clk_adc);
+    // decode byte clock ADC
     switch(clk_adc)
     {
     case 0:
-        sn_scale = SIGNAL_SCALE_0;
+        sn_scale = SIGNAL_SCALE_0;//15m
         break;
     case 1:
-        sn_scale = SIGNAL_SCALE_1;//printf("1");
+        sn_scale = SIGNAL_SCALE_1;//30m
         break;
     case 2:
-        sn_scale = SIGNAL_SCALE_2;//printf("2");
+        sn_scale = SIGNAL_SCALE_2;//60m
         break;
     case 3:
-        sn_scale = SIGNAL_SCALE_3;//printf("2");
+        sn_scale = SIGNAL_SCALE_3;//120m
         break;
     case 4:
-        sn_scale = SIGNAL_SCALE_4;//printf("2");
+        sn_scale = SIGNAL_SCALE_4;//240m
         break;
     case 5:
         sn_scale = SIGNAL_SCALE_5;//printf("2");
