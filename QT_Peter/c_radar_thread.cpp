@@ -165,7 +165,7 @@ bool dataProcessingThread::readGyroMsg(unsigned char *mReceiveBuff,int len)
             double headingRate = ((databegin[12])<<8)+databegin[13];
             if(headingRate>32768.0)headingRate=headingRate-65536.0;
             headingRate/=32768.0;
-            CConfig::mStat.inputGyro(heading,degrees(headingRate));
+            if(!mRadarData->isTrueHeadingFromRadar)CConfig::mStat.inputGyro(heading,degrees(headingRate));
             mRadarData->setShipHeadingDeg(heading);
             return true;
         }
