@@ -3558,11 +3558,11 @@ void Mainwindow::on_label_status_warning_clicked()
 //            else*/
 //    //    pRadar->mTrackList.at(targetDisplayList.at(selected_target_index)->trackId).isManual = false;
 //}
-bool Mainwindow::CheckTxCondition(bool isMsgOut)
+bool Mainwindow::CheckTxCondition(bool isPopupMsg)
 {
     if(CConfig::mStat.getAge21()>1000)
     {
-        if(isMsgOut){QMessageBox msgBox;
+        if(isPopupMsg){QMessageBox msgBox;
         msgBox.setText(QString::fromUtf8("Mất kết nối đến Máy 2-1!"));
         msgBox.exec();
 //        ui->toolButton_tx_off->setChecked(true);
@@ -3571,7 +3571,7 @@ bool Mainwindow::CheckTxCondition(bool isMsgOut)
     }
     if(CConfig::mStat.getAgeBH()>20000)
     {
-        if(isMsgOut){
+        if(isPopupMsg){
             QMessageBox msgBox;
             msgBox.setText(QString::fromUtf8("Mất kết nối đến mô đun báo hỏng, cấm phát!"));
             msgBox.exec();
@@ -3581,7 +3581,7 @@ bool Mainwindow::CheckTxCondition(bool isMsgOut)
     }
     if(!CConfig::mStat.isTxSwModeOk)
     {
-        if(isMsgOut){
+        if(isPopupMsg){
             QMessageBox msgBox;
             msgBox.setText(QString::fromUtf8("Vị trí chuyển mạch ăng ten không đúng, cấm phát!"));
             msgBox.exec();
@@ -3589,27 +3589,7 @@ bool Mainwindow::CheckTxCondition(bool isMsgOut)
         }
         return false;
     }
-    if(CConfig::mStat.getAge22()>20000)
-    {
-        if(isMsgOut){
-            QMessageBox msgBox;
-            msgBox.setText(QString::fromUtf8("Mất kết nối điều khiển máy phát, cấm phát!"));
-            msgBox.exec();
-//            ui->toolButton_tx_off->setChecked(true);
-        }
-        return false;
-    }
-    else if(!CConfig::mStat.mMayPhatOK)
-    {
-        if(isMsgOut){
-            QMessageBox msgBox;
-            msgBox.setText(QString::fromUtf8("Có báo hỏng máy phát, cấm phát!"));
-            msgBox.exec();
-//            ui->toolButton_tx_off->setChecked(true);
-        }
 
-        return false;
-    }
     if(CConfig::mStat.getAgeTempOk()>300000)
     {
         {
@@ -5248,4 +5228,9 @@ void Mainwindow::on_toolButton_passive_mode_clicked(bool checked)
     {
         sendToRadarString(CConfig::getString("mPassiveModeOff"));
     }
+}
+
+void Mainwindow::on_toolButton_tx_clicked(bool checked)
+{
+
 }

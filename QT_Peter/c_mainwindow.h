@@ -704,6 +704,8 @@ private slots:
 
     void on_toolButton_passive_mode_clicked(bool checked);
 
+    void on_toolButton_tx_clicked(bool checked);
+
 private:
 
 //    bool mShowobjects,
@@ -751,7 +753,7 @@ private:
     bool checkInsideZoom(int x, int y);
     void saveScreenShot(QString fileName);
     void SetTx(bool onoff);
-    bool CheckTxCondition(bool isMsgOut);
+    bool CheckTxCondition(bool isPopupMsg);
 };
 
 #endif // MAINWINDOW_H

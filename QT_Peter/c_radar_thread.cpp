@@ -397,9 +397,10 @@ bool dataProcessingThread::checkFeedback()
 void dataProcessingThread::sendAziData()
 {
     int azitrue = (mRadarData->getCurAziTrueRad()/PI_NHAN2*MAX_AZIR_SYSTEM);
-    int heading = CConfig::mStat.shipHeadingDeg/PI_NHAN2*MAX_AZIR_SYSTEM;
+    int heading = CConfig::mStat.shipHeadingDeg/360.0*MAX_AZIR_SYSTEM;
     int azi=azitrue-heading;
     if(azi<0)azi+=MAX_AZIR_SYSTEM;
+    if(azi>=MAX_AZIR_SYSTEM)azi-=MAX_AZIR_SYSTEM;
     unsigned char sendBuf[9];
     sendBuf[0]=0xaa;
     sendBuf[1]=0x55;
