@@ -2155,7 +2155,7 @@ void Mainwindow::Update100ms()
         //check if bearing is inside the prohibited sector
         if(CConfig::mStat.antennaBearingDeg<0)CConfig::mStat.antennaBearingDeg+=360;
         else if(CConfig::mStat.antennaBearingDeg>360)CConfig::mStat.antennaBearingDeg-=360;
-//        radarStatus_3C stat = CConfig::mStat;
+        //        radarStatus_3C stat = CConfig::mStat;
         bool isInsideProtectedNew =(CConfig::mStat.antennaBearingDeg>CConfig::mStat.antennaBearingTxStopDeg&&CConfig::mStat.antennaBearingDeg<CConfig::mStat.antennaBearingTxStartDeg);
         if(isInsideProtectedNew!=isInsideProtected)
         {
@@ -2387,7 +2387,7 @@ void Mainwindow::CheckRadarStatus()
 #ifndef THEON
     //check Tx condition
     bool isStatOk = CheckTxCondition(false);
-//    ui->toolButton_tx->setEnabled((CConfig::mStat.getAge21()<1000));
+    //    ui->toolButton_tx->setEnabled((CConfig::mStat.getAge21()<1000));
     ui->toolButton_tx->highLight(isStatOk);
     if(pRadar->isTxOn)
         ui->label_am2->setText("AM2-ON");
@@ -2404,17 +2404,17 @@ void Mainwindow::CheckRadarStatus()
         }
     }
 
-//    else
-//    {
-//        if(CConfig::mStat.getAgeTempOk()>1500000)
-//        {
-//            QMessageBox msgBox;
-//            msgBox.setText(QString::fromUtf8("Máy phát quá nhiệt quá 15 phút, cấm phát tuyệt đối!"));
-//            msgBox.exec();
-//            ui->toolButton_tx_off->setChecked(true);
-//            return false;
-//        }
-//    }
+    //    else
+    //    {
+    //        if(CConfig::mStat.getAgeTempOk()>1500000)
+    //        {
+    //            QMessageBox msgBox;
+    //            msgBox.setText(QString::fromUtf8("Máy phát quá nhiệt quá 15 phút, cấm phát tuyệt đối!"));
+    //            msgBox.exec();
+    //            ui->toolButton_tx_off->setChecked(true);
+    //            return false;
+    //        }
+    //    }
 #endif
     clock_t ageMay22 = CConfig::mStat.getAge22();
     if(ageMay22<5000)
@@ -3563,9 +3563,9 @@ bool Mainwindow::CheckTxCondition(bool isPopupMsg)
     if(CConfig::mStat.getAge21()>5000)
     {
         if(isPopupMsg){QMessageBox msgBox;
-        msgBox.setText(QString::fromUtf8("Mất kết nối đến Máy 2-1!"));
-        msgBox.exec();
-//        ui->toolButton_tx_off->setChecked(true);
+            msgBox.setText(QString::fromUtf8("Mất kết nối đến Máy 2-1!"));
+            msgBox.exec();
+            //        ui->toolButton_tx_off->setChecked(true);
         }
         return false;
     }
@@ -3575,7 +3575,7 @@ bool Mainwindow::CheckTxCondition(bool isPopupMsg)
             QMessageBox msgBox;
             msgBox.setText(QString::fromUtf8("Mất kết nối đến mô đun báo hỏng, cấm phát!"));
             msgBox.exec();
-//            ui->toolButton_tx_off->setChecked(true);
+            //            ui->toolButton_tx_off->setChecked(true);
         }
         return false;
     }
@@ -3585,7 +3585,7 @@ bool Mainwindow::CheckTxCondition(bool isPopupMsg)
             QMessageBox msgBox;
             msgBox.setText(QString::fromUtf8("Vị trí chuyển mạch ăng ten không đúng, cấm phát!"));
             msgBox.exec();
-//            ui->toolButton_tx_off->setChecked(true);
+            //            ui->toolButton_tx_off->setChecked(true);
         }
         return false;
     }
@@ -3597,7 +3597,7 @@ bool Mainwindow::CheckTxCondition(bool isPopupMsg)
             msgBox.setText(QString::fromUtf8("Máy phát quá nhiệt trên 5 phút, cấm phát!"));
             msgBox.exec();
         }
-//        ui->toolButton_tx_off->setChecked(true);
+        //        ui->toolButton_tx_off->setChecked(true);
         return false;
     }
     return true;
@@ -5047,16 +5047,18 @@ void Mainwindow::on_toolButton_chong_nhieu_1_clicked(bool checked)
     //processing->setVaru(checked);
     if(checked)
     {
-        uchar depth = ui->horizontalSlider_varu_depth->value();
-        uchar width = ui->horizontalSlider_varu_width->value();
+        int depth = ui->horizontalSlider_varu_depth->value();
+        depth = 16384/pow(10,depth/20.0);
+        int width = ui->horizontalSlider_varu_width->value();
+        width =  (16384 - depth)/10/width;
         uchar comand[8];
         comand[0] = 0x29;
         comand[1] = 0xab;
         comand[2] = 0x01;
         comand[3] = width;
         comand[4] = depth;
+        comand[5] = depth>>8;
         processing->sendCommand(&comand[0]);
-        //sendToRadarHS((const char*)comand);
     }
     else
     {
@@ -5064,23 +5066,23 @@ void Mainwindow::on_toolButton_chong_nhieu_1_clicked(bool checked)
     }
 }
 
-void Mainwindow::on_toolButton_chong_nhieu_2_clicked(bool checked)
-{
-    //processing->setSharu(checked);
-}
+//void Mainwindow::on_toolButton_chong_nhieu_2_clicked(bool checked)
+//{
+//    //processing->setSharu(checked);
+//}
 
-void Mainwindow::on_toolButton_chong_nhieu_3_clicked(bool checked)
-{
-    //processing->setBaru(checked);
-    if(checked)
-    {
-        sendToRadarHS("03ab2f00");
-    }
-    else
-    {
-        sendToRadarHS("03abffff");
-    }
-}
+//void Mainwindow::on_toolButton_chong_nhieu_3_clicked(bool checked)
+//{
+//    //processing->setBaru(checked);
+//    if(checked)
+//    {
+//        sendToRadarHS("03ab2f00");
+//    }
+//    else
+//    {
+//        sendToRadarHS("03abffff");
+//    }
+//}
 
 void Mainwindow::on_toolButton_auto_freq_clicked(bool checked)
 {
@@ -5096,18 +5098,15 @@ void Mainwindow::on_toolButton_chong_nhieu_ppy_clicked(bool checked)
 {
     if(checked)
     {
-        uchar gain = 100-ui->horizontalSlider_ppy_gain->value();
+        uchar value = ui->horizontalSlider_ppy_gain->value();
         uchar comand[8];
-        comand[0] = 0x03;
+        comand[0] = 0x2a;
         comand[1] = 0xab;
-        if(gain<=63)comand[2] = gain;
-        else        comand[2] = 63;
-        if(gain<=63)comand[3] = 0;
-        else        comand[3] = gain-63;
-        comand[4] = 0;
-        processing->sendCommand(&comand[0],8);
+        comand[2] = 0x01;
+        comand[3] = value;
+        processing->sendCommand(&comand[0]);
     }
-    else sendToRadarHS("03abffff");
+    else sendToRadarHS("2aab00");
 }
 
 void Mainwindow::on_toolButton_record_clicked(bool checked)
@@ -5233,4 +5232,55 @@ void Mainwindow::on_toolButton_passive_mode_clicked(bool checked)
 void Mainwindow::on_toolButton_tx_clicked(bool checked)
 {
 
+}
+
+void Mainwindow::on_horizontalSlider_varu_width_valueChanged(int value)
+{
+    if(ui->toolButton_chong_nhieu_1->isChecked())
+    {
+        int depth = ui->horizontalSlider_varu_depth->value();
+        depth = 16384/pow(10,depth/20.0);
+        int width = ui->horizontalSlider_varu_width->value();
+        width =  (16384 - depth)/10/width;
+        uchar comand[8];
+        comand[0] = 0x29;
+        comand[1] = 0xab;
+        comand[2] = 0x01;
+        comand[3] = width;
+        comand[4] = depth;
+        comand[5] = depth>>8;
+        processing->sendCommand(&comand[0]);
+    }
+}
+
+void Mainwindow::on_horizontalSlider_varu_depth_valueChanged(int value)
+{
+    if(ui->toolButton_chong_nhieu_1->isChecked())
+    {
+        int depth = ui->horizontalSlider_varu_depth->value();
+        depth = 16384/pow(10,depth/20.0);
+        int width = ui->horizontalSlider_varu_width->value();
+        width =  (16384 - depth)/10/width;
+        uchar comand[8];
+        comand[0] = 0x29;
+        comand[1] = 0xab;
+        comand[2] = 0x01;
+        comand[3] = width;
+        comand[4] = depth;
+        comand[5] = depth>>8;
+        processing->sendCommand(&comand[0]);
+    }
+}
+
+void Mainwindow::on_horizontalSlider_ppy_gain_valueChanged(int value)
+{
+    if(ui->toolButton_chong_nhieu_ppy->isChecked())
+    {
+        uchar comand[8];
+        comand[0] = 0x2a;
+        comand[1] = 0xab;
+        comand[2] = 0x01;
+        comand[3] = value;
+        processing->sendCommand(&comand[0]);
+    }
 }

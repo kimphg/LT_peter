@@ -662,9 +662,9 @@ private slots:
 
     void on_toolButton_chong_nhieu_1_clicked(bool checked);
 
-    void on_toolButton_chong_nhieu_2_clicked(bool checked);
+//    void on_toolButton_chong_nhieu_2_clicked(bool checked);
 
-    void on_toolButton_chong_nhieu_3_clicked(bool checked);
+//    void on_toolButton_chong_nhieu_3_clicked(bool checked);
 
     void on_toolButton_auto_freq_clicked(bool checked);
 
@@ -705,6 +705,12 @@ private slots:
     void on_toolButton_passive_mode_clicked(bool checked);
 
     void on_toolButton_tx_clicked(bool checked);
+
+    void on_horizontalSlider_varu_width_valueChanged(int value);
+
+    void on_horizontalSlider_varu_depth_valueChanged(int value);
+
+    void on_horizontalSlider_ppy_gain_valueChanged(int value);
 
 private:
 
