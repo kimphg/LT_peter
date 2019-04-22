@@ -1,7 +1,7 @@
 
 #include "c_radar_thread.h"
 
-#define MAX_IREC 2000
+#define MAX_IREC 1600
 //#include <QGeoCoordinate>
 //#include <QNmeaPositionInfoSource>
 DataBuff dataB[MAX_IREC];
@@ -44,6 +44,8 @@ void dataProcessingThread::ReadDataBuffer()
         uchar *pData = &(dataB[iRead].data[0]);
         unsigned short dataLen = dataB[iRead].len;
         mRadarData->processSocketData(pData,dataLen);
+//        if(dataLen==1058)
+//            dataLen=dataLen;
         if(isRecording)
         {
             signRecFile.write((char*)&dataLen,2);
@@ -660,21 +662,32 @@ void dataProcessingThread::run()
         while(radarSocket->hasPendingDatagrams())
         {
             int len = radarSocket->pendingDatagramSize();
-            if(len<NAV_FRAME_LEN)// system packets
+            if(len<NAV_FRAME_LEN&&len!=1058)// system packets
             {
 
                 radarSocket->readDatagram((char*)&mReceiveBuff[0],len);
 
-                ProcessNavData((unsigned char*)mReceiveBuff,len);
+                if(((mReceiveBuff[0])==0x04)&&(len==1058)) //may hoi
+                {
+                    memcpy(( char*)&(dataB[iRec].data[0]),( char*)mReceiveBuff,len);
+                    dataB[iRec].len = len;
+                    iRec++;
+                    if(iRec>=MAX_IREC)iRec = 0;
+                    continue;
+                }
+                else
+                {
+                    ProcessNavData((unsigned char*)mReceiveBuff,len);
+                    continue;
+                }
             }
-            else if(len<=MAX_FRAME_SIZE)
+            else  if(len<=MAX_FRAME_SIZE)
             {
-                dataB[iRec].len = len;
-
                 radarSocket->readDatagram(( char*)&(dataB[iRec].data[0]),len);
-
+                dataB[iRec].len = len;
                 iRec++;
                 if(iRec>=MAX_IREC)iRec = 0;
+                continue;
                 //nframe++;
             }
 

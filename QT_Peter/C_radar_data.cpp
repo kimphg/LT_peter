@@ -28,7 +28,7 @@ static short indexCurrProcessAzi = 0;
 static short    curIdCount = 1;
 static qint64   cur_rot_timeMSecs ;//= QDateTime::currentMSecsSinceEpoch();
 static int      antennaHeadOffset;
-static float                   rot_period_min =0;
+static float    rot_period_min =0;
 static short histogram[256];
 #define AZI_QUEUE_SIZE 500
 static int aziToProcess[AZI_QUEUE_SIZE];
@@ -179,8 +179,6 @@ double C_primary_track::estimateScore(object_t *obj1,object_t *obj2)
     if(dtime<TRACK_MIN_DTIME)return -1;
     if(dtime>TRACK_MAX_DTIME)return -1;
     dtime/=3600000.0;//time in hours
-
-
     double dx = obj1->xkm - obj2->xkm;
     double dy = obj1->ykm - obj2->ykm;
 
@@ -1515,13 +1513,44 @@ int C_radar_data::approximateAzi(int newAzi)
 void C_radar_data::processSocketData(unsigned char* data,short len)
 {
     CConfig::mStat.mFrameCount++;
-    if(len==MAX_FRAME_SIZE)
-        range_max = RADAR_RESOLUTION;
-    else if(len==MAX_FRAME_SIZE_HALF)
-        range_max = RADAR_RESOLUTION_HALF;
-    else return;
+#ifndef THEON
+    if(data[0]==4)// du lieu may hoi
+    {
+        ProcessGOData(data, len,curAzirTrue2048);
+        return;
+    }
+#endif
+
     //check data valid
-    if(data[0]!=0x55&&data[0]>10)return;
+    if(data[0]!=0x55&&data[0]>7)return;
+    if(data[0]==5)
+    {
+        if(range_max!=512)
+
+        {
+            range_max = 512;
+            resetData();
+        }
+
+    }
+    else if((data[0]==6)||(data[0]==7))
+    {
+        if(range_max!=1024)
+
+        {
+            range_max = 512;
+            resetData();
+        }
+    }
+    else if((data[0]>=0)&&(data[0]<4))
+    {
+        if(range_max!=RADAR_RESOLUTION)
+
+        {
+            range_max = 512;
+            resetData();
+        }
+    }
     memcpy(mHeader,data,FRAME_HEADER_SIZE);
     unsigned char n_clk_adc = data[4];
     sn_stat = (data[5]<<8)+data[6];
@@ -1580,13 +1609,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     //    azi queue
 
 
-#ifndef THEON
-    if(data[0]==4)// du lieu may hoi
-    {
-        ProcessGOData(data, len,newAziTrue);
-        return;
-    }
-#endif
+
     if(curAzirTrue2048==newAziTrue)return;
 
     int dIntAzi = newAziTrue -curAzirTrue2048;

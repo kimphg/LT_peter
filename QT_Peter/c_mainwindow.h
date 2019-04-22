@@ -373,18 +373,6 @@ private slots:
 
 
 
-    void on_toolButton_tx_2_clicked();
-
-    void on_toolButton_tx_3_clicked();
-
-    void on_toolButton_tx_4_clicked();
-
-    void on_toolButton_tx_5_clicked();
-
-    void on_toolButton_tx_6_clicked();
-
-    void on_toolButton_tx_7_clicked();
-
     void on_toolButton_gps_update_auto_clicked();
 
 
@@ -399,7 +387,7 @@ private slots:
 
 //    void on_toolButton_grid_clicked(bool checked);
 
-    void on_toolButton_auto_freq_toggled(bool checked);
+//    void on_toolButton_auto_freq_toggled(bool checked);
 
     void on_toolButton_set_default_clicked();
 
@@ -564,19 +552,9 @@ private slots:
 
     void on_bt_rg_7_toggled(bool checked);
 
-    void on_toolButton_xl_dopler_3_toggled(bool checked);
+//    void on_toolButton_xl_dopler_3_toggled(bool checked);
 
-    void on_toolButton_tx_14_clicked();
 
-    void on_toolButton_tx_15_clicked();
-
-    void on_toolButton_tx_16_clicked();
-
-    void on_toolButton_tx_17_clicked();
-
-    void on_toolButton_tx_18_clicked();
-
-    void on_toolButton_tx_19_clicked();
 
     void on_toolButton_open_record_2_clicked();
 
@@ -712,6 +690,10 @@ private slots:
 
     void on_horizontalSlider_ppy_gain_valueChanged(int value);
 
+    void on_toolButton_tx_3_clicked(bool checked);
+
+    void on_comboBox_currentIndexChanged(int index);
+
 private:
 
 //    bool mShowobjects,
@@ -734,7 +716,7 @@ private:
     void setDistanceUnit(int unit);
     void keyReleaseEvent(QKeyEvent *event);
     void sendToRadarString(QString command);
-    void autoSwitchFreq();
+//    void autoSwitchFreq();
     void checkClickAIS(int xclick, int yclick);
     void UpdateGpsData();
     void CheckRadarStatus();

@@ -213,13 +213,19 @@ void c_target_manager::initDataGram()
     kasudatagram[3] = 0x16;
     kasudatagram[4] = 0x00;
     kasudatagram[5] = 0x00;//Циклический номер последнего правильного принятого пакета
-    kasudatagram[6] = 0x00;//Циклический номер пакета
+    kasudatagram[6] = 0x3C;//Циклический номер пакета
     kasudatagram[7] = 0x00;
-    kasudatagram[8] = 0x16;//Контрольная сумма байт 3-8
-    kasudatagram[9] = 0x16;//Контрольная сумма байт 3-8
+    int sum = kasudatagram[2]+
+            kasudatagram[3]+
+            kasudatagram[4]+
+            kasudatagram[5]+
+            kasudatagram[6]+
+            kasudatagram[7];
+    kasudatagram[8] = sum;//Контрольная сумма байт 3-8
+    kasudatagram[9] = sum>>8;//Контрольная сумма байт 3-8
     //end of header
     memset(&kasudatagram[10],0,22*6);
-    kasudatagram[142] = 0x00;
+    kasudatagram[142] = 0x00;//Контрольная сумма поля данных
     kasudatagram[143] = 0x00;//Контрольная сумма поля данных
 }
 
@@ -440,7 +446,13 @@ void c_target_manager::OutputTargetToKasu()
     {
 
     }*/
-
+    int sum =0;
+    for(int i=10;i<142;i++)
+    {
+        sum+=kasudatagram[i];
+    }
+    kasudatagram[142] = sum;//Контрольная сумма поля данных
+    kasudatagram[143] = sum>>8;//Контрольная сумма поля данных
     udpSocketKasu->writeDatagram((char*)(&kasudatagram[0]),
                                KASU_DATA_SIZE,
                                QHostAddress("192.168.1.20"),30000

@@ -1599,7 +1599,7 @@ void Mainwindow::StartCuda()
         QFileInfo check_file("D:\\HR2D\\cudaFFT.exe");
         if (check_file.exists() && check_file.isFile())
         {
-            processCuda->start("D:\\HR2D\\cudaFFT.exe");
+            processCuda->startDetached("D:\\HR2D\\cudaFFT.exe");
             CConfig::AddMessage(QString::fromUtf8("Khởi động core FFT: OK"));
         }
         else
@@ -2352,7 +2352,7 @@ void Mainwindow::saveScreenShot(QString fileName)
 //        //ui->label_data_dopler->setText("--");
 //    }
 //}
-void Mainwindow::autoSwitchFreq()
+/*void Mainwindow::autoSwitchFreq()
 {
     int newFreq = rand()%6;
     if(newFreq==0)
@@ -2381,7 +2381,7 @@ void Mainwindow::autoSwitchFreq()
     }
 
 
-}//label_data_range_2
+}*///label_data_range_2
 void Mainwindow::CheckRadarStatus()
 {
 #ifndef THEON
@@ -2441,6 +2441,7 @@ void Mainwindow::CheckRadarStatus()
         else if(CConfig::mStat.mSuyGiam==3)ui->toolButton_dk_7->setChecked(true);//suy giam
         else if(CConfig::mStat.mSuyGiam==2)ui->toolButton_dk_8->setChecked(true);//suy giam
         else if(CConfig::mStat.mSuyGiam==1)ui->toolButton_dk_9->setChecked(true);//suy giam
+        else if(CConfig::mStat.mSuyGiam==0)ui->toolButton_dk_3->setChecked(true);//suy giam
         ui->groupBox_20->setTitle(QString::fromUtf8("Cao ap san sang:")+QString::number(CConfig::mStat.mCaoApReady));
         if(CConfig::mStat.mCaoApReady==2)ui->groupBox_20->setStyleSheet("background-color: rgb(255, 10, 10);color:rgb(255, 255, 255);");
         else if(CConfig::mStat.mCaoApReady==1)ui->groupBox_20->setStyleSheet("background-color: rgb(150, 150, 10);color:rgb(255, 255, 255);");
@@ -3900,36 +3901,7 @@ void Mainwindow::on_toolButton_setRangeUnit_clicked()
 
 
 
-void Mainwindow::on_toolButton_tx_2_clicked()
-{
-    sendToRadarString(CConfig::getString("mFreq1Command"));
 
-}
-
-void Mainwindow::on_toolButton_tx_3_clicked()
-{
-    sendToRadarString(CConfig::getString("mFreq2Command"));
-}
-
-void Mainwindow::on_toolButton_tx_4_clicked()
-{
-    sendToRadarString(CConfig::getString("mFreq3Command"));
-}
-
-void Mainwindow::on_toolButton_tx_5_clicked()
-{
-    sendToRadarString(CConfig::getString("mFreq4Command"));
-}
-
-void Mainwindow::on_toolButton_tx_6_clicked()
-{
-    sendToRadarString(CConfig::getString("mFreq5Command"));
-}
-
-void Mainwindow::on_toolButton_tx_7_clicked()
-{
-    sendToRadarString(CConfig::getString("mFreq6Command"));
-}
 
 void Mainwindow::on_toolButton_gps_update_auto_clicked()
 {
@@ -3976,52 +3948,10 @@ void Mainwindow::on_toolButton_advanced_control_clicked()
 
 
 
-/*void Mainwindow::on_toolButton_set_command_clicked()
-{
-    CConfig::getString("mR0Command") = ui->plainTextEdit_range_0->toPlainText();
-    CConfig::getString("mR1Command") = ui->plainTextEdit_range_1->toPlainText();
-    CConfig::getString("mR2Command") = ui->plainTextEdit_range_2->toPlainText();
-    CConfig::getString("mR3Command") = ui->plainTextEdit_range_3->toPlainText();
-    CConfig::getString("mR4Command") = ui->plainTextEdit_range_4->toPlainText();
-    CConfig::getString("mR5Command") = ui->plainTextEdit_range_5->toPlainText();
-    CConfig::getString("mR6Command") = ui->plainTextEdit_range_6->toPlainText();
-    CConfig::getString("mR7Command") = ui->plainTextEdit_range_7->toPlainText();
-    CConfig::getString("mRxCommand") = ui->plainTextEdit_command_rx->toPlainText();
-    CConfig::getString("mTxCommand") = ui->plainTextEdit_command_tx->toPlainText();
-    CConfig::setValue("CConfig::getString("mR0Command")",CConfig::getString("mR0Command"));
-    CConfig::setValue("CConfig::getString("mR1Command")",CConfig::getString("mR1Command"));
-    CConfig::setValue("CConfig::getString("mR2Command")",CConfig::getString("mR2Command"));
-    CConfig::setValue("CConfig::getString("mR3Command")",CConfig::getString("mR3Command"));
-    CConfig::setValue("CConfig::getString("mR4Command")",CConfig::getString("mR4Command"));
-    CConfig::setValue("CConfig::getString("mR5Command")",CConfig::getString("mR5Command"));
-    CConfig::setValue("CConfig::getString("mR6Command")",CConfig::getString("mR6Command"));
-    CConfig::setValue("CConfig::getString("mR7Command")",CConfig::getString("mR7Command"));
-    CConfig::setValue("CConfig::getString("mRxCommand")",CConfig::getString("mRxCommand"));
-    CConfig::setValue("CConfig::getString("mTxCommand")",CConfig::getString("mTxCommand"));
-    //
-    CConfig::getString("mFreq1Command") =  ui->plainTextEdit_freq_1->toPlainText();
-    CConfig::getString("mFreq2Command") =  ui->plainTextEdit_freq_2->toPlainText();
-    CConfig::getString("mFreq3Command") =  ui->plainTextEdit_freq_3->toPlainText();
-    CConfig::getString("mFreq4Command") =  ui->plainTextEdit_freq_4->toPlainText();
-    CConfig::getString("mFreq5Command") =  ui->plainTextEdit_freq_5->toPlainText();
-    CConfig::getString("mFreq6Command") =  ui->plainTextEdit_freq_6->toPlainText();
-    //
-    CConfig::setValue("CConfig::getString("mFreq1Command")",CConfig::getString("mFreq1Command"));
-    CConfig::setValue("CConfig::getString("mFreq2Command")",CConfig::getString("mFreq2Command"));
-    CConfig::setValue("CConfig::getString("mFreq3Command")",CConfig::getString("mFreq3Command"));
-    CConfig::setValue("CConfig::getString("mFreq4Command")",CConfig::getString("mFreq4Command"));
-    CConfig::setValue("CConfig::getString("mFreq5Command")",CConfig::getString("mFreq5Command"));
-    CConfig::setValue("CConfig::getString("mFreq6Command")",CConfig::getString("mFreq6Command"));
-    ui->groupBox_control_setting->setHidden(true);
-    ui->toolButton_set_commands->setChecked(false);
-
-}
-*/
-
-void Mainwindow::on_toolButton_auto_freq_toggled(bool checked)
-{
-    if(checked) autoSwitchFreq();
-}
+//void Mainwindow::on_toolButton_auto_freq_toggled(bool checked)
+//{
+//    if(checked) autoSwitchFreq();
+//}
 
 void Mainwindow::on_toolButton_set_default_clicked()
 {
@@ -4483,40 +4413,6 @@ void Mainwindow::on_bt_rg_7_toggled(bool checked)
     }
 }
 
-void Mainwindow::on_toolButton_xl_dopler_3_toggled(bool checked)
-{
-
-}
-
-void Mainwindow::on_toolButton_tx_14_clicked()
-{
-    sendToRadarString(CConfig::getString("mFreq7Command"));
-}
-
-void Mainwindow::on_toolButton_tx_15_clicked()
-{
-    sendToRadarString(CConfig::getString("mFreq8Command"));
-}
-
-void Mainwindow::on_toolButton_tx_16_clicked()
-{
-    sendToRadarString(CConfig::getString("mFreq9Command"));
-}
-
-void Mainwindow::on_toolButton_tx_17_clicked()
-{
-    sendToRadarString(CConfig::getString("mFreq10Command"));
-}
-
-void Mainwindow::on_toolButton_tx_18_clicked()
-{
-    sendToRadarString(CConfig::getString("mFreq11Command"));
-}
-
-void Mainwindow::on_toolButton_tx_19_clicked()
-{
-    sendToRadarString(CConfig::getString("mFreq12Command"));
-}
 
 void Mainwindow::on_toolButton_open_record_2_clicked()
 {
@@ -5088,10 +4984,10 @@ void Mainwindow::on_toolButton_auto_freq_clicked(bool checked)
 {
     if(checked)
     {
-        sendToRadarHS("28ab2001");
-        sendToRadarHS("1aab01");
+        sendToRadarHS(CConfig::getString("mAutoFreqOnCommand").toStdString().data());
+
     }
-    else sendToRadarHS("1aab00");
+    else sendToRadarHS(CConfig::getString("mAutoFreqOffCommand").toStdString().data());
 }
 
 void Mainwindow::on_toolButton_chong_nhieu_ppy_clicked(bool checked)
@@ -5282,5 +5178,31 @@ void Mainwindow::on_horizontalSlider_ppy_gain_valueChanged(int value)
         comand[2] = 0x01;
         comand[3] = value;
         processing->sendCommand(&comand[0]);
+    }
+}
+
+void Mainwindow::on_toolButton_tx_3_clicked(bool checked)
+{
+
+}
+
+void Mainwindow::on_comboBox_currentIndexChanged(int index)
+{
+
+    switch (index)
+    {
+    case 0 : sendToRadarString(CConfig::getString("mFreq1Command"));break;
+    case 1 : sendToRadarString(CConfig::getString("mFreq2Command"));break;
+    case 2 : sendToRadarString(CConfig::getString("mFreq3Command"));break;
+    case 3 : sendToRadarString(CConfig::getString("mFreq4Command"));break;
+    case 4 : sendToRadarString(CConfig::getString("mFreq5Command"));break;
+    case 5 : sendToRadarString(CConfig::getString("mFreq6Command"));break;
+    case 6 : sendToRadarString(CConfig::getString("mFreq7Command"));break;
+    case 7 : sendToRadarString(CConfig::getString("mFreq8Command"));break;
+    case 8 : sendToRadarString(CConfig::getString("mFreq9Command"));break;
+    case 9 : sendToRadarString(CConfig::getString("mFreq10Command"));break;
+    case 10 : sendToRadarString(CConfig::getString("mFreq11Command"));break;
+    case 11 : sendToRadarString(CConfig::getString("mFreq12Command"));break;
+    default : break;
     }
 }
