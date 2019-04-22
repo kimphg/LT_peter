@@ -72,9 +72,7 @@ public:
     void radRequestTemp(char index);
     void radTxOn();
     void radTxOff();
-    void setVaru(bool isOn);
-    void setSharu(bool isOn);
-    void setBaru(bool isOn);
+
     void sendCommand(unsigned char* commandBuff, short len=8, bool queued = true);
     void loadRecordDataFile(QString fileName);
     void togglePlayPause(bool play);

@@ -23016,7 +23016,7 @@ background-color: rgba(255, 255, 255, 0);</string>
      <bool>false</bool>
     </property>
     <property name="currentIndex">
-     <number>4</number>
+     <number>2</number>
     </property>
     <property name="elideMode">
      <enum>Qt::ElideNone</enum>
@@ -26642,7 +26642,7 @@ background-color: rgba(255, 255, 255, 0);</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_8">
        <item>
-        <widget class="QCustomButton" name="toolButton_dk_15">
+        <widget class="QCustomButton" name="toolButton_cao_ap_1">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -26655,18 +26655,18 @@ background-color: rgba(255, 255, 255, 0);</string>
           </font>
          </property>
          <property name="text">
-          <string>Ngắt cao áp 1 và 2</string>
+          <string>Cao áp 1</string>
          </property>
          <property name="checkable">
           <bool>true</bool>
          </property>
          <property name="autoExclusive">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCustomButton" name="toolButton_dk_10">
+        <widget class="QCustomButton" name="toolButton_cao_ap_2">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -26679,37 +26679,13 @@ background-color: rgba(255, 255, 255, 0);</string>
           </font>
          </property>
          <property name="text">
-          <string>Nối cao áp 1, ngắt  2</string>
+          <string>Cao áp 2</string>
          </property>
          <property name="checkable">
           <bool>true</bool>
          </property>
          <property name="autoExclusive">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCustomButton" name="toolButton_dk_14">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>Nối cao áp 1, nối  2</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="autoExclusive">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -44809,7 +44785,4 @@ color: rgb(255, 0, 0);</string>
  </customwidgets>
  <resources/>
  <connections/>
- <buttongroups>
-  <buttongroup name="buttonGroup"/>
- </buttongroups>
 </ui>

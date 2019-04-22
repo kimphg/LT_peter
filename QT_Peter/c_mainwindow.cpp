@@ -1870,6 +1870,7 @@ void Mainwindow::DrawViewFrame(QPainter* p)
     p->setPen(penYellow);
     p->drawEllipse(ppiRect);
     p->setFont(QFont("Times", 10));
+    CConfig::mStat.antennaAziDeg = degrees(pRadar->getCurAziTrueRad());//todo
     //ve vanh goc ngoai
     for(short theta=0;theta<360;theta+=2)
     {
@@ -2148,7 +2149,7 @@ void Mainwindow::Update100ms()
     int posy = (QCursor::pos()).y();
     if(posx)mMousex= posx;
     if(posy)mMousey= posy;
-    CConfig::mStat.antennaAziDeg = degrees(pRadar->getCurAziTrueRad());//todo
+
 
     if(CConfig::mStat.isTransmitting){
         CConfig::mStat.antennaBearingDeg = CConfig::mStat.antennaAziDeg - CConfig::mStat.shipHeadingDeg;
@@ -2446,9 +2447,26 @@ void Mainwindow::CheckRadarStatus()
         if(CConfig::mStat.mCaoApReady==2)ui->groupBox_20->setStyleSheet("background-color: rgb(255, 10, 10);color:rgb(255, 255, 255);");
         else if(CConfig::mStat.mCaoApReady==1)ui->groupBox_20->setStyleSheet("background-color: rgb(150, 150, 10);color:rgb(255, 255, 255);");
         else if(CConfig::mStat.mCaoApReady==0)ui->groupBox_20->setStyleSheet("background-color: rgb(24, 32, 64);color:rgb(255, 255, 255);");
-        if(CConfig::mStat.mCaoApKetNoi==0)ui->toolButton_dk_15->setChecked(true);//cao ap
-        else if(CConfig::mStat.mCaoApKetNoi==1)ui->toolButton_dk_10->setChecked(true);//cao ap
-        else if(CConfig::mStat.mCaoApKetNoi==2)ui->toolButton_dk_14->setChecked(true);//cao ap
+        if(CConfig::mStat.mCaoApKetNoi==0)
+        {
+            ui->toolButton_cao_ap_1->setChecked(false);//cao ap
+            ui->toolButton_cao_ap_2->setChecked(false);//cao ap
+        }
+        else if(CConfig::mStat.mCaoApKetNoi==1)
+        {
+            ui->toolButton_cao_ap_1->setChecked(true);//cao ap
+            ui->toolButton_cao_ap_2->setChecked(false);//cao ap
+        }
+        else if(CConfig::mStat.mCaoApKetNoi==2)
+        {
+            ui->toolButton_cao_ap_1->setChecked(false);//cao ap
+            ui->toolButton_cao_ap_2->setChecked(true);//cao ap
+        }
+        else if(CConfig::mStat.mCaoApKetNoi==3)
+        {
+            ui->toolButton_cao_ap_1->setChecked(true);//cao ap
+            ui->toolButton_cao_ap_2->setChecked(true);//cao ap
+        }
     }
     else
     {
@@ -4232,23 +4250,23 @@ void Mainwindow::on_toolButton_dk_12_clicked()
     processing->sendCommand(commandMay22,12,false);
 }
 
-void Mainwindow::on_toolButton_dk_10_clicked()
-{
-    commandMay22[8]=0x01;
-    processing->sendCommand(commandMay22,12,false);
-}
+//void Mainwindow::on_toolButton_dk_10_clicked()
+//{
+//    commandMay22[8]=0x01;
+//    processing->sendCommand(commandMay22,12,false);
+//}
 
-void Mainwindow::on_toolButton_dk_14_clicked()
-{
-    commandMay22[8]=0x02;
-    processing->sendCommand(commandMay22,12,false);
-}
+//void Mainwindow::on_toolButton_dk_14_clicked()
+//{
+//    commandMay22[8]=0x02;
+//    processing->sendCommand(commandMay22,12,false);
+//}
 
-void Mainwindow::on_toolButton_dk_15_clicked()
-{
-    commandMay22[8]=0x00;
-    processing->sendCommand(commandMay22,12,false);
-}
+//void Mainwindow::on_toolButton_dk_15_clicked()
+//{
+//    commandMay22[8]=0x00;
+//    processing->sendCommand(commandMay22,12,false);
+//}
 
 void Mainwindow::on_toolButton_sled_time25_clicked()
 {
@@ -5205,4 +5223,25 @@ void Mainwindow::on_comboBox_currentIndexChanged(int index)
     case 11 : sendToRadarString(CConfig::getString("mFreq12Command"));break;
     default : break;
     }
+}
+
+//void Mainwindow::on_toolButton_cao_ap_1_clicked(bool checked)
+//{
+
+//}
+
+void Mainwindow::on_toolButton_cao_ap_1_clicked()
+{
+    unsigned char is_checked_1 = ui->toolButton_cao_ap_1->isChecked();
+    unsigned char is_checked_2 = ui->toolButton_cao_ap_2->isChecked();
+    commandMay22[8]=is_checked_1+is_checked_2*2;
+    processing->sendCommand(commandMay22,12,false);
+}
+
+void Mainwindow::on_toolButton_cao_ap_2_clicked()
+{
+    unsigned char is_checked_1 = ui->toolButton_cao_ap_1->isChecked();
+    unsigned char is_checked_2 = ui->toolButton_cao_ap_2->isChecked();
+    commandMay22[8]=is_checked_1+is_checked_2*2;
+    processing->sendCommand(commandMay22,12,false);
 }

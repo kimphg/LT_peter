@@ -664,7 +664,7 @@ void dataProcessingThread::run()
             int len = radarSocket->pendingDatagramSize();
             if(len<NAV_FRAME_LEN&&len!=1058)// system packets
             {
-
+                char* dataPtr = (char*)&mReceiveBuff[0];
                 radarSocket->readDatagram((char*)&mReceiveBuff[0],len);
 
                 if(((mReceiveBuff[0])==0x04)&&(len==1058)) //may hoi
@@ -866,20 +866,7 @@ void dataProcessingThread::radTxOff()
     //    }
 }
 
-void dataProcessingThread::setVaru(bool isOn)
-{
 
-}
-
-void dataProcessingThread::setSharu(bool isOn)
-{
-
-}
-
-void dataProcessingThread::setBaru(bool isOn)
-{
-
-}
 
 void dataProcessingThread::sendCommand(unsigned char *commandBuff, short len,bool queued )
 {

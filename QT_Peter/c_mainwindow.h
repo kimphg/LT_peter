@@ -496,11 +496,11 @@ private slots:
 
     void on_toolButton_dk_12_clicked();
 
-    void on_toolButton_dk_10_clicked();
+//    void on_toolButton_dk_10_clicked();
 
-    void on_toolButton_dk_14_clicked();
+//    void on_toolButton_dk_14_clicked();
 
-    void on_toolButton_dk_15_clicked();
+//    void on_toolButton_dk_15_clicked();
 
     void on_toolButton_sled_time25_clicked();
 
@@ -693,6 +693,12 @@ private slots:
     void on_toolButton_tx_3_clicked(bool checked);
 
     void on_comboBox_currentIndexChanged(int index);
+
+
+
+    void on_toolButton_cao_ap_1_clicked();
+
+    void on_toolButton_cao_ap_2_clicked();
 
 private:
 
