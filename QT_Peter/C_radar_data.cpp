@@ -27,7 +27,7 @@ static short indexLastProcessAzi = 0;
 static short indexCurrProcessAzi = 0;
 static short    curIdCount = 1;
 static qint64   cur_rot_timeMSecs ;//= QDateTime::currentMSecsSinceEpoch();
-static int      antennaHeadOffset;
+//static int      antennaHeadOffset;
 static float    rot_period_min =0;
 static short histogram[256];
 #define AZI_QUEUE_SIZE 500

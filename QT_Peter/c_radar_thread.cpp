@@ -923,10 +923,10 @@ void dataProcessingThread::sendCommand(unsigned char *commandBuff, short len,boo
                                    len,
                                    QHostAddress("192.168.1.253"),30004
                                    );
-        //        radarSocket->writeDatagram((char*)commandBuff,
-        //                len,
-        //                QHostAddress("127.0.0.1"),30002
-        //                );
+                radarSocket->writeDatagram((char*)commandBuff,
+                        len,
+                        QHostAddress("127.0.0.1"),8001
+                        );
     }
 }
 void dataProcessingThread::startRecord(QString fileName)

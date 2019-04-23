@@ -426,7 +426,7 @@ public:
     std::vector<C_primary_track>        mTrackList;
     std::vector<plot_t>         plot_list;
     std::vector<object_t>       mFreeObjList;
-
+    int      antennaHeadOffset;
     float rgStdErr;
 //    qint64 time_start_ms;
     double sn_scale;

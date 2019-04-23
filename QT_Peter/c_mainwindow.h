@@ -698,6 +698,8 @@ private slots:
 
     void on_toolButton_cao_ap_2_clicked();
 
+    void on_toolButton_antennaConfigUpdate_clicked();
+
 private:
 
 //    bool mShowobjects,

@@ -5225,10 +5225,6 @@ void Mainwindow::on_comboBox_currentIndexChanged(int index)
     }
 }
 
-//{
-
-//}
-
 void Mainwindow::on_toolButton_cao_ap_1_clicked()
 {
     unsigned char is_checked_1 = ui->toolButton_cao_ap_1->isChecked();
@@ -5243,4 +5239,12 @@ void Mainwindow::on_toolButton_cao_ap_2_clicked()
     unsigned char is_checked_2 = ui->toolButton_cao_ap_2->isChecked();
     commandMay22[8]=is_checked_1+is_checked_2*2;
     processing->sendCommand(commandMay22,12,false);
+}
+
+void Mainwindow::on_toolButton_antennaConfigUpdate_clicked()
+{
+   CConfig::setValue("antennaHeadOffset", ui->textEdit_headingAdjust->text().toDouble());
+   pRadar->antennaHeadOffset = ui->textEdit_headingAdjust->text().toDouble();
+   CConfig::setValue("mInverseRotAziCorrection", ui->textEdit_headingAdjustInverse->text().toDouble());
+   pRadar->mInverseRotAziCorrection= ui->textEdit_headingAdjust->text().toDouble();
 }
