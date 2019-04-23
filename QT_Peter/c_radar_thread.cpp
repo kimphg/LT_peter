@@ -866,7 +866,20 @@ void dataProcessingThread::radTxOff()
     //    }
 }
 
+void dataProcessingThread::setVaru(bool isOn)
+{
 
+}
+
+void dataProcessingThread::setSharu(bool isOn)
+{
+
+}
+
+void dataProcessingThread::setBaru(bool isOn)
+{
+
+}
 
 void dataProcessingThread::sendCommand(unsigned char *commandBuff, short len,bool queued )
 {

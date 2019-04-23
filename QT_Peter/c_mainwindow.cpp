@@ -5225,7 +5225,6 @@ void Mainwindow::on_comboBox_currentIndexChanged(int index)
     }
 }
 
-//void Mainwindow::on_toolButton_cao_ap_1_clicked(bool checked)
 //{
 
 //}

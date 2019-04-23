@@ -694,8 +694,6 @@ private slots:
 
     void on_comboBox_currentIndexChanged(int index);
 
-
-
     void on_toolButton_cao_ap_1_clicked();
 
     void on_toolButton_cao_ap_2_clicked();
