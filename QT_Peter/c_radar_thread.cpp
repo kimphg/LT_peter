@@ -15,7 +15,7 @@ bool *pIsPlaying;
 dataProcessingThread::~dataProcessingThread()
 {
     delete mRadarData;
-    signTTMFile.close();
+//    signTTMFile.close();
     //    delete arpaData;
 }
 
@@ -132,11 +132,11 @@ dataProcessingThread::dataProcessingThread()
     connect(&readUdpBuffTimer, &QTimer::timeout, this, &dataProcessingThread::ReadDataBuffer);
     readUdpBuffTimer.start(20);
     initSerialComm();
-    QDateTime now = QDateTime::currentDateTime();
-    QString filename = "D:/HR2D/rec_"+ now.toString("dd.MM.yy_hh.mm")+ ".log";
+//    QDateTime now = QDateTime::currentDateTime();
+//    QString filename = "D:/HR2D/ttm_rec_"+ now.toString("dd.MM.yy_hh.mm")+ ".log";
 
-    signTTMFile.setFileName(filename);
-    signTTMFile.open(QIODevice::WriteOnly);
+//    signTTMFile.setFileName(filename);
+
 
 }
 void dataProcessingThread::ReadNavData()
@@ -420,6 +420,7 @@ void dataProcessingThread::sendAziData()
 }
 void dataProcessingThread::sendRATTM()
 {
+
     for(int i=0;i<mRadarData->mTrackList.size();i++)
     {
         C_primary_track *track = &(mRadarData->mTrackList.at(i));
@@ -866,20 +867,20 @@ void dataProcessingThread::radTxOff()
     //    }
 }
 
-void dataProcessingThread::setVaru(bool isOn)
-{
+//void dataProcessingThread::setVaru(bool isOn)
+//{
 
-}
+//}
 
-void dataProcessingThread::setSharu(bool isOn)
-{
+//void dataProcessingThread::setSharu(bool isOn)
+//{
 
-}
+//}
 
-void dataProcessingThread::setBaru(bool isOn)
-{
+//void dataProcessingThread::setBaru(bool isOn)
+//{
 
-}
+//}
 
 void dataProcessingThread::sendCommand(unsigned char *commandBuff, short len,bool queued )
 {

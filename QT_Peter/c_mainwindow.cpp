@@ -2429,7 +2429,7 @@ void Mainwindow::CheckRadarStatus()
         else
         {
             ui->label_status_may_22->setStyleSheet("color: rgb(255, 10, 10);");
-            ui->label_status_may_22->setText(QString::fromUtf8("Máy phát không hoạt động"));
+            ui->label_status_may_22->setText(QString::fromUtf8("Máy phát không hoàn hảo"));
         }
         if(CConfig::mStat.mTaiAngTen==1)ui->toolButton_dk_2->setChecked(true);//tai ang ten
         else if(CConfig::mStat.mTaiAngTen==0)ui->toolButton_dk_13->setChecked(true);//tai tuong duong
@@ -2450,23 +2450,23 @@ void Mainwindow::CheckRadarStatus()
         else if(CConfig::mStat.mCaoApReady==0)ui->groupBox_20->setStyleSheet("background-color: rgb(24, 32, 64);color:rgb(255, 255, 255);");
         if(CConfig::mStat.mCaoApKetNoi==0)
         {
-            ui->toolButton_cao_ap_1->setChecked(false);//cao ap
-            ui->toolButton_cao_ap_2->setChecked(false);//cao ap
+            ui->checkBox_cao_ap_1->setChecked(false);//cao ap
+            ui->checkBox_cao_ap_2->setChecked(false);//cao ap
         }
         else if(CConfig::mStat.mCaoApKetNoi==1)
         {
-            ui->toolButton_cao_ap_1->setChecked(true);//cao ap
-            ui->toolButton_cao_ap_2->setChecked(false);//cao ap
+            ui->checkBox_cao_ap_1->setChecked(true);//cao ap
+            ui->checkBox_cao_ap_2->setChecked(false);//cao ap
         }
         else if(CConfig::mStat.mCaoApKetNoi==2)
         {
-            ui->toolButton_cao_ap_1->setChecked(false);//cao ap
-            ui->toolButton_cao_ap_2->setChecked(true);//cao ap
+            ui->checkBox_cao_ap_1->setChecked(false);//cao ap
+            ui->checkBox_cao_ap_2->setChecked(true);//cao ap
         }
         else if(CConfig::mStat.mCaoApKetNoi==3)
         {
-            ui->toolButton_cao_ap_1->setChecked(true);//cao ap
-            ui->toolButton_cao_ap_2->setChecked(true);//cao ap
+            ui->checkBox_cao_ap_1->setChecked(true);//cao ap
+            ui->checkBox_cao_ap_2->setChecked(true);//cao ap
         }
     }
     else
