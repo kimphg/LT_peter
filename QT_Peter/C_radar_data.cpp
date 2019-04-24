@@ -701,7 +701,7 @@ C_radar_data::C_radar_data()
     cur_rot_timeMSecs = QDateTime::currentMSecsSinceEpoch();
     C_primary_track track;
     mTrackList = std::vector<C_primary_track>(MAX_TRACKS_COUNT,track);
-    giaQuayPhanCung = true;
+    giaQuayPhanCung = false;
     //    mShipHeading = 0;
     isTrueHeadingFromRadar = true;
     rgStdErr = sn_scale*pow(2,clk_adc);
@@ -1559,6 +1559,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     }*/
     memcpy(mHeader,data,FRAME_HEADER_SIZE);
     unsigned char n_clk_adc = data[4];
+    mFreq = 0x0F&(data[20]);
     sn_stat = (data[5]<<8)+data[6];
     isTxOn = (data[21])>>4;
     if(clk_adc != n_clk_adc)
@@ -1600,6 +1601,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
         if(giaQuayPhanCung)
         {
             newAziTrue = ((data[11]<<8)|(data[12]))>>5;
+
         }
         else
         {
@@ -1607,15 +1609,16 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
             newAziTrue>>=3;
             newAziTrue&=0xffff;
             newAziTrue = ssiDecode(newAziTrue);
-            if(isTrueHeadingFromRadar)
-            {
-                mShipHeading2048 = ((data[15]<<8)|data[16])>>5;//get heading from radar frame
-                if(mShipHeading2048)CConfig::mStat.inputGyro(mShipHeading2048*360.0/MAX_AZIR,0);
-            }
-            newAziTrue+= (mShipHeading2048+antennaHeadOffset);
-            while(newAziTrue>=MAX_AZIR)newAziTrue-=MAX_AZIR;
-            newAziTrue = approximateAzi(newAziTrue);
+
         }
+        if(isTrueHeadingFromRadar)
+        {
+            mShipHeading2048 = (((data[13]<<8)|data[14]))/65536.0*MAX_AZIR;
+            CConfig::mStat.inputGyro(mShipHeading2048*360.0/MAX_AZIR,0);
+        }
+        newAziTrue+= (mShipHeading2048+antennaHeadOffset);
+        while(newAziTrue>=MAX_AZIR)newAziTrue-=MAX_AZIR;
+        newAziTrue = approximateAzi(newAziTrue);
 
 #endif
     }

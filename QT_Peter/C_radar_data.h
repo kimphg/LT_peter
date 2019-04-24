@@ -24,8 +24,8 @@
 #define TRACK_MIN_DTIME 500
 #define TRACK_LOST_TIME 90000
 #define TRACK_DELETE_TIME 120000
-#define TARGET_MAX_SPEED_MARINE     100.0
-#define AZI_ERROR_STD 0.03
+#define TARGET_MAX_SPEED_MARINE     150.0
+#define AZI_ERROR_STD 0.06
 #define MAX_TRACKS_COUNT                  99
 #define RAD_DISPLAY_RES             650//768
 #endif
@@ -443,7 +443,7 @@ public:
     double                  mRealAziRate,mRealAzi;
     void                    setZoomRectAR(float ctx, float cty, double sizeKM, double sizeDeg);
     void                    setZoomRectXY(float ctx, float cty);
-    unsigned int            sn_stat,chu_ky;
+    unsigned int            mFreq,sn_stat,chu_ky;
     unsigned short          *tb_tap;
     double                  tb_tap_k;
     //    int                     get_tb_tap();

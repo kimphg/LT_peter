@@ -2097,6 +2097,7 @@ void Mainwindow::SetTx(bool isOn)
 void Mainwindow::Update100ms()
 {
 
+    ui->label_cur_freq->setText(QString::number((pRadar->mFreq)+1));
     //smooth the heading
     ui->label_head_ship->setText(QString::number(CConfig::mStat.shipHeadingDeg,'f',1));
     ui->label_course_ship->setText(QString::number(CConfig::mStat.shipCourseDeg,'f',1));
