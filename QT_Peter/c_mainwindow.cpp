@@ -5003,10 +5003,10 @@ void Mainwindow::on_toolButton_auto_freq_clicked(bool checked)
 {
     if(checked)
     {
-        sendToRadarHS(CConfig::getString("mAutoFreqOnCommand").toStdString().data());
+        sendToRadarString(CConfig::getString("mAutoFreqOnCommand"));
 
     }
-    else sendToRadarHS(CConfig::getString("mAutoFreqOffCommand").toStdString().data());
+    else sendToRadarString(CConfig::getString("mAutoFreqOffCommand"));
 }
 
 void Mainwindow::on_toolButton_chong_nhieu_ppy_clicked(bool checked)
@@ -5248,4 +5248,16 @@ void Mainwindow::on_toolButton_antennaConfigUpdate_clicked()
    pRadar->antennaHeadOffset = ui->textEdit_headingAdjust->text().toDouble();
    CConfig::setValue("mInverseRotAziCorrection", ui->textEdit_headingAdjustInverse->text().toDouble());
    pRadar->mInverseRotAziCorrection= ui->textEdit_headingAdjust->text().toDouble();
+}
+
+void Mainwindow::on_toolButton_exit_4_clicked(bool checked)
+{
+    if(checked )
+    {
+        sendToRadarString(CConfig::getString("m300WNewCommand"));
+    }
+    else
+    {
+        sendToRadarString(CConfig::getString("m300WOldCommand"));
+    }
 }

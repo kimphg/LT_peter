@@ -700,6 +700,8 @@ private slots:
 
     void on_toolButton_antennaConfigUpdate_clicked();
 
+    void on_toolButton_exit_4_clicked(bool checked);
+
 private:
 
 //    bool mShowobjects,

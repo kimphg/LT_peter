@@ -1338,7 +1338,7 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
 
             }
             if(cut_noise&&(!(*pDetect)))displayVal= 0;
-            if(data_mem.may_hoi[azi][r_pos])displayVal+=80;
+            if(data_mem.may_hoi[azi/2][r_pos])displayVal+=80;
             if(displayVal>255)displayVal=255;
             data_mem.level_disp[azi][r_pos]=displayVal;
         }
@@ -1366,7 +1366,7 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
             }
             else displayVal=data_mem.level[azi][r_pos];
             if(data_mem.level[azi][r_pos]<nthresh)displayVal=0;
-            if(data_mem.may_hoi[azi][r_pos])displayVal+=80;
+            if(data_mem.may_hoi[azi/2][r_pos])displayVal+=80;
             /*
             data_mem.detect[azi][r_pos] = (!cutoff);
             //data_mem.detect[azi][r_pos] = (!cutoff);
@@ -1476,14 +1476,7 @@ void C_radar_data::setShipHeadingDeg(double headingDeg)
     }
 
 }
-void C_radar_data::ProcessGOData(unsigned char* data,short len, int azi)
-{
-    if(len<300)return;
-    for(int i=0;i<range_max;i++)
-    {
-        data_mem.may_hoi[azi][i] = (data[i/8+RADAR_HEADER_LEN]>>(i%8))&0x01;
-    }
-}
+
 int C_radar_data::approximateAzi(int newAzi)
 {
     double dazi = newAzi-mRealAzi;
@@ -1514,10 +1507,10 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
 {
     CConfig::mStat.mFrameCount++;
 #ifndef THEON
-    bool isGo = (data[0]==4);// du lieu may hoi
+    //bool isGo = (data[0]==4);// du lieu may hoi
     if((data[0]==4))
     {
-        ProcessGOData(data, len,curAzirTrue2048);
+        ProcessGOData(data, len,curAzirTrue2048/2);
         return;
 
     }
@@ -1920,6 +1913,15 @@ void C_radar_data::LeastSquareFit(C_primary_track* track)
 //    delete[] B;
 //    delete[] a;
 */
+}
+
+void C_radar_data::ProcessGOData(unsigned char *data, short len, int aziMH)
+{
+    if(len<300)return;
+    for(int i=0;i<range_max;i++)
+    {
+        data_mem.may_hoi[aziMH][i] = (data[i/8+RADAR_HEADER_LEN]>>(i%8))&0x01;
+    }
 }
 void C_radar_data::setAziViewOffsetDeg(double angle)
 {

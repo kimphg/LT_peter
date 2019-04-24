@@ -29249,70 +29249,6 @@ background-color: rgba(255, 255, 255, 0);</string>
            </property>
           </widget>
          </item>
-         <item row="7" column="0" colspan="2">
-          <widget class="QComboBox" name="comboBox">
-           <item>
-            <property name="text">
-             <string>Tần số 1</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Tần số 2</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Tần số 3</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Tần số 4</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Tần số 5</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Tần số 6</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Tần số 7</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Tần số 8</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Tần số 9</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Tần số 10</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Tần số 11</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Tần số 12</string>
-            </property>
-           </item>
-          </widget>
-         </item>
          <item row="9" column="0" colspan="2">
           <widget class="QCustomButton" name="toolButton_auto_freq">
            <property name="enabled">
@@ -29801,6 +29737,70 @@ background-color: rgba(255, 255, 255, 0);</string>
            <property name="buddy">
             <cstring>horizontalSlider_gain</cstring>
            </property>
+          </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="QComboBox" name="comboBox">
+           <item>
+            <property name="text">
+             <string>Tần số 1</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Tần số 2</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Tần số 3</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Tần số 4</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Tần số 5</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Tần số 6</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Tần số 7</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Tần số 8</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Tần số 9</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Tần số 10</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Tần số 11</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Tần số 12</string>
+            </property>
+           </item>
           </widget>
          </item>
         </layout>
@@ -45623,6 +45623,33 @@ color: rgb(255, 0, 0);</string>
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
     </property>
    </widget>
+   <widget class="QCustomButton" name="toolButton_exit_4">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>90</y>
+      <width>101</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>300W mới</string>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+   </widget>
    <zorder>frame</zorder>
    <zorder>groupBox_16</zorder>
    <zorder>groupBox_24</zorder>
@@ -45639,6 +45666,7 @@ color: rgb(255, 0, 0);</string>
    <zorder>toolButton_exit_3</zorder>
    <zorder>toolButton_passive_mode</zorder>
    <zorder>label_am2</zorder>
+   <zorder>toolButton_exit_4</zorder>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

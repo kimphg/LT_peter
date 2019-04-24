@@ -573,7 +573,7 @@ private:
     //    void LinearFit(track_t *track);
     void LeastSquareFit(C_primary_track* track);
     //    double LinearFitCost(track_t *track, object_t *myobj);
-    void ProcessGOData(unsigned char *data, short len, int azi);
+    void ProcessGOData(unsigned char *data, short len, int aziMH);
     void addDetectionZone(DetectionWindow dw);
     int approximateAzi(int newAzi);
     bool checkInsideDW(double aziDeg, double rgkm);
