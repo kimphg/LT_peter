@@ -737,6 +737,7 @@ private:
     void ConvXYradar2XYscr();
     PointInt ConvWGSToScrPoint(double m_Long, double m_Lat);
     PointDouble ConvScrPointToKMXY(int x, int y);
+    QPoint mBorderPoint2,mBorderPoint1,mBorderPoint0;
     void rotateVector(double angle, double *x, double *y);
     void SetUpTheonGUILayout();
     PointAziRgkm ConvScrPointToAziRgkm(int x, int y);

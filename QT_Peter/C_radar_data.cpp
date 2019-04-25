@@ -975,26 +975,7 @@ void C_radar_data::drawBlackAzi(short azi_draw)
 void C_radar_data::drawAzi(short azi)
 {
 
-    /*int leftAzi = azi-1;if(leftAzi<0)leftAzi+=MAX_AZIR;
-    int rightAzi = azi +1; if(rightAzi>=MAX_AZIR)rightAzi-=MAX_AZIR;
-    if(lastProcessAzi==leftAzi)
-    {
-        if(rotDir>-3)
-        {
-            rotDir--;
-            if(rotDir==-1)init_time+=2;
-        }
-    }
-    else if(lastProcessAzi==rightAzi)
-    {
-        if(rotDir<2)
-        {
-            rotDir++;
-            if(rotDir==0)init_time+=2;
-        }
-    }*/
-
-
+    //clear old image
     if(isInverseRotation)
     {
         //reset the display masks
@@ -1005,7 +986,6 @@ void C_radar_data::drawAzi(short azi)
         drawBlackAzi(prev_azi*3);
         //reset the drawing ray
         memset(&data_mem.display_ray[0][0],0,RAD_DISPLAY_RES*3);
-        //memset(&signal_map.display_zoom[0][0],0,DISPLAY_RES_ZOOM*3);
         //set data to the drawing ray
 
     }
@@ -1028,6 +1008,7 @@ void C_radar_data::drawAzi(short azi)
     {
         unsigned short value = data_mem.level_disp[azi][r_pos];
         unsigned short dopler = data_mem.dopler[azi][r_pos];
+//        if(r_pos==500)dopler = 16;
         if(DrawZoomAR(azi,r_pos,
                       value,
                       dopler,
@@ -1338,11 +1319,12 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
 
             }
             if(cut_noise&&(!(*pDetect)))displayVal= 0;
-            if(data_mem.may_hoi[azi/2][r_pos])displayVal+=80;
+
             if(displayVal>255)displayVal=255;
             data_mem.level_disp[azi][r_pos]=displayVal;
         }
-
+        if(data_mem.may_hoi[azi/2][r_pos])
+            data_mem.dopler[azi][r_pos]|=0x10;
 
     }
     // display value if isManualTune
@@ -1366,23 +1348,7 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
             }
             else displayVal=data_mem.level[azi][r_pos];
             if(data_mem.level[azi][r_pos]<nthresh)displayVal=0;
-            if(data_mem.may_hoi[azi/2][r_pos])displayVal+=80;
-            /*
-            data_mem.detect[azi][r_pos] = (!cutoff);
-            //data_mem.detect[azi][r_pos] = (!cutoff);
-            //detect = vuot nguong & dopler lap lai
 
-            if(data_mem.detect[azi][r_pos])
-            {
-                if(!init_time)
-                {data_mem.sled[azi][r_pos] = mSledValue;
-                    if(r_pos>RANGE_MIN)procPix(azi,r_pos);}
-            }
-            else
-            {
-                data_mem.sled[azi][r_pos] -= (data_mem.sled[azi][r_pos])/20.0f;
-                if(cut_noise)displayVal= 0;
-            }*/
             if(displayVal>255)displayVal=255;
             data_mem.level_disp[azi][r_pos]=displayVal;
 
@@ -2683,7 +2649,6 @@ void C_radar_data::drawSgnZoom(short azi_draw, short r_pos)
 }
 uint C_radar_data::getColor(unsigned char pvalue,unsigned char dopler,unsigned char sled)
 {
-    dopler = dopler%16;
     unsigned short value = ((unsigned short)pvalue)*brightness;
     if(!isShowSled)sled = 0;
     else
@@ -2692,82 +2657,90 @@ uint C_radar_data::getColor(unsigned char pvalue,unsigned char dopler,unsigned c
     {
         value = 0xff;
     }
-    unsigned char alpha;
+    unsigned char alpha = 0xff - ((0xff - value)*0.75);;
     unsigned char red   = 0;
     unsigned char green = 0;
     unsigned char blue  = 0;
     unsigned char gradation = value<<2;
     uint color;
-    switch(imgMode)
+    if((dopler&0xF0))
     {
-    case DOPLER_3_COLOR:
-        if(pvalue>1)
+        color = 0xffffff|(alpha<<24);
+    }
+    else
+    {
+        dopler&=0x0F;
+        switch(imgMode)
         {
-            if(dopler==0)
+        case DOPLER_3_COLOR:
+            if(pvalue>1)
             {
-                color = 0xffff00;
-            }else
-            {
-                char dDopler = dopler-1;
-                if(dDopler>7)dDopler = 15-dDopler;
-                color = 0x00ff00 | ((dDopler<<5));
+                if(dopler==0)
+                {
+                    color = 0xffff00;
+                }
+                else
+                {
+                    char dDopler = dopler-1;
+                    if(dDopler>7)dDopler = 15-dDopler;
+                    color = 0x00ff00 | ((dDopler<<5));
+                }
+                //alpha = value;//0xff - ((0xff - value)*0.75);
+                color = color|(alpha<<24);
             }
-            alpha = value;//0xff - ((0xff - value)*0.75);
-            color = color|(alpha<<24);
-        }
-        else
-        {
-            color = (sled<<24)|(0xff);
-        }
-        //
-
-        break;
-
-    case VALUE_ORANGE_BLUE:
-        if(pvalue>1)
-        {
-            alpha = 0xff - ((0xff - value)*0.75);
-            //pvalue-=(pvalue/10);
-            switch(value>>6)
+            else
             {
-            case 3:
-                red = 0xff;
-                green = 0xff - gradation;
-                break;
-            case 2:
-                red = gradation;
-                green = 0xff;
-                break;
-            case 1:
-                green = 0xff ;
-                blue = 0xff - gradation;
-                break;
-            case 0:
-                green = gradation ;
-                blue = 0xff;
-                break;
+                color = (sled<<24)|(0xff);
             }
-            color = (alpha<<24)|(red<<16)|(green<<8)|blue;
-        }
-        else
-        {
-            color = (sled<<24)|(0xff);
-        }
+            //
 
-        break;
-    case VALUE_YELLOW_SHADES:
-        if(pvalue>1)
-        {
-            alpha = value;//0xff - ((0xff - pvalue)*0.75);
-            color = (value<<24)|(0xff<<16)|(0xff<<8);
+            break;
+
+        case VALUE_ORANGE_BLUE:
+            if(pvalue>1)
+            {
+                //pvalue-=(pvalue/10);
+                switch(value>>6)
+                {
+                case 3:
+                    red = 0xff;
+                    green = 0xff - gradation;
+                    break;
+                case 2:
+                    red = gradation;
+                    green = 0xff;
+                    break;
+                case 1:
+                    green = 0xff ;
+                    blue = 0xff - gradation;
+                    break;
+                case 0:
+                    green = gradation ;
+                    blue = 0xff;
+                    break;
+                }
+                color = (alpha<<24)|(red<<16)|(green<<8)|blue;
+            }
+            else
+            {
+                color = (sled<<24)|(0xff);
+            }
+
+            break;
+        case VALUE_YELLOW_SHADES:
+            if(pvalue>1)
+            {
+                //alpha = value;//0xff - ((0xff - pvalue)*0.75);
+                color = (value<<24)|(0xff<<16)|(0xff<<8);
+            }
+            else
+            {
+                color = (sled<<24)|(0xff);
+            }
+            break;
+        default:
+            break;
         }
-        else
-        {
-            color = (sled<<24)|(0xff);
-        }
-        break;
-    default:
-        break;
     }
     return color;
 }

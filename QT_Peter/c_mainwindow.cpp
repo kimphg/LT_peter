@@ -45,7 +45,7 @@ static double                      mLat=DEFAULT_LAT,mLon = DEFAULT_LONG;
 static bool                        isMapOutdated = true;
 static bool isHeadUp = false;
 static int   mMousex =0,mMousey=0;
-static QPoint points[6];
+//static QPoint points[6];
 static double                      mMapOpacity;
 static int                         mMaxTapMayThu=18;
 static QTimer                      timerVideoUpdate,timerMetaUpdate;
@@ -1768,29 +1768,29 @@ void Mainwindow::ReloadSetting()
 }
 bool Mainwindow::CalcAziContour(double theta, double d)
 {
-    while (theta>360.0)theta-=360.0;
+    while (theta>359.99)theta-=360.0;
     while(theta<0.0)theta+=360.0;
     double tanA = tan(theta/57.295779513);
     double sinA = sin(theta/57.295779513);
     double cosA = cos(theta/57.295779513);
 
-    if(theta==0)
+    if(abs(theta)<0.01)
     {
-        points[2].setX(scrCtX  - dx);
-        points[2].setY(scrCtY - sqrt((d*d/4.0- dx*dx)));
-        points[1].setX(points[2].x());
-        points[1].setY(points[2].y()-5.0);
-        points[0].setX(points[2].x());
-        points[0].setY(points[2].y()-18.0);
+        mBorderPoint2.setX(scrCtX  - dx);
+        mBorderPoint2.setY(scrCtY - sqrt((d*d/4.0- dx*dx)));
+        mBorderPoint1.setX(mBorderPoint2.x());
+        mBorderPoint1.setY(mBorderPoint2.y()-5.0);
+        mBorderPoint0.setX(mBorderPoint2.x());
+        mBorderPoint0.setY(mBorderPoint2.y()-18.0);
     }
-    else if(theta==180)
+    else if(abs(theta-180)<0.01)
     {
-        points[2].setX(scrCtX  - dx);
-        points[2].setY(scrCtY + sqrt((d*d/4.0- dx*dx)));
-        points[1].setX(points[2].x());
-        points[1].setY(points[2].y()+5.0);
-        points[0].setX(points[2].x());
-        points[0].setY(points[2].y()+18.0);
+        mBorderPoint2.setX(scrCtX  - dx);
+        mBorderPoint2.setY(scrCtY + sqrt((d*d/4.0- dx*dx)));
+        mBorderPoint1.setX(mBorderPoint2.x());
+        mBorderPoint1.setY(mBorderPoint2.y()+5.0);
+        mBorderPoint0.setX(mBorderPoint2.x());
+        mBorderPoint0.setY(mBorderPoint2.y()+18.0);
     }
     else if (theta<180)
     {
@@ -1803,12 +1803,12 @@ bool Mainwindow::CalcAziContour(double theta, double d)
         double rx = (-b + delta)/2.0/a;
         double ry = -rx/tanA;
         if(abs(rx)<100&&abs(ry)<100)return false;
-        points[2].setX(scrCtX + rx -dx+1);
-        points[2].setY(scrCtY + ry-dy);
-        points[1].setX(points[2].x()+5.0*sinA);
-        points[1].setY(points[2].y()-5.0*cosA);
-        points[0].setX(points[2].x()+18.0*sinA);
-        points[0].setY(points[2].y()-18.0*cosA);
+        mBorderPoint2.setX(scrCtX + rx -dx+1);
+        mBorderPoint2.setY(scrCtY + ry-dy);
+        mBorderPoint1.setX(mBorderPoint2.x()+5.0*sinA);
+        mBorderPoint1.setY(mBorderPoint2.y()-5.0*cosA);
+        mBorderPoint0.setX(mBorderPoint2.x()+18.0*sinA);
+        mBorderPoint0.setY(mBorderPoint2.y()-18.0*cosA);
     }
     else
     {
@@ -1821,12 +1821,12 @@ bool Mainwindow::CalcAziContour(double theta, double d)
         double rx = (-b - delta)/2.0/a;
         double ry = -rx/tanA;
         if(abs(rx)<100&&abs(ry)<100)return false;
-        points[2].setX(scrCtX + rx - dx);
-        points[2].setY(scrCtY + ry - dy);
-        points[1].setX(points[2].x()+5.0*sinA);
-        points[1].setY(points[2].y()-5.0*cosA);
-        points[0].setX(points[2].x()+18.0*sinA);
-        points[0].setY(points[2].y()-18.0*cosA);
+        mBorderPoint2.setX(scrCtX + rx - dx);
+        mBorderPoint2.setY(scrCtY + ry - dy);
+        mBorderPoint1.setX(mBorderPoint2.x()+5.0*sinA);
+        mBorderPoint1.setY(mBorderPoint2.y()-5.0*cosA);
+        mBorderPoint0.setX(mBorderPoint2.x()+18.0*sinA);
+        mBorderPoint0.setY(mBorderPoint2.y()-18.0*cosA);
     }
     return true;
 
@@ -1879,18 +1879,18 @@ void Mainwindow::DrawViewFrame(QPainter* p)
 
             if(!(theta%10))
             {
-                p->drawLine(points[1],points[2]);
-                p->drawText(points[0].x()-25,points[0].y()-10,50,20,
+                p->drawLine(mBorderPoint1,mBorderPoint2);
+                p->drawText(mBorderPoint0.x()-25,mBorderPoint0.y()-10,50,20,
                         Qt::AlignHCenter|Qt::AlignVCenter,
                         QString::number(theta));
             }
-            else p->drawPoint(points[1]);
+            else p->drawPoint(mBorderPoint1);
         }
     }
     if(CalcAziContour((CConfig::mStat.antennaAziDeg)+trueShiftDeg,SCR_H-SCR_BORDER_SIZE-20))
     {
         p->setPen(QPen(Qt::red,4,Qt::SolidLine,Qt::RoundCap));
-        p->drawLine(points[2],points[1]);
+        p->drawLine(mBorderPoint2,mBorderPoint1);
         //draw text
 
     }
@@ -1904,8 +1904,8 @@ void Mainwindow::DrawViewFrame(QPainter* p)
             int value = theta;
             if(value>180)value-=360;
             if(!value)continue;
-            p->drawLine(points[0],points[1]);
-            p->drawText(points[2].x()-25,points[2].y()-10,50,20,
+            p->drawLine(mBorderPoint0,mBorderPoint1);
+            p->drawText(mBorderPoint2.x()-25,mBorderPoint2.y()-10,50,20,
                     Qt::AlignHCenter|Qt::AlignVCenter,
                     QString::number(value));
         }
@@ -1929,7 +1929,7 @@ void Mainwindow::DrawViewFrame(QPainter* p)
                   radCtY-15*cos(radians(radHeading-150)));
         QPoint p5(radCtX+15*sin(radians(radHeading-30)),
                   radCtY-15*cos(radians(radHeading-30)));
-        p->drawLine(p1,points[1]);
+        p->drawLine(p1,mBorderPoint1);
         p->drawLine(p1,p2);
         p->drawLine(p2,p3);
         p->drawLine(p3,p4);
@@ -1946,7 +1946,7 @@ void Mainwindow::DrawViewFrame(QPainter* p)
     //    if(CalcAziContour(processing->mAntennaAzi,SCR_H-SCR_BORDER_SIZE-20))
     //    {
     //        p->setPen(QPen(Qt::red,4,Qt::SolidLine,Qt::RoundCap));
-    //        p->drawLine(points[2],points[1]);
+    //        p->drawLine(mBorderPoint2,mBorderPoint1);
     //        //draw text
     //        //p->drawText(720,20,200,20,0,"Antenna: "+QString::number(aziDeg,'f',1));
 
@@ -1954,7 +1954,7 @@ void Mainwindow::DrawViewFrame(QPainter* p)
     if(CalcAziContour((CConfig::mStat.antennaAziDeg)+trueShiftDeg,SCR_H-SCR_BORDER_SIZE-20))
     {
         p->setPen(QPen(Qt::red,4,Qt::SolidLine,Qt::RoundCap));
-        p->drawLine(points[2],points[1]);
+        p->drawLine(mBorderPoint2,mBorderPoint1);
         //draw text
         //p->drawText(720,20,200,20,0,"Antenna: "+QString::number(aziDeg,'f',1));
 
@@ -2445,8 +2445,8 @@ void Mainwindow::CheckRadarStatus()
         else if(CConfig::mStat.mSuyGiam==1)ui->toolButton_dk_9->setChecked(true);//suy giam
         else if(CConfig::mStat.mSuyGiam==0)ui->toolButton_dk_3->setChecked(true);//suy giam
         ui->groupBox_20->setTitle(QString::fromUtf8("Cao ap san sang:")+QString::number(CConfig::mStat.mCaoApReady));
-        if(CConfig::mStat.mCaoApReady==2)ui->groupBox_20->setStyleSheet("background-color: rgb(255, 10, 10);color:rgb(255, 255, 255);");
-        else if(CConfig::mStat.mCaoApReady==1)ui->groupBox_20->setStyleSheet("background-color: rgb(150, 150, 10);color:rgb(255, 255, 255);");
+        if(CConfig::mStat.mCaoApReady==2)ui->groupBox_20->setStyleSheet("background-color: rgb(70, 30, 10);color:rgb(255, 255, 255);");
+        else if(CConfig::mStat.mCaoApReady==1)ui->groupBox_20->setStyleSheet("background-color: rgb(60, 60, 10);color:rgb(255, 255, 255);");
         else if(CConfig::mStat.mCaoApReady==0)ui->groupBox_20->setStyleSheet("background-color: rgb(24, 32, 64);color:rgb(255, 255, 255);");
         if(CConfig::mStat.mCaoApKetNoi==0)
         {
