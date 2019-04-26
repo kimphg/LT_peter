@@ -749,7 +749,7 @@ private:
     PointAziRgkm ConvScrPointToAziRgkm(int x, int y);
     void showTrackContext();
     void DrawViewFrameSquared(QPainter *p);
-    void StartCuda();
+    void checkCuda();
     void initCursor();
     void DrawAISMark(PointInt s, double head, QPainter *p, bool isSelected, QString name, int size);
     bool isInsideIADZone(int x, int y);

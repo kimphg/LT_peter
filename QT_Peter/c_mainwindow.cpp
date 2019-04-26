@@ -1587,20 +1587,19 @@ void Mainwindow::SetUpTheonGUILayout()
     ui->groupBox_5->setGeometry(1430,270,160,100);
 
 }
-void Mainwindow::StartCuda()
+void Mainwindow::checkCuda()
 {
     //system("taskkill /f /im cudaFFT.exe");
-    if(processCuda->state()==QProcess::Running)return;
-    //    QString file = "D:\\HR2D\\cudaFFT.exe";
-
-    {
-
-        //        system("taskkill /f /im cudaFFT.exe");
+    int a=processing->mCudaAge200ms;
+    if(processing->mCudaAge200ms<10)return;
+    else {
+        system("taskkill /f /im cudaFFT.exe");
         QFileInfo check_file("D:\\HR2D\\cudaFFT.exe");
         if (check_file.exists() && check_file.isFile())
         {
             processCuda->startDetached("D:\\HR2D\\cudaFFT.exe");
             CConfig::AddMessage(QString::fromUtf8("Khởi động core FFT: OK"));
+            processing->mCudaAge200ms=-30;
         }
         else
         {
@@ -1621,7 +1620,7 @@ void Mainwindow::InitSetting()
     //hide iad
     //    system("taskkill /f /im cudaFFT.exe");
 #ifndef THEON
-    StartCuda();
+    checkCuda();
 #endif
     ui->tabWidget_iad->setGeometry(200,-800,ui->tabWidget_iad->width(),ui->tabWidget_iad->height());
     ui->tabWidget_iad->hide();
@@ -2620,6 +2619,7 @@ void Mainwindow::sync1S()//period 1 second
     //            CConfig::AddMessage(QString::fromLatin1(ba));
     //        }
     //    }
+    checkCuda();
     if(CConfig::getWarningList()->size())
     {
         std::queue<WarningMessage> * listMsg = (CConfig::getWarningList());
@@ -3634,7 +3634,7 @@ void Mainwindow::on_toolButton_tx_clicked()
 #endif
 
     //restart cuda
-    StartCuda();
+
     SetTx(true);
     unsigned char command[]={0xaa,0x55,0x67,0x0c,
                              0x00,

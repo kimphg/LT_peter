@@ -87,6 +87,7 @@ double dataProcessingThread::getSelsynAzi() const
 }
 dataProcessingThread::dataProcessingThread()
 {
+    mCudaAge200ms=50;
     mFramesPerSec=0;
     isSimulationMode = false;
     mRadMode = ModeComplexSignal;
@@ -451,6 +452,7 @@ void dataProcessingThread::sendRATTM()
 }
 void dataProcessingThread::Timer200ms()
 {
+    mCudaAge200ms++;
     CalculateRFR();
     sendAziData();
     SerialDataRead();
@@ -668,9 +670,23 @@ void dataProcessingThread::run()
         while(radarSocket->hasPendingDatagrams())
         {
             int len = radarSocket->pendingDatagramSize();
+            if(!len)
+            {
+                radarSocket->readDatagram((char*)&mReceiveBuff[0],1);
+                continue;
+            }
+            if(len==4)
+            {
+                radarSocket->readDatagram((char*)&mReceiveBuff[0],len);
+                if(mReceiveBuff[0]==0xAA&&
+                        mReceiveBuff[1]==0xAA&&
+                        mReceiveBuff[2]==0xAA&&
+                        mReceiveBuff[3]==0xAA)mCudaAge200ms = 0;
+                continue;
+            }
             if(len<NAV_FRAME_LEN&&len!=1058)// system packets
             {
-                char* dataPtr = (char*)&mReceiveBuff[0];
+
                 radarSocket->readDatagram((char*)&mReceiveBuff[0],len);
 
                 if(((mReceiveBuff[0])==0x04)&&(len==1058)) //may hoi
