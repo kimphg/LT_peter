@@ -448,7 +448,7 @@ void C_primary_track::update()
                     if(mSpeedkmhFit<TARGET_MAX_SPEED_MARINE)
                     {
                         LinearFit(TRACK_STABLE_LEN);
-                        if(fitProbability<0.75)
+                        if(fitProbability<0.5)
                         {
                             printf("\n fitProbability too small:%f",fitProbability);
                         }
@@ -2095,7 +2095,7 @@ void C_radar_data::procPLot(plot_t* mPlot)
     newobject.energy = mPlot->sumEnergy;
     newobject.drg = (mPlot->maxR-mPlot->minR)+1;
     newobject.aziStdEr = azi_er_rad;
-    newobject.rgStdEr = (rgStdErr*newobject.drg)/2;
+    newobject.rgStdEr = rgStdErr+(newobject.drg*sn_scale)/2;//km
     if(ctA<0|| ctR>=RADAR_RESOLUTION)
     {
         return;
@@ -2976,6 +2976,10 @@ bool C_radar_data::checkBelongToTrack(object_t *obj1)
                 chosenTrack = track;
                 isBelongingToTrack = true;
             }
+            if((!isBelongingToTrack)&&(track->mDopler==obj1->dopler))
+            {
+                score=score;
+            }
 
         }
 
@@ -2999,6 +3003,7 @@ bool C_radar_data::checkBelongToTrack(object_t *obj1)
     else
     {
         //printf(" maxScore:%f",maxScore);
+
         return false;
     }
 }

@@ -65,10 +65,10 @@
 #define RAD_S_PULSE_RES             256
 //#define RAD_DISPLAY_RES             700//768
 #define RAD_FULL_RES                1792
-#define SIGNAL_SCALE_7              0.24113 //215.38461538461538461538461538461
-#define SIGNAL_SCALE_6              0.24113//184.61538461538461538461538461538
-#define SIGNAL_SCALE_5              0.24113 //153.84615384615384615384615384615
-#define SIGNAL_SCALE_4              0.24113 // 123.07692307692307692307692307692
+#define SIGNAL_SCALE_7              1.92904238624 //215.38461538461538461538461538461
+#define SIGNAL_SCALE_6              0.96452119312 //184.61538461538461538461538461538
+#define SIGNAL_SCALE_5              0.48226059656 //153.84615384615384615384615384615
+#define SIGNAL_SCALE_4              0.24113029828 // 123.07692307692307692307692307692
 #define SIGNAL_SCALE_3              0.12056514914 //92.307692307692307692307692307692
 #define SIGNAL_SCALE_2              0.06028257456 //61.538461538461538461538461538462
 #define SIGNAL_SCALE_1              0.03014128728 //30.769230769230769230769230769231
@@ -479,7 +479,7 @@ public:
     void        raw_map_init_zoom();
     void        drawAzi(short azi);
     void        drawBlackAzi(short azi_draw);
-    void        DrawZoom(short azi_draw, short r_pos);
+//    void        DrawZoom(short azi_draw, short r_pos);
     //    void        blackLine(short x0, short y0, short x1, short y1);
     //    void        addTrackManual(double x, double y);
     //    void        addTrack(object_t *mObject);

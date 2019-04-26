@@ -1429,16 +1429,13 @@ void Mainwindow::targetTableItemMenu(int row,int col)
         connect(&action1, SIGNAL(triggered()), this, SLOT(removeTarget()));
         contextMenu.addAction(&action1);
         contextMenu.exec((QCursor::pos()));
-        //delete
-        QAction action2(QString::fromUtf8("Xóa"), this);
-        connect(&action2, SIGNAL(triggered()), this, SLOT(removeTrack()));
-        contextMenu.addAction(&action2);
-        contextMenu.exec((QCursor::pos()));
     }
 }
 void Mainwindow::showTrackContext()
 {
     if(!mTargetMan.currTrackPt)return;
+    C_primary_track* track = mTargetMan.currTrackPt->track;
+    if(!track)return;
     QMenu contextMenu(tr("Context menu"), this);
     QAction action2(QString::fromUtf8("Đặt cờ địch"), this);
     connect(&action2, SIGNAL(triggered()), this, SLOT(setEnemy()));
@@ -1466,7 +1463,7 @@ void Mainwindow::showTrackContext()
     QAction action1(QString::fromUtf8("Xóa"), this);
     connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
     contextMenu.addAction(&action1);
-    C_primary_track* track = mTargetMan.currTrackPt->track;
+
     //Ph. vị
     QAction action7(QString::fromUtf8("Ph. vị:    ")+QString::number(track->aziDeg,'f',1) , this);
     //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
@@ -1545,8 +1542,11 @@ void Mainwindow::removeTrack()
 {
     if(mTargetMan.currTrackPt)
     {
-        mTargetMan.currTrackPt->track->Remove();
+
+        if(mTargetMan.currTrackPt->track)
+        {mTargetMan.currTrackPt->track->Remove();
         mTargetMan.currTrackPt->track = nullptr;
+        }
     }
 
 }
@@ -3612,7 +3612,7 @@ bool Mainwindow::CheckTxCondition(bool isPopupMsg)
 
     if(CConfig::mStat.getAgeTempOk()>300000)
     {
-        {
+        if(isPopupMsg){
             QMessageBox msgBox;
             msgBox.setText(QString::fromUtf8("Máy phát quá nhiệt trên 5 phút, cấm phát!"));
             msgBox.exec();
@@ -5260,4 +5260,39 @@ void Mainwindow::on_toolButton_exit_4_clicked(bool checked)
     {
         sendToRadarString(CConfig::getString("m300WOldCommand"));
     }
+}
+
+void Mainwindow::on_horizontalSlider_ppy_gain_2_valueChanged(int value)
+{
+    ui->label_speed_comp_value->setText(QString::number(ui->horizontalSlider_ppy_gain_2->value()));
+    if(ui->toolButton_chong_nhieu_ppy_2->isChecked())
+    {
+        int value = ui->horizontalSlider_ppy_gain_2->value();
+        uchar comand[8];
+        comand[0] = 0x2b;
+        comand[1] = 0xab;
+        comand[2] = value;
+        comand[3] = value>>8;
+        processing->sendCommand(&comand[0]);
+    }
+}
+
+void Mainwindow::on_toolButton_chong_nhieu_ppy_2_clicked()
+{
+
+}
+
+void Mainwindow::on_toolButton_chong_nhieu_ppy_2_clicked(bool checked)
+{
+    if(checked)
+    {
+        int value = ui->horizontalSlider_ppy_gain_2->value();
+        uchar comand[8];
+        comand[0] = 0x2b;
+        comand[1] = 0xab;
+        comand[2] = value;
+        comand[3] = value>>8;
+        processing->sendCommand(&comand[0]);
+    }
+    else sendToRadarHS("2bab00");
 }

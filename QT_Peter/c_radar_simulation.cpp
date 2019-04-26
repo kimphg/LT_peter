@@ -1,7 +1,7 @@
 #include "c_radar_simulation.h"
 static std::default_random_engine generator;
 static std::normal_distribution<double> distribNoise(30, 8);
-static std::normal_distribution<double> distribAzi(0, 1);//scale of 2048
+static std::normal_distribution<double> distribAzi(0, 0.01);//radian
 static std::normal_distribution<double> distribRot(180, 0.5 );//deg per sec
 static unsigned char n_clk_adc = 0;
 double rResolution = 0.015070644;
@@ -128,7 +128,7 @@ void target_t::update()
     x += distance*sin(bearing);
     y += distance*cos(bearing);
     //
-    azi = ConvXYToAziRad(x, y) / 3.141592653589*1024.0;// +(distribAzi(generator));
+    azi = (ConvXYToAziRad(x, y) + distribAzi(generator))/ 3.141592653589*1024.0;
     range	= ConvXYToR(x, y) / rResolution;
     generateSignal();
 }
@@ -212,14 +212,14 @@ void c_radar_simulation::pause()
 {
     isPlaying = false;
 }
-void c_radar_simulation::setTarget(int id,double aziDeg, double rangeKm,  double tbearingDeg,double tspeed, int dople)
+void c_radar_simulation::setTarget(int id,double aziDeg, double rangeKm,  double tbearingDeg,double tspeedKn, int dople)
 {
     //target_t newTarget(tx,ty,tspeed,tbearing,dople);
     if(id>=target.size())return;
     double tx,ty;
     tx = rangeKm*CONST_NM*sin(radians(aziDeg));
     ty = rangeKm*CONST_NM*cos(radians(aziDeg));
-    target[id].init(tx,ty,tspeed*CONST_NM,tbearingDeg,1);
+    target[id].init(tx,ty,tspeedKn*CONST_NM,tbearingDeg,1);//(double tx, double ty, double tspeedKmh, double tbearing, int dople)
 }
 void c_radar_simulation::setRange(int clk_adc)
 {

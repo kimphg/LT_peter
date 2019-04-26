@@ -1,6 +1,6 @@
 
 #include "c_radar_thread.h"
-
+#define NAV_FRAME_LEN 1500
 #define MAX_IREC 1600
 //#include <QGeoCoordinate>
 //#include <QNmeaPositionInfoSource>
@@ -277,6 +277,11 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
 
     if(len<7)return;
     if(isSimulationMode)return;
+    if(isRecording)
+    {
+        signRecFile.write((char*)&len,2);
+        signRecFile.write((char*)mReceiveBuff,len);
+    }
     if(readNmea(mReceiveBuff,len))
     {
         return;
@@ -523,7 +528,7 @@ void dataProcessingThread::playbackRadarData()
             buff.resize(len);
 
             signRepFile.read(buff.data(),len);
-            if(len>2000){
+            if(len>NAV_FRAME_LEN||((len==1058)&&(buff.data()[0]==4))){
                 //mRadarData->assembleDataFrame((unsigned char*)buff.data(),buff.size());
                 mRadarData->processSocketData((unsigned char*)buff.data(),len);
             }
@@ -647,7 +652,7 @@ void dataProcessingThread::processRadarData()
 
 }
 static unsigned long int lastFrameCount=0;
-#define NAV_FRAME_LEN 1500
+
 static uchar mReceiveBuff[NAV_FRAME_LEN];
 void dataProcessingThread::CalculateRFR()
 {

@@ -702,6 +702,12 @@ private slots:
 
     void on_toolButton_exit_4_clicked(bool checked);
 
+    void on_horizontalSlider_ppy_gain_2_valueChanged(int value);
+
+    void on_toolButton_chong_nhieu_ppy_2_clicked();
+
+    void on_toolButton_chong_nhieu_ppy_2_clicked(bool checked);
+
 private:
 
 //    bool mShowobjects,
