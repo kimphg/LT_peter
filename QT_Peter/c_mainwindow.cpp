@@ -1293,6 +1293,17 @@ void Mainwindow::DrawIADArea(QPainter* p)
         if((pRadar->img_zoom_ar==nullptr)||(pRadar->img_zoom_ar->isNull()))return;
         //        printf("\nDraw IAD");
         p->setPen(QPen(Qt::white,2));
+
+
+        QImage img = pRadar->img_zoom_ar->scaled(mIADrect.width(),mIADrect.height(),Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
+        p->drawImage(mIADrect,img);//todo:resize
+        p->setFont(QFont("Times",10));
+        p->drawText(mIADrect.x()+mIADrect.width()-50,mIADrect.y()+mIADrect.height()-10,
+                    QString::number(mZoomSizeAz,'f',1)+
+                    QString::fromUtf8(" Độ"));
+        p->drawText(mIADrect.x()+5,mIADrect.y()+15,
+                    QString::number( mZoomSizeRg/1.852,'f',1)+
+                    QString::fromUtf8(" Lý"));
         QPoint p1(mIADrect.x(),mIADrect.y());
         //QPoint p2(rect.x(),rect.y());
         QPoint p11(mIADrect.x()+mIADrect.width(),mIADrect.y());
@@ -1302,14 +1313,9 @@ void Mainwindow::DrawIADArea(QPainter* p)
         int step = mIADrect.width()/5;
         for(int i = 0;i<5;i++)
         {
-            p->drawLine(mIADrect.x()+step*i,mIADrect.y(),mIADrect.x()+step*i,mIADrect.y()+5);
-            p->drawLine(mIADrect.x(),mIADrect.y()+step*i,mIADrect.x()+5,mIADrect.y()+step*i);
+            p->drawLine(mIADrect.x()+step*i,mIADrect.y()+mIADrect.height(),mIADrect.x()+step*i,mIADrect.y()+mIADrect.height()-15);
+            p->drawLine(mIADrect.x(),mIADrect.y()+step*i,mIADrect.x()+15,mIADrect.y()+step*i);
         }
-        p->setFont(QFont("Times",10));
-        p->drawText(mIADrect.x()+mIADrect.width()-50,mIADrect.y()+15,QString::number(mZoomSizeRg/0.1852,'f',1)+QString::fromUtf8(" Liên"));
-        p->drawText(mIADrect.x()+5,mIADrect.y()+mIADrect.height()-5,QString::number(mZoomSizeAz,'f',1)+QString::fromUtf8(" Độ"));
-        QImage img = pRadar->img_zoom_ar->scaled(mIADrect.width(),mIADrect.height(),Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
-        p->drawImage(mIADrect,img);//todo:resize
 
 
 

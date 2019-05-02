@@ -2457,7 +2457,7 @@ void C_radar_data::setZoomRectAR(float ctx, float cty,double sizeKM,double sizeD
     if(zoom_ar_r0 <0)zoom_ar_r0=0;
     zoom_ar_r1 = zoom_ar_r0+zoom_ar_size_r;
     if(zoom_ar_r1>range_max)zoom_ar_r1=range_max;
-    img_zoom_ar = new QImage(zoom_ar_size_r+1,zoom_ar_size_a+1,QImage::Format_ARGB32);
+    img_zoom_ar = new QImage(zoom_ar_size_a+1,zoom_ar_size_r+1,QImage::Format_ARGB32);
     //img_zoom_ar->// toto:resize
     //drawZoomAR(a0,r0);
 
@@ -2474,7 +2474,7 @@ bool C_radar_data::DrawZoomAR(int a,int r,short val,short dopler,short sled)
     int pr = r-zoom_ar_r0;
     if(pr>zoom_ar_size_r)return false;
     if(pr<0)return false;
-    img_zoom_ar->setPixel(pr,pa,getColor(val,dopler,sled));
+    img_zoom_ar->setPixel(pa,zoom_ar_size_r-pr,getColor(val,dopler,sled));
     if(pa==zoom_ar_size_a)return true;
     if(pr==zoom_ar_size_r)return true;
     if(pa==0)return true;
