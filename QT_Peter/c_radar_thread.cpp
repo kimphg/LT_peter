@@ -277,11 +277,12 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
 {
 
     if(len<7)return;
+    unsigned short dataLen = len;
     if(isSimulationMode)return;
     if(isRecording)
     {
-        signRecFile.write((char*)&len,2);
-        signRecFile.write((char*)mReceiveBuff,len);
+        signRecFile.write((char*)&dataLen,2);
+        signRecFile.write((char*)mReceiveBuff,dataLen);
     }
     if(readNmea(mReceiveBuff,len))
     {

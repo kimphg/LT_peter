@@ -1481,10 +1481,14 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
 
     }
 
+#else
+    if((data[0]==4))
+    {
+        return;
 
-
+    }
 #endif
-
+    
     //check data valid
     if(data[0]!=0x55&&data[0]>7)
         return;

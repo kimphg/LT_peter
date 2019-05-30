@@ -303,10 +303,11 @@ void Mainwindow::wheelEvent(QWheelEvent *event)
     //if(event->delta()>0)ui->horizontalSlider->setValue(ui->horizontalSlider->value()+1);
     //if(event->delta()<0)ui->horizontalSlider->setValue(ui->horizontalSlider->value()-1);
 }
-void Mainwindow::mouseMoveEvent(QMouseEvent *event) {
+void Mainwindow::mouseMoveEvent(QMouseEvent *event) 
+{
 
-    if((mouse_mode&MouseDrag)&&(event->buttons() & Qt::LeftButton)) {
-
+    if((mouse_mode&MouseDrag)&&(event->buttons() & Qt::LeftButton)) 
+	{
         {
             short olddx = dx;
             short olddy = dy;
@@ -1302,7 +1303,7 @@ void Mainwindow::DrawIADArea(QPainter* p)
                     QString::number(mZoomSizeAz,'f',1)+
                     QString::fromUtf8(" Độ"));
         p->drawText(mIADrect.x()+5,mIADrect.y()+15,
-                    QString::number( mZoomSizeRg/1.852,'f',1)+
+                    QString::number(mZoomSizeRg/1.852,'f',1)+
                     QString::fromUtf8(" Lý"));
         QPoint p1(mIADrect.x(),mIADrect.y());
         //QPoint p2(rect.x(),rect.y());
@@ -1568,6 +1569,10 @@ void Mainwindow::addToTargets()
 }
 void Mainwindow::SetUpTheonGUILayout()
 {
+    ui->label_am2->hide();
+    ui->toolButton_exit_4->hide();
+    ui->toolButton_exit_3->hide();
+    ui->toolButton_passive_mode->hide();
     ui->groupBox_gps_3->hide();
     ui->groupBox_statuses->setGeometry(1430,1165,480,30);
     ui->groupBox_25->setGeometry(10,1010,130,100);
@@ -2808,30 +2813,30 @@ void Mainwindow::on_actionSaveMap_triggered()
     //vnmap.SaveBinFile();
 }
 
-void Mainwindow::on_actionSetting_triggered()
-{
-    //    GPSDialog *dlg = new GPSDialog(this);
-    //    dlg->setModal(false);
-    //    dlg->loadConfig(&config);
-    //    dlg->show();
-    //    dlg->setAttribute(Qt::WA_DeleteOnClose);
-    //    connect(dlg, SIGNAL(destroyed(QObject*)), SLOT(UpdateSetting()));
-    //    connect(dlg, SIGNAL(destroyed(QObject*)), SLOT(setCodeType()));
-}
-void Mainwindow::on_actionAddTarget_toggled(bool arg1)
-{
-    //isAddingTarget=arg1;
+//void Mainwindow::on_actionSetting_triggered()
+//{
+//    //    GPSDialog *dlg = new GPSDialog(this);
+//    //    dlg->setModal(false);
+//    //    dlg->loadConfig(&config);
+//    //    dlg->show();
+//    //    dlg->setAttribute(Qt::WA_DeleteOnClose);
+//    //    connect(dlg, SIGNAL(destroyed(QObject*)), SLOT(UpdateSetting()));
+//    //    connect(dlg, SIGNAL(destroyed(QObject*)), SLOT(setCodeType()));
+//}
+//void Mainwindow::on_actionAddTarget_toggled(bool arg1)
+//{
+//    //isAddingTarget=arg1;
 
-}
-
-
+//}
 
 
-void Mainwindow::on_actionClear_data_triggered()
-{
-    pRadar->resetData();
-    //    isScreenUp2Date = false;
-}
+
+
+//void Mainwindow::on_actionClear_data_triggered()
+//{
+//    pRadar->resetData();
+//    //    isScreenUp2Date = false;
+//}
 
 //void Mainwindow::on_actionView_grid_triggered(bool checked)
 //{
@@ -3928,10 +3933,10 @@ void Mainwindow::on_toolButton_setRangeUnit_clicked()
 
 
 
-void Mainwindow::on_toolButton_gps_update_auto_clicked()
-{
-    UpdateGpsData();
-}
+//void Mainwindow::on_toolButton_gps_update_auto_clicked()
+//{
+//    UpdateGpsData();
+//}
 
 void Mainwindow::UpdateGpsData()
 {

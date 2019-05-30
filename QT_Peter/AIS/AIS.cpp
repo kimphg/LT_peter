@@ -249,6 +249,7 @@ const struct AIS::AisParamPosPair* AIS::AisMsgParams[AIS_MSG_MAX] = {
 
 AIS::AIS()
 {
+    msgType=AIS_MSG_MAX;
     //msglen = 0;
     lastMesID = -1;
 }
@@ -437,7 +438,6 @@ bool AIS::getParamStart(enum AIS::Nmea0183AisParams param, unsigned& start)
 {
     if(msgType==AIS_MSG_MAX)return false;
     const struct AisParamPosPair* pparam = AisMsgParams[msgType];
-
     while (pparam->param != AIS_PARAM_MAX) {
         if (pparam->param == param) {
             start = pparam->start;

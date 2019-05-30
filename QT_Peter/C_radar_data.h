@@ -6,7 +6,7 @@
 //  |Last update: Jan 2019                                     |
 //  |Author: Phung Kim Phuong                                  |
 //  |----------------------------------------------------------|
-//#define THEON
+#define THEON
 //#define DEBUGMODE
 #ifdef THEON
 #define TRACK_LOST_TIME 75000

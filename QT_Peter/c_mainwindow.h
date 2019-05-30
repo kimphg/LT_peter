@@ -188,9 +188,9 @@ private slots:
 //
 //    void on_actionOpen_map_triggered();
     void on_actionSaveMap_triggered();
-    void on_actionSetting_triggered();
-    void on_actionAddTarget_toggled(bool arg1);
-    void on_actionClear_data_triggered();
+//    void on_actionSetting_triggered();
+//    void on_actionAddTarget_toggled(bool arg1);
+//    void on_actionClear_data_triggered();
 //    void on_actionView_grid_triggered(bool checked);
     void on_actionPlayPause_toggled(bool arg1);
 //    void on_actionRecording_triggered();
@@ -373,7 +373,7 @@ private slots:
 
 
 
-    void on_toolButton_gps_update_auto_clicked();
+//    void on_toolButton_gps_update_auto_clicked();
 
 
 
