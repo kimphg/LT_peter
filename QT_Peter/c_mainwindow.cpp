@@ -688,7 +688,7 @@ Mainwindow::Mainwindow(QWidget *parent) :
     initCursor();
     controlPressed = false;
     pMap = new QPixmap(SCR_H,SCR_H);
-    processCuda = new QProcess(this);
+//    processCuda = new QProcess();
     degreeSymbol= QString::fromLocal8Bit("\260");
 
     //cmLog = new DialogCommandLog();
@@ -1601,14 +1601,16 @@ void Mainwindow::SetUpTheonGUILayout()
 void Mainwindow::checkCuda()
 {
     //system("taskkill /f /im cudaFFT.exe");
-    int a=processing->mCudaAge200ms;
+//    int a=processing->mCudaAge200ms;
     if(processing->mCudaAge200ms<10)return;
     else {
         system("taskkill /f /im cudaFFT.exe");
         QFileInfo check_file("D:\\HR2D\\cudaFFT.exe");
         if (check_file.exists() && check_file.isFile())
         {
-            processCuda->startDetached("D:\\HR2D\\cudaFFT.exe");
+//            processCuda->start("D:\\HR2D\\cudaFFT.exe");
+
+            system("start D:\\HR2D\\cudaFFT.exe");
             CConfig::AddMessage(QString::fromUtf8("Khởi động core FFT: OK"));
             processing->mCudaAge200ms=-30;
         }
@@ -2161,7 +2163,7 @@ void Mainwindow::Update100ms()
     if(posx)mMousex= posx;
     if(posy)mMousey= posy;
 
-
+#ifndef THEON
     if(CConfig::mStat.isTransmitting){
         CConfig::mStat.antennaBearingDeg = CConfig::mStat.antennaAziDeg - CConfig::mStat.shipHeadingDeg;
         //check if bearing is inside the prohibited sector
@@ -2180,6 +2182,7 @@ void Mainwindow::Update100ms()
         isInsideProtected =isInsideProtectedNew;
         //
     }
+#endif
     if(pRadar->init_time)
     {
         ui->label_azi_antenna_head_true->setText(QString::number(int(CConfig::mStat.antennaAziDeg)));
@@ -3645,7 +3648,7 @@ void Mainwindow::on_toolButton_tx_clicked()
 #endif
 
     //restart cuda
-
+    system("taskkill /f /im cudaFFT.exe");
     SetTx(true);
     unsigned char command[]={0xaa,0x55,0x67,0x0c,
                              0x00,

@@ -95,7 +95,7 @@ private:
     PointInt mIADCenter;
     double mZoomScale;
     QRect ppiRect;
-    QProcess *processCuda ;
+//    QProcess *processCuda ;
     dataProcessingThread        *processing;// thread xu ly du lieu radar
     c_radar_simulation          *simulator;// thread tao gia tin hieu
     C_radar_data                *pRadar;

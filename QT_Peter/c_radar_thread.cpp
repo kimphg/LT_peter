@@ -1,7 +1,7 @@
 
 #include "c_radar_thread.h"
 #define NAV_FRAME_LEN 1500
-#define MAX_IREC 1600
+#define MAX_IREC 2000
 //#include <QGeoCoordinate>
 //#include <QNmeaPositionInfoSource>
 DataBuff dataB[MAX_IREC];
@@ -275,17 +275,17 @@ bool dataProcessingThread::readMay22Msg(unsigned char *mReceiveBuff,int len)
 }
 void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
 {
-
     if(len<7)return;
     unsigned short dataLen = len;
     if(isSimulationMode)return;
-    if(isRecording)
-    {
-        signRecFile.write((char*)&dataLen,2);
-        signRecFile.write((char*)mReceiveBuff,dataLen);
-    }
+
     if(readNmea(mReceiveBuff,len))
     {
+        if(isRecording)
+        {
+            signRecFile.write((char*)&dataLen,2);
+            signRecFile.write((char*)mReceiveBuff,dataLen);
+        }
         return;
     }
     else if(readMay22Msg(mReceiveBuff,len))//system messages
@@ -685,7 +685,7 @@ void dataProcessingThread::run()
                         mReceiveBuff[3]==0xAA)mCudaAge200ms = 0;
                 continue;
             }
-            if(len<NAV_FRAME_LEN&&len!=1058)// system packets
+            if(len<NAV_FRAME_LEN&&(len!=1058||len!=1100))// system packets
             {
 
                 radarSocket->readDatagram((char*)&mReceiveBuff[0],len);

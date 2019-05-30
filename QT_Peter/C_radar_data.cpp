@@ -1560,6 +1560,8 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     {
 #ifdef THEON
         newAziTrue =  ((data[11]<<8)|data[12])>>5;
+        newAziTrue+= (mShipHeading2048+antennaHeadOffset);
+        while(newAziTrue>=MAX_AZIR)newAziTrue-=MAX_AZIR;
 #else
         if(giaQuayPhanCung)
         {
@@ -1582,6 +1584,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
         newAziTrue+= (mShipHeading2048+antennaHeadOffset);
         while(newAziTrue>=MAX_AZIR)newAziTrue-=MAX_AZIR;
         newAziTrue = approximateAzi(newAziTrue);
+
 
 #endif
     }
