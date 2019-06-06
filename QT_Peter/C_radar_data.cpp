@@ -1027,9 +1027,8 @@ void C_radar_data::drawAzi(short azi)
             {
                 data_mem.display_ray[display_pos][0] = value;
                 data_mem.display_ray[display_pos][1] = dopler;
-
             }
-            if(data_mem.display_ray[display_pos][2] < data_mem.sled[azi][r_pos])
+            if (data_mem.display_ray[display_pos][2] < data_mem.sled[azi][r_pos])
             {
                 data_mem.display_ray[display_pos][2] = data_mem.sled[azi][r_pos];
             }
@@ -1047,7 +1046,6 @@ void C_radar_data::drawAzi(short azi)
             {
                 data_mem.display_ray_zoom[display_pos_zoom][0] += (value-data_mem.display_ray_zoom[display_pos_zoom][0])/1.4;
                 data_mem.display_ray_zoom[display_pos_zoom][1] = dopler;
-
             }
             if(true)//signal_map.display_zoom[display_pos_zoom][2] < signal_map.sled[azi][r_pos])
             {
