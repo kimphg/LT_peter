@@ -428,6 +428,7 @@ public:
     std::vector<plot_t>         plot_list;
     std::vector<object_t>       mFreeObjList;
     int      antennaHeadOffset;
+    int     freqHeadOffset;
     float rgStdErr;
 //    qint64 time_start_ms;
     double sn_scale;
@@ -607,6 +608,7 @@ public:
     void setShipHeadingDeg(double headingDeg);
     void setAziViewOffsetDeg(double angle);
     void addDetectionZoneAZ(double az, double rg, double dazi, double drg, bool isOneTime);
+    void setFreqHeadOffsetDeg(double offset);
 };
 
 //extern C_radar_data radarData;

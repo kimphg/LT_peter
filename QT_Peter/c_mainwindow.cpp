@@ -5,10 +5,10 @@
 
 #define MAX_VIEW_RANGE_KM   50
 static QPen penTargetHistory(QBrush(Qt::gray),1);
-static QPen penTargetEnemy(QBrush(Qt::magenta),2);
+static QPen penTargetEnemy(QBrush(Qt::magenta),1);
 static QPen penTargetFriend(QBrush(QColor(0,200,200 ,255)),2);
-static QPen penTargetEnemySelected(QBrush(Qt::magenta),3);
-static QPen penTargetFriendSelected(QBrush(QColor(50,255,255 ,255)),4);
+static QPen penTargetEnemySelected(QBrush(Qt::magenta),2);
+static QPen penTargetFriendSelected(QBrush(QColor(50,255,255 ,255)),3);
 static QPen penCyan(QBrush(QColor(50,255,255 ,255)),1);//xoay mui tau
 static enum ZoomMode {ZoomHiden =0,ZoomIAD=1,ZoomHistogram=2,ZoomSpectre=3,ZoomRamp=4,ZoomZoom=5} zoom_mode=ZoomHiden;
 static PointAziRgkm AutoSelP1,AutoSelP2;
@@ -342,8 +342,32 @@ void Mainwindow::keyPressEvent(QKeyEvent *event)
 {
     this->setFocus();
     int key = event->key();
+     if(key == Qt::Key_Space)
+    {
+        int posx = (QCursor::pos()).x();
+        int posy = (QCursor::pos()).y();
+        if(posx)mMousex= posx;
+        if(posy)mMousey= posy;
+#ifndef THEON
+        if(!isInsideViewZone(mMousex,mMousey))return;
+        double azid,rg;
+        C_radar_data::kmxyToPolarDeg((mMousex - radCtX)/mScale,-(mMousey - radCtY)/mScale,&azid,&rg);
+        int aziBinary = int(azid/360.0*4096);
+        unsigned char command[]={0xaa,0x55,0x6a,0x09,
+                                 static_cast<unsigned char>(aziBinary>>8),
+                                 static_cast<unsigned char>(aziBinary),
+                                 0x00,0x00,0x00,0x00,0x00,0x00};
+        processing->sendCommand(command,9,false);
+#endif
+        mZoomCenterx = mMousex;
+        mZoomCentery = mMousey;
 
-    if(key == Qt::Key_Control)
+        pRadar->setZoomRectAR((mMousex - radCtX)/mScale,
+                              -(mMousey - radCtY)/mScale,
+                              mZoomSizeRg,mZoomSizeAz);
+        pRadar->setZoomRectXY((mMousex - radCtX),(mMousey - radCtY));
+    }
+    else if(key == Qt::Key_Control)
     {
         controlPressed  = true;
     }
@@ -387,31 +411,7 @@ void Mainwindow::keyPressEvent(QKeyEvent *event)
         }
 
     }
-    else if(key == Qt::Key_Space)
-    {
-        int posx = (QCursor::pos()).x();
-        int posy = (QCursor::pos()).y();
-        if(posx)mMousex= posx;
-        if(posy)mMousey= posy;
-#ifndef THEON
-        if(!isInsideViewZone(mMousex,mMousey))return;
-        double azid,rg;
-        C_radar_data::kmxyToPolarDeg((mMousex - radCtX)/mScale,-(mMousey - radCtY)/mScale,&azid,&rg);
-        int aziBinary = int(azid/360.0*4096);
-        unsigned char command[]={0xaa,0x55,0x6a,0x09,
-                                 static_cast<unsigned char>(aziBinary>>8),
-                                 static_cast<unsigned char>(aziBinary),
-                                 0x00,0x00,0x00,0x00,0x00,0x00};
-        processing->sendCommand(command,9,false);
-#endif
-        mZoomCenterx = mMousex;
-        mZoomCentery = mMousey;
 
-        pRadar->setZoomRectAR((mMousex - radCtX)/mScale,
-                              -(mMousey - radCtY)/mScale,
-                              mZoomSizeRg,mZoomSizeAz);
-        pRadar->setZoomRectXY((mMousex - radCtX),(mMousey - radCtY));
-    }
     else if((!controlPressed)&&key >= Qt::Key_1&&key<=Qt::Key_6)
     {
         /*int keyNum = key-Qt::Key_1;
@@ -474,7 +474,8 @@ bool Mainwindow::isInsideViewZone(int x, int y)
 
     short dx = x-scrCtX;
     short dy = y-scrCtY;
-    if((dx*dx+dy*dy)>(SCR_H*SCR_H/4))
+    short range = SCR_H-60;
+    if((dx*dx+dy*dy)>(range*range/4))
         return false;
     else
         return true;
@@ -630,6 +631,7 @@ void Mainwindow::checkClickAIS(int xclick, int yclick)
             dialog->setWindowFlags(dialog->windowFlags()&(~Qt::WindowContextHelpButtonHint));
             dialog->setFixedSize(dialog->width(),dialog->height());
             dialog->setAisData(&processing->m_aisList,aisObj.mMMSI);
+            dialog->setGeometry(10,800,0,0);
             dialog->show();
             break;
         }
@@ -647,6 +649,7 @@ void Mainwindow::checkClickAIS(int xclick, int yclick)
                 dialog->setWindowFlags(dialog->windowFlags()&(~Qt::WindowContextHelpButtonHint));
                 dialog->setFixedSize(dialog->width(),dialog->height());
                 dialog->setAisData(&processing->m_aisList,aisObj.mMMSI);
+                dialog->setGeometry(10,800,0,0);
                 dialog->show();
                 break;
             }
@@ -1271,6 +1274,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
 
     //ve luoi cu ly phuong vi
     DrawDetectZones(&p);
+
     DrawViewFrame(&p);
     //    DrawViewFrameSquared(&p);
     DrawIADArea(&p);
@@ -5224,18 +5228,43 @@ void Mainwindow::on_comboBox_currentIndexChanged(int index)
 
     switch (index)
     {
-    case 0 : sendToRadarString(CConfig::getString("mFreq1Command"));break;
-    case 1 : sendToRadarString(CConfig::getString("mFreq2Command"));break;
-    case 2 : sendToRadarString(CConfig::getString("mFreq3Command"));break;
-    case 3 : sendToRadarString(CConfig::getString("mFreq4Command"));break;
-    case 4 : sendToRadarString(CConfig::getString("mFreq5Command"));break;
-    case 5 : sendToRadarString(CConfig::getString("mFreq6Command"));break;
-    case 6 : sendToRadarString(CConfig::getString("mFreq7Command"));break;
-    case 7 : sendToRadarString(CConfig::getString("mFreq8Command"));break;
-    case 8 : sendToRadarString(CConfig::getString("mFreq9Command"));break;
-    case 9 : sendToRadarString(CConfig::getString("mFreq10Command"));break;
-    case 10 : sendToRadarString(CConfig::getString("mFreq11Command"));break;
-    case 11 : sendToRadarString(CConfig::getString("mFreq12Command"));break;
+    case 0 :
+        pRadar->setFreqHeadOffsetDeg(CConfig::getDouble("mFreq1Offset",0));
+        sendToRadarString(CConfig::getString("mFreq1Command"));
+        break;
+    case 1 :
+        pRadar->setFreqHeadOffsetDeg(CConfig::getDouble("mFreq2Offset",0));
+        sendToRadarString(CConfig::getString("mFreq2Command"));break;
+    case 2 :
+        pRadar->setFreqHeadOffsetDeg(CConfig::getDouble("mFreq3Offset",0));
+        sendToRadarString(CConfig::getString("mFreq3Command"));break;
+    case 3 :
+        pRadar->setFreqHeadOffsetDeg(CConfig::getDouble("mFreq4Offset",0));
+        sendToRadarString(CConfig::getString("mFreq4Command"));break;
+    case 4 :
+        pRadar->setFreqHeadOffsetDeg(CConfig::getDouble("mFreq5Offset",0));
+        sendToRadarString(CConfig::getString("mFreq5Command"));break;
+    case 5 :
+        pRadar->setFreqHeadOffsetDeg(CConfig::getDouble("mFreq6Offset",0));
+        sendToRadarString(CConfig::getString("mFreq6Command"));break;
+    case 6 :
+        pRadar->setFreqHeadOffsetDeg(CConfig::getDouble("mFreq7Offset",0));
+        sendToRadarString(CConfig::getString("mFreq7Command"));break;
+    case 7 :
+        pRadar->setFreqHeadOffsetDeg(CConfig::getDouble("mFreq8Offset",0));
+        sendToRadarString(CConfig::getString("mFreq8Command"));break;
+    case 8 :
+        pRadar->setFreqHeadOffsetDeg(CConfig::getDouble("mFreq9Offset",0));
+        sendToRadarString(CConfig::getString("mFreq9Command"));break;
+    case 9 :
+        pRadar->setFreqHeadOffsetDeg(CConfig::getDouble("mFreq10Offset",0));
+        sendToRadarString(CConfig::getString("mFreq10Command"));break;
+    case 10 :
+        pRadar->setFreqHeadOffsetDeg(CConfig::getDouble("mFreq11Offset",0));
+        sendToRadarString(CConfig::getString("mFreq11Command"));break;
+    case 11 :
+        pRadar->setFreqHeadOffsetDeg(CConfig::getDouble("mFreq12Offset",0));
+        sendToRadarString(CConfig::getString("mFreq12Command"));break;
     default : break;
     }
 }

@@ -1,5 +1,7 @@
 
 #include "c_radar_thread.h"
+
+#include <QDir>
 #define NAV_FRAME_LEN 1500
 #define MAX_IREC 2000
 //#include <QGeoCoordinate>
@@ -15,6 +17,7 @@ bool *pIsPlaying;
 dataProcessingThread::~dataProcessingThread()
 {
     delete mRadarData;
+    aisLogFile.close();
 //    signTTMFile.close();
     //    delete arpaData;
 }
@@ -36,11 +39,11 @@ void dataProcessingThread::ReadDataBuffer()
     while(iRec!=iRead)
     {
         nread++;
-        if(nread>=600)
-        {
-            mRadarData->resetData();
-            break;
-        }
+//        if(nread>=600)
+//        {
+//            mRadarData->resetData();
+//            break;
+//        }
         uchar *pData = &(dataB[iRead].data[0]);
         unsigned short dataLen = dataB[iRead].len;
         mRadarData->processSocketData(pData,dataLen);
@@ -87,6 +90,14 @@ double dataProcessingThread::getSelsynAzi() const
 }
 dataProcessingThread::dataProcessingThread()
 {
+            QDateTime now = QDateTime::currentDateTime();
+            if(!QDir("D:\\HR2D\\logs\\"+now.toString("\\dd.MM\\")).exists())
+            {
+                QDir().mkdir("D:\\HR2D\\logs\\"+now.toString("\\dd.MM\\"));
+            }
+            aisLogFile.setFileName("D:\\HR2D\\logs\\"+now.toString("\\dd.MM\\")+now.toString("dd.MM-hh.mm.ss")+"_ais.log");
+            aisLogFile.open(QIODevice::WriteOnly);
+
     mCudaAge200ms=50;
     mFramesPerSec=0;
     isSimulationMode = false;
@@ -237,7 +248,9 @@ bool dataProcessingThread::readNmea(unsigned char *mReceiveBuff,int len)
         }
         if(databegin[0]=='!'&&databegin[1]=='A')//AIS
         {
-            inputAISData(QByteArray((char*)databegin,len));
+            QByteArray ba=QByteArray((char*)databegin,len);
+            inputAISData(ba);
+            aisLogFile.write(ba);
             return true;
         }
 
@@ -593,6 +606,7 @@ void dataProcessingThread::inputAISData(QByteArray inputdata)
     for(int i = 0;i<strlist.size()-1;i++)
         if(aisMessageHandler.ProcessNMEA(strlist.at(i)))
         {
+
             CConfig::mStat.cAisUpdateTime = clock();
             AIS_object_t obj = aisMessageHandler.GetAisObject();
 
@@ -685,24 +699,12 @@ void dataProcessingThread::run()
                         mReceiveBuff[3]==0xAA)mCudaAge200ms = 0;
                 continue;
             }
-            if(len<NAV_FRAME_LEN&&(len!=1058||len!=1100))// system packets
+            if(len<NAV_FRAME_LEN&&(len!=1100))// system packets
             {
-
                 radarSocket->readDatagram((char*)&mReceiveBuff[0],len);
+                ProcessNavData((unsigned char*)mReceiveBuff,len);
+                continue;
 
-                if(((mReceiveBuff[0])==0x04)&&(len==1058)) //may hoi
-                {
-                    memcpy(( char*)&(dataB[iRec].data[0]),( char*)mReceiveBuff,len);
-                    dataB[iRec].len = len;
-                    iRec++;
-                    if(iRec>=MAX_IREC)iRec = 0;
-                    continue;
-                }
-                else
-                {
-                    ProcessNavData((unsigned char*)mReceiveBuff,len);
-                    continue;
-                }
             }
             else  if(len<=MAX_FRAME_SIZE)
             {
@@ -873,7 +875,8 @@ void dataProcessingThread::radTxOff()
     sendCommand(&bytes[0],7);
     sendCommand(&bytes[0],7);
     sendCommand(&bytes[0],7);
-    //    if(1)
+
+    //    if(1)4
     //    {
     //        QFile logFile;
     //        QDateTime now = QDateTime::currentDateTime();
