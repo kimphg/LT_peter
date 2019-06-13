@@ -691,6 +691,7 @@ C_radar_data::C_radar_data()
     mTerrainAvailable = false;
     mShipHeading2048 = 0;
     aziViewOffset = 0;
+    freqHeadOffset =0;
     antennaHeadOffset=int((CConfig::getDouble("antennaHeadOffset",13))/360.0*MAX_AZIR);
     while((antennaHeadOffset)>=MAX_AZIR)antennaHeadOffset-=MAX_AZIR;
     while((antennaHeadOffset)<=0)antennaHeadOffset+=MAX_AZIR;
@@ -772,6 +773,11 @@ C_radar_data::C_radar_data()
     setScaleZoom(4);
     //setZoomRectAR(0,0);
 }
+void C_radar_data::setFreqHeadOffsetDeg(double offset)
+{
+   freqHeadOffset= (offset)/360.0*MAX_AZIR;
+}
+
 C_radar_data::~C_radar_data()
 {
     delete img_ppi;
@@ -1558,7 +1564,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     {
 #ifdef THEON
         newAziTrue =  ((data[11]<<8)|data[12])>>5;
-        newAziTrue+= (mShipHeading2048+antennaHeadOffset);
+        newAziTrue+= (mShipHeading2048+antennaHeadOffset+freqHeadOffset);
         while(newAziTrue>=MAX_AZIR)newAziTrue-=MAX_AZIR;
 #else
         if(giaQuayPhanCung)
@@ -1598,13 +1604,13 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     if(abs(dIntAzi)>10)
     {
         curAzirTrue2048 = newAziTrue;
-        return;
 
         indexCurrRecAzi++;
         if(indexCurrRecAzi>=AZI_QUEUE_SIZE)indexCurrRecAzi=0;
         aziToProcess[indexCurrRecAzi]=curAzirTrue2048;
+        return;
     }
-    while (curAzirTrue2048 != newAziTrue)
+    else while (curAzirTrue2048 != newAziTrue)
     {
         if(dIntAzi>0)
         {

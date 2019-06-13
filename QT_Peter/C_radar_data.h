@@ -14,8 +14,8 @@
 #define TRACK_MAX_DTIME 60000
 #define TRACK_MIN_DTIME 500
 #define TRACK_STABLE_LEN          6
-#define TARGET_MAX_SPEED_MARINE     80.0
-#define AZI_ERROR_STD 0.026//1.5 deg
+#define TARGET_MAX_SPEED_MARINE     100.0
+#define AZI_ERROR_STD 0.05//1.5 deg
 #define MAX_TRACKS_COUNT          300
 #define RAD_DISPLAY_RES             700//768
 #else

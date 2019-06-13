@@ -51,6 +51,7 @@ class dataProcessingThread:public QThread
 public:
     bool isSimulationMode;
     int mCudaAge200ms;
+    QFile aisLogFile;
 //    std::queue<GPSData> mGpsData;
 //    unsigned char       connect_timeout;
     RadarSignMode       mRadMode;
