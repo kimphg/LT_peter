@@ -109,6 +109,7 @@ DEPENDPATH += $$PWD/
 #unix: LIBS += -larmadillo
 win32:LIBS += -L$$PWD//WpdPack/Lib/ -lPacket
 win32:LIBS += -L$$PWD//WpdPack/Lib/ -lwpcap
+LIBS += -lQt5Concurrent
 #win32:LIBS += -L$$PWD/mitab/ -lmitab
 #LIBS += -ltinyxml
 #INCLUDEPATH += $$PWD/../opencv/build/include

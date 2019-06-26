@@ -90,6 +90,7 @@
 #include <time.h>
 #include <queue>
 //#include <c_target_manager.h>
+#include <QtConcurrent/QtConcurrent>
 inline double sinFast(double a)
 {
     while (a>PI) {

@@ -54,38 +54,63 @@
 #include <QDebug>
 #include <QGuiApplication>
 #include <qtconcurrentmap.h>
+#include <QDir>
+#include <QDirIterator>
+int nFiles = 0;
 QColor SeaColorGM(163,205,255,255);
 QImage scale(const QImage &image)
 {
     QImage tmp = image;
     for(int y = 0; y < tmp.height(); y++)
-      for(int x= 0; x < tmp.width(); x++)
-      {
-          QColor color = tmp.pixelColor(x,y);
-          int color_dist = abs(color.red()-163)+abs(color.green()-205)+abs(color.blue()-255);
-          if(color_dist<100)
-          {
-              double ss=color_dist/100.0;
-              tmp.setPixelColor(x,y,QColor(color.red()*ss,color.green()*ss,color.blue()*ss,255));
-          }
-      }
+        for(int x= 0; x < tmp.width(); x++)
+        {
+            QColor color = tmp.pixelColor(x,y);
+            int color_dist = abs(color.red()-163)+abs(color.green()-205)+abs(color.blue()-255);
+            if(color_dist<100)
+            {
+                double ss=color_dist/100.0;
+                tmp.setPixelColor(x,y,QColor(color.red()*ss,color.green()*ss,color.blue()*ss,255));
+            }
+        }
     return tmp;
 }
+void processDir(QString path)
+{
+    QDir    directory(path);
+    QDirIterator directories(path, QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
 
+    while(directories.hasNext()){
+            directories.next();
+            processDir(directories.path()+"/"+directories.fileName());
+        }
+    QStringList imageNames = directory.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
+    foreach(QString imageName, imageNames) {
+        QImage tmp(directory.absolutePath()+"/"+imageName);
+        for(int y = 0; y < tmp.height(); y++)
+            for(int x= 0; x < tmp.width(); x++)
+            {
+                QColor color = tmp.pixelColor(x,y);
+                int color_dist = abs(color.red()-163)+abs(color.green()-205)+abs(color.blue()-255);
+                if(color_dist<80)
+                {
+                    double ss=color_dist/80.0;
+                    tmp.setPixelColor(x,y,QColor(color.red()*ss,color.green()*ss,color.blue()*ss,255));
+                }
+            }
+        tmp.save(directory.absolutePath()+"/"+imageName);
+        nFiles++;
+        printf("\n%d",nFiles);
+        //QList<QImage> images.append(QImage(imageName));
+    }
+}
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-    QDir directory("Pictures/MyPictures");
-    QList<QImage> images;
-    QStringList imageNames = directory.entryList(QStringList() << "*.jpg" << "*.JPG",QDir::Files);
-    foreach(QString imageName, imageNames) {
-        //QList<QImage> images.append(QImage(imageName));
-    }
-//    foreach(QImage image,images)
-//    {
 
-//    }
-    //QList<QImage> thumbnails = QtConcurrent::blockingMapped(images, scale);
-
+    //    QList<QImage> images;
+//    processDir("D:/HR2D/mapData/GM/7/");
+//    processDir("D:/HR2D/mapData/GM/8/");
+    processDir("D:/HR2D/mapData/GM1/");
+//    processDir("D:/HR2D/mapData/GM/12/");
     return 0;
 }

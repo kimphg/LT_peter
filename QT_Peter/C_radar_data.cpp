@@ -1926,7 +1926,7 @@ bool C_radar_data::UpdateData()
         else continue;
         //        clock_t clkBegin = clock();
         ProcessData(azi,lastAzi);
-        drawAzi(azi);
+//        QFuture<void> future = QtConcurrent::run(drawAzi(azi));
         //        clock_t clkEnd = clock();
         //        int ProcessingTime = (clkEnd-clkBegin);
         //        if(ProcessingTime>1)
