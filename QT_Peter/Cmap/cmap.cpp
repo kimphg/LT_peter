@@ -20,7 +20,7 @@ CMap::CMap(QObject *parent): mScale(10),QObject(parent)
 {
     //khoi tao mot vung pixmap co kich thuoc 256 X 256 va boi day no voi mau lightGray
     m_emptyTile = QPixmap(tdim, tdim);
-    m_emptyTile.fill(Qt::darkGray);
+    m_emptyTile.fill(Qt::black);
     mMapWidth = 1024;
     mMapHeight = 1024;
     mapImage = 0;
@@ -114,7 +114,7 @@ void CMap::setImgSize(int width, int height)
     if(mapImage)delete mapImage;
     mMapWidth = width*1.2;
     mMapHeight = height*1.2;
-    // why 1.25??? - mapImage will be rescaled before sending to user
+    //  mapImage will be rescaled before sending to user
     //with scale ratio from 0.8 to 1.6 original size
     mapImage = new QPixmap(mMapWidth,mMapHeight);
 }
