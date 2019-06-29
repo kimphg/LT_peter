@@ -322,6 +322,7 @@ public:
     void init(object_t* obj1,object_t* obj2,int id=-1)
     {
         fitProbability=1;
+        mDoplerFit = 0;
         startTime = CConfig::time_now_ms;
         objectList.clear();
         objectHistory.clear();
@@ -336,8 +337,8 @@ public:
         //        isLost     = false;
         courseRad = ConvXYToAziRd(dx,dy);
         mSpeedkmhFit    = sqrt(dx*dx+dy*dy)/dtime;
-        courseRadFit   = ConvXYToAziRd(dx,dy);
-        possibleMaxScore = 0;
+        courseRadFit    = ConvXYToAziRd(dx,dy);
+        possibleMaxScore= 0;
         xkm             = obj1->xkm;
         ykm             = obj1->ykm;
         rgKm            = ConvXYToRg(xkm,ykm);
@@ -377,6 +378,7 @@ public:
     //uint  dtime;
     double lineScore;
     double mSpeedkmhFit;
+    double mDoplerFit;
     std::vector<object_t> objectList;
     std::vector<object_t> objectHistory;
     object_t                possibleObj;
@@ -420,7 +422,7 @@ public:
     ~C_radar_data();
 //    float k_vet;// !!!!
     bool                        isTxOn;
-    bool                        isInverseRotation;
+
     bool                        cut_terrain;
     double                      mInverseRotAziCorrection;
     double                      rotation_per_min ;
@@ -441,7 +443,7 @@ public:
     //    int                     mEncoderAzi;
     unsigned char           mHeader[FRAME_HEADER_SIZE];
     unsigned char           overload, init_time, clk_adc;
-    float                   scale_ppi,scale_zoom_ppi;
+
     short                   curAzirTrue2048,arcMinAzi,arcMaxAzi,arcWidth;
     double                  mRealAziRate,mRealAzi;
     void                    setZoomRectAR(float ctx, float cty, double sizeKM, double sizeDeg);
@@ -451,24 +453,26 @@ public:
     double                  tb_tap_k;
     //    int                     get_tb_tap();
     bool                    is_do_bup_song;
-    bool                    isClkAdcChanged,gat_mua_va_dia_vat,noise_nornalize,isShowSled,filter2of3;
+    bool                    isClkAdcChanged,gat_mua_va_dia_vat,noise_nornalize,filter2of3;
     bool                    isManualTune,cut_noise,bo_bang_0,data_export;
     bool                    isSelfRotation;
-    double                   krain,kgain,ksea,brightness;
+    double                   krain,kgain,ksea;
     double                   krain_auto,kgain_auto,ksea_auto;
     void setAutorgs( bool aut);
     void                    clearPPI();
+    void setBrightness(double value);
+    void setImgMode(imgDrawMode mode);
+    void SetSled(bool sled);
     unsigned char           moduleVal;
     int                  aziViewOffset;
     double                  aziRotCorrection;
     DataOverLay             dataOver;
     //    unsigned char           noise_level[8];
     unsigned char           rotation_speed;
-    unsigned short          range_max;
-    QImage                  *img_ppi,*img_RAmp,*img_zoom_ppi,*img_histogram,*img_spectre,*img_zoom_ar;
-    int                     zoom_ar_w,zoom_ar_h,zoom_ar_a0,zoom_ar_r0,zoom_ar_a1,zoom_ar_r1;
-    int                     zoom_ar_size_a,zoom_ar_size_r;
-    imgDrawMode             imgMode;
+
+//    QImage     *mimg_ppi,*mimg_RAmp,*mimg_zoom_ppi,*mimg_histogram,*mimg_spectre,*mimg_zoom_ar;
+
+
     //double                  sn_scale;
     //    void deleteTrack(ushort trackNum);
     void drawRamp();
@@ -480,7 +484,7 @@ public:
     void        ProcessData(unsigned short azi, unsigned short lastAzi);
     void        raw_map_init();
     void        raw_map_init_zoom();
-    void        drawAzi(short azi);
+//    void        drawAzi(short azi);
     void        drawBlackAzi(short azi_draw);
 //    void        DrawZoom(short azi_draw, short r_pos);
     //    void        blackLine(short x0, short y0, short x1, short y1);
@@ -544,8 +548,8 @@ private:
     bool        avtodetect;
     //    bool        doubleFilter;
     uint        getColor(unsigned char pvalue, unsigned char dopler, unsigned char sled);
-    void        drawSgn(short azi_draw, short r_pos);
-    void        drawSgnZoom(short azi_draw, short r_pos);
+//    void        drawSgn(short azi_draw, short r_pos);
+//    void        drawSgnZoom(short azi_draw, short r_pos);
     unsigned char command_feedback[8];
     void        polarToXY(float *x, float *y, float azi, float range);
     bool        isProcessing;
@@ -610,6 +614,14 @@ public:
     void setAziViewOffsetDeg(double angle);
     void addDetectionZoneAZ(double az, double rg, double dazi, double drg, bool isOneTime);
     void setFreqHeadOffsetDeg(double offset);
+    QImage *getMimg_ppi() const;
+    QImage *getMimg_RAmp() const;
+    QImage *getMimg_zoom_ppi() const;
+    QImage *getMimg_histogram() const;
+    QImage *getMimg_spectre() const;
+    QImage *getMimg_zoom_ar() const;
+    double getScale_ppi() const;
+    double getScale_zoom_ppi() const;
 };
 
 //extern C_radar_data radarData;

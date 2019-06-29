@@ -19,9 +19,15 @@
 #define RADAR_GAIN_MAX 9.0
 
 #define TARGET_OBSERV_PERIOD 6500//ENVAR max periods to save object in the memory
+static unsigned short           range_max;
+static    imgDrawMode           imgMode;
+static double                   scale_ppi,scale_zoom_ppi;
+static QImage     *img_ppi,*img_RAmp,*img_zoom_ppi,*img_histogram,*img_spectre,*img_zoom_ar;
 static  FILE *logfile;
+static bool isShowSled ;
 int C_primary_track::IDCounter =1;
 static int sumvar = 0;
+double brightness =1;
 static int nNoiseFrameCount = 0;
 static short indexLastProcessAzi = 0;
 static short indexCurrProcessAzi = 0;
@@ -30,10 +36,13 @@ static qint64   cur_rot_timeMSecs ;//= QDateTime::currentMSecsSinceEpoch();
 //static int      antennaHeadOffset;
 static float    rot_period_min =0;
 static short histogram[256];
+static   bool                        isInverseRotation;
 #define AZI_QUEUE_SIZE 500
 static int aziToProcess[AZI_QUEUE_SIZE];
 static int indexCurrRecAzi = 0;
 //qint64   CConfig::time_now_ms ;
+static int                     zoom_ar_w,zoom_ar_h,zoom_ar_a0,zoom_ar_r0,zoom_ar_a1,zoom_ar_r1;
+static int                     zoom_ar_size_a,zoom_ar_size_r;
 typedef struct  {
     //processing dataaziQueue
     unsigned char level [MAX_AZIR][RADAR_RESOLUTION];
@@ -60,6 +69,156 @@ typedef struct  {
     short yzoom[MAX_AZIR_DRAW][DISPLAY_RES_ZOOM];
 } signal_map_t;
 static signal_map_t data_mem;
+
+uint getColor(unsigned char pvalue,unsigned char dopler,unsigned char sled)
+{
+    unsigned short value = ((unsigned short)pvalue)*brightness;
+    if(!isShowSled)sled = 0;
+    else
+        if(sled>=128)sled = 0xff; else sled*=2;
+    if(value>0xff)
+    {
+        value = 0xff;
+    }
+    unsigned char alpha = 0xff - ((0xff - value)*0.75);;
+    unsigned char red   = 0;
+    unsigned char green = 0;
+    unsigned char blue  = 0;
+    unsigned char gradation = value<<2;
+    uint color;
+    if((dopler&0xF0))
+    {
+        color = 0xffffff|(alpha<<24);
+    }
+    else
+    {
+        dopler&=0x0F;
+        switch(imgMode)
+        {
+        case DOPLER_3_COLOR:
+            if(pvalue>1)
+            {
+                if(dopler==0)
+                {
+                    color = 0xffff00;
+                }
+                else
+                {
+                    char dDopler = dopler-1;
+                    if(dDopler>7)dDopler = 15-dDopler;
+                    color = 0x00ff00 | ((dDopler<<5));
+                }
+                //alpha = value;//0xff - ((0xff - value)*0.75);
+                color = color|(alpha<<24);
+            }
+            else
+            {
+                color = (sled<<24)|(0xff);
+            }
+            //
+
+            break;
+
+        case VALUE_ORANGE_BLUE:
+            if(pvalue>1)
+            {
+                //pvalue-=(pvalue/10);
+                switch(value>>6)
+                {
+                case 3:
+                    red = 0xff;
+                    green = 0xff - gradation;
+                    break;
+                case 2:
+                    red = gradation;
+                    green = 0xff;
+                    break;
+                case 1:
+                    green = 0xff ;
+                    blue = 0xff - gradation;
+                    break;
+                case 0:
+                    green = gradation ;
+                    blue = 0xff;
+                    break;
+                }
+                color = (alpha<<24)|(red<<16)|(green<<8)|blue;
+            }
+            else
+            {
+                color = (sled<<24)|(0xff);
+            }
+
+            break;
+        case VALUE_YELLOW_SHADES:
+            if(pvalue>1)
+            {
+                //alpha = value;//0xff - ((0xff - pvalue)*0.75);
+                color = (value<<24)|(0xff<<16)|(0xff<<8);
+            }
+            else
+            {
+                color = (sled<<24)|(0xff);
+            }
+            break;
+        default:
+            break;
+        }
+    }
+    return color;
+}
+void drawSgnZoom(short azi_draw, short r_pos)
+{
+
+
+    short px = data_mem.xzoom[azi_draw][r_pos];
+    short py = data_mem.yzoom[azi_draw][r_pos];
+    if(!(px*py))return;
+    unsigned char value    = data_mem.display_ray_zoom[r_pos][0];
+    unsigned char dopler    = data_mem.display_ray_zoom[r_pos][1];
+    unsigned char sled     = data_mem.display_ray_zoom[r_pos][2];
+    short pSize = r_pos/150;if(pSize>4)pSize=4;
+
+    //if(pSize>2)pSize = 2;
+    if((px<pSize)||(py<pSize)||(px>=ZOOM_SIZE-pSize)||(py>=ZOOM_SIZE-pSize))return;
+    for(short x = -pSize;x <= pSize;x++)
+    {
+        for(short y = -pSize;y <= pSize;y++)
+        {
+            double k =1.0/(sqrt(x*x+y*y)/8.0+1.0);
+
+            unsigned char pvalue = value*k;
+            if( data_mem.display_mask_zoom[px+x][py+y] <= pvalue)
+            {
+                data_mem.display_mask_zoom[px+x][py+y] = pvalue;
+                img_zoom_ppi->setPixel(px+x,py+y,getColor(pvalue,dopler,sled));
+                //DrawZoom(px,py,pvalue);
+            }
+        }
+    }
+
+}
+
+bool DrawZoomAR(int a,int r,short val,short dopler,short sled)
+{
+    //return true if point is on the edges of the zone
+    //if(a<zoom_ar_size_a)a+=MAX_AZIR;
+    if(!img_zoom_ar)return false;
+    int pa= a-zoom_ar_a0;
+    if(pa>=MAX_AZIR)pa-=MAX_AZIR;
+    if(pa<0)pa+=MAX_AZIR;
+    if(pa>zoom_ar_size_a)return false;
+    int pr = r-zoom_ar_r0;
+    if(pr>zoom_ar_size_r)return false;
+    if(pr<0)return false;
+    img_zoom_ar->setPixel(pa,zoom_ar_size_r-pr,getColor(val,dopler,sled));
+    if(pa==zoom_ar_size_a)return true;
+    if(pr==zoom_ar_size_r)return true;
+    if(pa==0)return true;
+    if(pr==0)return true;
+    return false;
+
+}
 /*
 +-------+-----------+-----------------------------------------------------+
 |       |           |                                                     |
@@ -408,9 +567,12 @@ void C_primary_track::update()
 {
     isUpdating = true;
     ageMs=uint(CConfig::time_now_ms-lastTimeMs);
+    //removed state
     if(mState == TrackState::removed)return;
+    //check delete condition
     else if(ageMs>TRACK_DELETE_TIME)
     {mState = TrackState::removed;return;}
+    //check lost condition
     else if((mState!= TrackState::lost)&&ageMs>TRACK_LOST_TIME)
     {
         if(mState==TrackState::newDetection)
@@ -424,29 +586,31 @@ void C_primary_track::update()
                                 QString::number(aziDeg,'f',1)+" CL:"+
                                 QString::number(nm(rgKm),'f',1)
                                 );
-            //            printf("\ntrack lost id:%d len:%llu",uniqId, objectList.size());
-            //            _flushall();
         }
         return;
     }
     if(possibleMaxScore>0)
     {
-        if(CConfig::time_now_ms-possibleObj.timeMs>TRACK_MIN_DTIME)
-        {
+        // add obj to track
+        objectList.push_back(possibleObj);
+        //update dopler
+        mDopler = possibleObj.dopler;
+        if(mDopler>7)mDopler-=16;
+        mDoplerFit += (mDopler-mDoplerFit)/4.0;;
+        //
+        lastTimeMs = possibleObj.timeMs;
 
-            objectList.push_back(possibleObj);
-            mDopler = possibleObj.dopler;
-            lastTimeMs = possibleObj.timeMs;
-            if(mDopler>7)mDopler-=16;
-            while(objectList.size()>TRACK_STABLE_LEN)
+        while(objectList.size()>TRACK_STABLE_LEN)
+        {
+            if((lastTimeMs-objectHistory.back().timeMs)>60000)
+                objectHistory.push_back(objectList[0]);
+            objectList.erase(objectList.begin());
+            if(mState==TrackState::newDetection)
             {
-                if((lastTimeMs-objectHistory.back().timeMs)>60000)
-                    objectHistory.push_back(objectList[0]);
-                objectList.erase(objectList.begin());
-                if(mState==TrackState::newDetection)
-                {
+                if(abs(mDoplerFit)>1)//todo:find optimized value
                     if(mSpeedkmhFit<TARGET_MAX_SPEED_MARINE)
                     {
+
                         LinearFit(TRACK_STABLE_LEN);
                         if(fitProbability<0.5)
                         {
@@ -458,106 +622,106 @@ void C_primary_track::update()
                             mState = TrackState::confirmed;
                         }
                     }
-                }
-            }
-
-
-            possibleMaxScore = 0;
-            if(mState==TrackState::newDetection)
-            {
-                object_t* obj1  = &(objectList.back());
-                object_t* obj2 ;
-                if(objectHistory.size()>2)
-                {
-                    obj2 = &(objectHistory.back())-2;
-                }
-                else if(objectHistory.size()>1)
-                {
-                    obj2 = &(objectHistory.back())-1;
-                }
-                else
-                {
-                    obj2 = &(objectList.at(0));
-                }
-                if(obj1->timeMs != obj2->timeMs)
-                {
-                    double dx       = obj1->xkm - obj2->xkm;
-                    double dy       = obj1->ykm - obj2->ykm;
-                    double dtime    = (obj1->timeMs - obj2->timeMs)/3600000.0;
-                    rgSpeedkmh      = (obj1->rgKm - obj2->rgKm)/dtime;
-                    //speed param
-                    mSpeedkmhFit    = sqrt(dx*dx+dy*dy)/dtime;
-                    sko_spd         = mSpeedkmhFit/2.0;
-                    //course param
-                    courseRadFit    = ConvXYToAziRd(dx,dy);
-                    courseDeg = degrees(courseRadFit);
-                    sko_cour = 30.0;
-                }
-                else
-                { printf("\ntrung object, khong the tinh van toc");}
-                //xy coordinates
-                xkm             = obj1->xkm;
-                ykm             = obj1->ykm;
-                //range
-                rgKm            = ConvXYToRg(xkm,ykm);
-                sko_rgKm          = obj1->rgStdEr;
-                //azi
-                aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
-                sko_aziDeg         = degrees((obj1->aziStdEr));
-
-            }
-            else if(mState==TrackState::confirmed)
-            {
-
-                LinearFit(TRACK_STABLE_LEN);
-                object_t* obj1  = &(objectList.back());
-                object_t* obj2  ;
-                if(objectHistory.size()>2)
-                {
-                    obj2 = &(objectHistory.back())-2;
-                }
-                else if(objectHistory.size()>1)
-                {
-                    obj2 = &(objectHistory.back())-1;
-                }
-                else
-                {
-                    obj2 = &(objectList.at(0));
-                }
-                double dx       = obj1->xkm - obj2->xkm;
-                double dy       = obj1->ykm - obj2->ykm;
-                if(obj1->timeMs!=obj2->timeMs)
-                {
-                    double dtime    = (obj1->timeMs-obj2->timeMs)/3600000.0;
-                    rgSpeedkmh      = (obj1->rgKm-obj2->rgKm)/dtime;
-                    //speed param
-                    double mSpeedkmhFitNew    = sqrt(dx*dx+dy*dy)/dtime;
-                    double sko_spdNew = abs(mSpeedkmhFitNew-mSpeedkmhFit);
-                    sko_spd         +=(sko_spdNew-sko_spd)/5.0;
-                    mSpeedkmhFit    +=(mSpeedkmhFitNew-mSpeedkmhFit)/5.0;
-                    //course param
-                    courseRadFit   = ConvXYToAziRd(dx,dy);
-                    double courseDegNew = degrees(courseRadFit);
-                    double sko_courNew = abs(courseDegNew-courseDeg);
-                    if(sko_courNew>180)sko_courNew-=360;
-                    if(sko_courNew<-180)sko_courNew+=360;
-                    courseDeg       = courseDegNew;
-                    sko_cour        +=(sko_courNew-sko_cour)/5.0;
-                }
-                //xy
-                xkm             = obj1->xkm;
-                ykm             = obj1->ykm;
-                //range
-                rgKm            = ConvXYToRg(xkm,ykm);
-                double sko_rgNew         = abs(rgKm-obj1->rgKm);
-                sko_rgKm+=(sko_rgNew-sko_rgKm)/5.0;
-                //azi
-                aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
-                double sko_aziNew         = abs(aziDeg-degrees(obj1->azRad));
-                sko_aziDeg += (sko_aziNew-sko_aziDeg)/5.0;
-                generateTTM();
             }
         }
+
+
+        possibleMaxScore = 0;
+        if(mState==TrackState::newDetection)
+        {
+            object_t* obj1  = &(objectList.back());
+            object_t* obj2 ;
+            if(objectHistory.size()>2)
+            {
+                obj2 = &(objectHistory.back())-2;
+            }
+            else if(objectHistory.size()>1)
+            {
+                obj2 = &(objectHistory.back())-1;
+            }
+            else
+            {
+                obj2 = &(objectList.at(0));
+            }
+            if(obj1->timeMs != obj2->timeMs)
+            {
+                double dx       = obj1->xkm - obj2->xkm;
+                double dy       = obj1->ykm - obj2->ykm;
+                double dtime    = (obj1->timeMs - obj2->timeMs)/3600000.0;
+                rgSpeedkmh      = (obj1->rgKm - obj2->rgKm)/dtime;
+                //speed param
+                mSpeedkmhFit    = sqrt(dx*dx+dy*dy)/dtime;
+                sko_spd         = mSpeedkmhFit/2.0;
+                //course param
+                courseRadFit    = ConvXYToAziRd(dx,dy);
+                courseDeg = degrees(courseRadFit);
+                sko_cour = 30.0;
+            }
+            else
+            { printf("\ntrung object, khong the tinh van toc");}
+            //xy coordinates
+            xkm             = obj1->xkm;
+            ykm             = obj1->ykm;
+            //range
+            rgKm            = ConvXYToRg(xkm,ykm);
+            sko_rgKm          = obj1->rgStdEr;
+            //azi
+            aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
+            sko_aziDeg         = degrees((obj1->aziStdEr));
+
+        }
+        else if(mState==TrackState::confirmed)
+        {
+
+            LinearFit(TRACK_STABLE_LEN);
+            object_t* obj1  = &(objectList.back());
+            object_t* obj2  ;
+            if(objectHistory.size()>2)
+            {
+                obj2 = &(objectHistory.back())-2;
+            }
+            else if(objectHistory.size()>1)
+            {
+                obj2 = &(objectHistory.back())-1;
+            }
+            else
+            {
+                obj2 = &(objectList.at(0));
+            }
+            double dx       = obj1->xkm - obj2->xkm;
+            double dy       = obj1->ykm - obj2->ykm;
+            if(obj1->timeMs!=obj2->timeMs)
+            {
+                double dtime    = (obj1->timeMs-obj2->timeMs)/3600000.0;
+                rgSpeedkmh      = (obj1->rgKm-obj2->rgKm)/dtime;
+                //speed param
+                double mSpeedkmhFitNew    = sqrt(dx*dx+dy*dy)/dtime;
+                double sko_spdNew = abs(mSpeedkmhFitNew-mSpeedkmhFit);
+                sko_spd         +=(sko_spdNew-sko_spd)/5.0;
+                mSpeedkmhFit    +=(mSpeedkmhFitNew-mSpeedkmhFit)/5.0;
+                //course param
+                courseRadFit   = ConvXYToAziRd(dx,dy);
+                double courseDegNew = degrees(courseRadFit);
+                double sko_courNew = abs(courseDegNew-courseDeg);
+                if(sko_courNew>180)sko_courNew-=360;
+                if(sko_courNew<-180)sko_courNew+=360;
+                courseDeg       = courseDegNew;
+                sko_cour        +=(sko_courNew-sko_cour)/5.0;
+            }
+            //xy
+            xkm             = obj1->xkm;
+            ykm             = obj1->ykm;
+            //range
+            rgKm            = ConvXYToRg(xkm,ykm);
+            double sko_rgNew         = abs(rgKm-obj1->rgKm);
+            sko_rgKm+=(sko_rgNew-sko_rgKm)/5.0;
+            //azi
+            aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
+            double sko_aziNew         = abs(aziDeg-degrees(obj1->azRad));
+            sko_aziDeg += (sko_aziNew-sko_aziDeg)/5.0;
+            generateTTM();
+        }
+
 
     }
     isUpdating = false;
@@ -715,16 +879,15 @@ C_radar_data::C_radar_data()
     isMarineMode = true;
     range_max = RADAR_RESOLUTION;
     imgMode = VALUE_ORANGE_BLUE;
-    brightness = 1.5;
     hsTap = 0;
     tb_tap=new unsigned short[MAX_AZIR];
-    img_histogram=new QImage(257,101,QImage::Format_Mono);
+    img_histogram =new QImage(257,101,QImage::Format_Mono);
     img_histogram->fill(0);
-    img_ppi = new QImage(RAD_DISPLAY_RES*2+1,RAD_DISPLAY_RES*2+1,QImage::Format_ARGB32);
-    img_RAmp = new QImage(RADAR_RESOLUTION,256,QImage::Format_ARGB32);
-    img_spectre = new QImage(16,256,QImage::Format_Mono);
+    img_ppi= new QImage(RAD_DISPLAY_RES*2+1,RAD_DISPLAY_RES*2+1,QImage::Format_ARGB32);
+    img_RAmp= new QImage(RADAR_RESOLUTION,256,QImage::Format_ARGB32);
+    img_spectre= new QImage(16,256,QImage::Format_Mono);
     img_spectre->fill(0);
-    img_zoom_ppi = new QImage(ZOOM_SIZE+1,ZOOM_SIZE+1,QImage::Format_ARGB32);
+    img_zoom_ppi= new QImage(ZOOM_SIZE+1,ZOOM_SIZE+1,QImage::Format_ARGB32);
     img_zoom_ar = nullptr;
 
     tb_tap_k = 1;
@@ -754,7 +917,7 @@ C_radar_data::C_radar_data()
     ksea_auto = 0;
     kgain = 1;
     krain  = ksea = 0.2;
-    brightness = 1;
+
     avtodetect = true;
     isClkAdcChanged = true;
     isShowSled = CConfig::getInt("isShowSled");
@@ -905,7 +1068,7 @@ bool C_radar_data::checkFeedback(unsigned char *command)
 }
 
 
-void C_radar_data::drawSgn(short azi_draw, short r_pos)
+void drawSgn(short azi_draw, short r_pos)
 {
     unsigned char value = data_mem.display_ray[r_pos][0];
     unsigned char dopler    = data_mem.display_ray[r_pos][1];
@@ -933,7 +1096,7 @@ void C_radar_data::drawSgn(short azi_draw, short r_pos)
     }
 }
 
-void C_radar_data::drawBlackAzi(short azi_draw)
+void drawBlackAzi(short azi_draw)
 {
     for (short r_pos = 1;r_pos < RAD_DISPLAY_RES;r_pos++)
     {
@@ -978,7 +1141,7 @@ void C_radar_data::drawBlackAzi(short azi_draw)
         }
     }
 }
-void C_radar_data::drawAzi(short azi)
+void clearAzi(short azi)
 {
 
     //clear old image
@@ -1008,6 +1171,10 @@ void C_radar_data::drawAzi(short azi)
 
     }
 
+
+}
+void drawAzi(short azi)
+{
 
     unsigned short  lastDisplayPos =0;
     for (short r_pos = 0;r_pos<range_max-1;r_pos++)
@@ -1801,6 +1968,63 @@ void C_radar_data::clearPPI()
 
 }
 
+void C_radar_data::setBrightness(double value)
+{
+    brightness =value;
+
+}
+
+void C_radar_data::setImgMode(imgDrawMode mode)
+{
+    imgMode = mode;
+}
+
+void C_radar_data::SetSled(bool sled)
+{
+    isShowSled=sled;
+
+}
+
+double C_radar_data::getScale_zoom_ppi() const
+{
+    return scale_zoom_ppi;
+}
+
+double C_radar_data::getScale_ppi() const
+{
+    return scale_ppi;
+}
+
+QImage *C_radar_data::getMimg_zoom_ar() const
+{
+    return img_zoom_ar;
+}
+
+QImage *C_radar_data::getMimg_spectre() const
+{
+    return img_spectre;
+}
+
+QImage *C_radar_data::getMimg_histogram() const
+{
+    return img_histogram;
+}
+
+QImage *C_radar_data::getMimg_zoom_ppi() const
+{
+    return img_zoom_ppi;
+}
+
+QImage *C_radar_data::getMimg_RAmp() const
+{
+    return img_RAmp;
+}
+
+QImage *C_radar_data::getMimg_ppi() const
+{
+    return img_ppi;
+}
+
 
 
 #define POLY_DEG 2
@@ -1926,7 +2150,9 @@ bool C_radar_data::UpdateData()
         else continue;
         //        clock_t clkBegin = clock();
         ProcessData(azi,lastAzi);
-//        QFuture<void> future = QtConcurrent::run(drawAzi(azi));
+        clearAzi(azi);
+        drawAzi(azi);
+//        QFuture<void> future = QtConcurrent::run(drawAzi,azi);
         //        clock_t clkEnd = clock();
         //        int ProcessingTime = (clkEnd-clkBegin);
         //        if(ProcessingTime>1)
@@ -2473,26 +2699,7 @@ void C_radar_data::setZoomRectAR(float ctx, float cty,double sizeKM,double sizeD
     //drawZoomAR(a0,r0);
 
 }
-bool C_radar_data::DrawZoomAR(int a,int r,short val,short dopler,short sled)
-{
-    //return true if point is on the edges of the zone
-    //if(a<zoom_ar_size_a)a+=MAX_AZIR;
-    if(!img_zoom_ar)return false;
-    int pa= a-zoom_ar_a0;
-    if(pa>=MAX_AZIR)pa-=MAX_AZIR;
-    if(pa<0)pa+=MAX_AZIR;
-    if(pa>zoom_ar_size_a)return false;
-    int pr = r-zoom_ar_r0;
-    if(pr>zoom_ar_size_r)return false;
-    if(pr<0)return false;
-    img_zoom_ar->setPixel(pa,zoom_ar_size_r-pr,getColor(val,dopler,sled));
-    if(pa==zoom_ar_size_a)return true;
-    if(pr==zoom_ar_size_r)return true;
-    if(pa==0)return true;
-    if(pr==0)return true;
-    return false;
 
-}
 void C_radar_data::resetGain()
 {
     //krain_auto = 0.3;
@@ -2627,134 +2834,6 @@ void C_radar_data::setScaleZoom(float scale)
 //      *img_zoom_ar = imgAR->copy(rect);//.convertToFormat(QImage::Format_Indexed8,colorTable,Qt::ColorOnly);
 
 //}
-void C_radar_data::drawSgnZoom(short azi_draw, short r_pos)
-{
-
-
-    short px = data_mem.xzoom[azi_draw][r_pos];
-    short py = data_mem.yzoom[azi_draw][r_pos];
-    if(!(px*py))return;
-    unsigned char value    = data_mem.display_ray_zoom[r_pos][0];
-    unsigned char dopler    = data_mem.display_ray_zoom[r_pos][1];
-    unsigned char sled     = data_mem.display_ray_zoom[r_pos][2];
-    short pSize = r_pos/150;if(pSize>4)pSize=4;
-
-    //if(pSize>2)pSize = 2;
-    if((px<pSize)||(py<pSize)||(px>=ZOOM_SIZE-pSize)||(py>=ZOOM_SIZE-pSize))return;
-    for(short x = -pSize;x <= pSize;x++)
-    {
-        for(short y = -pSize;y <= pSize;y++)
-        {
-            double k =1.0/(sqrt(x*x+y*y)/8.0+1.0);
-
-            unsigned char pvalue = value*k;
-            if( data_mem.display_mask_zoom[px+x][py+y] <= pvalue)
-            {
-                data_mem.display_mask_zoom[px+x][py+y] = pvalue;
-                img_zoom_ppi->setPixel(px+x,py+y,getColor(pvalue,dopler,sled));
-                //DrawZoom(px,py,pvalue);
-            }
-        }
-    }
-
-}
-uint C_radar_data::getColor(unsigned char pvalue,unsigned char dopler,unsigned char sled)
-{
-    unsigned short value = ((unsigned short)pvalue)*brightness;
-    if(!isShowSled)sled = 0;
-    else
-        if(sled>=128)sled = 0xff; else sled*=2;
-    if(value>0xff)
-    {
-        value = 0xff;
-    }
-    unsigned char alpha = 0xff - ((0xff - value)*0.75);;
-    unsigned char red   = 0;
-    unsigned char green = 0;
-    unsigned char blue  = 0;
-    unsigned char gradation = value<<2;
-    uint color;
-    if((dopler&0xF0))
-    {
-        color = 0xffffff|(alpha<<24);
-    }
-    else
-    {
-        dopler&=0x0F;
-        switch(imgMode)
-        {
-        case DOPLER_3_COLOR:
-            if(pvalue>1)
-            {
-                if(dopler==0)
-                {
-                    color = 0xffff00;
-                }
-                else
-                {
-                    char dDopler = dopler-1;
-                    if(dDopler>7)dDopler = 15-dDopler;
-                    color = 0x00ff00 | ((dDopler<<5));
-                }
-                //alpha = value;//0xff - ((0xff - value)*0.75);
-                color = color|(alpha<<24);
-            }
-            else
-            {
-                color = (sled<<24)|(0xff);
-            }
-            //
-
-            break;
-
-        case VALUE_ORANGE_BLUE:
-            if(pvalue>1)
-            {
-                //pvalue-=(pvalue/10);
-                switch(value>>6)
-                {
-                case 3:
-                    red = 0xff;
-                    green = 0xff - gradation;
-                    break;
-                case 2:
-                    red = gradation;
-                    green = 0xff;
-                    break;
-                case 1:
-                    green = 0xff ;
-                    blue = 0xff - gradation;
-                    break;
-                case 0:
-                    green = gradation ;
-                    blue = 0xff;
-                    break;
-                }
-                color = (alpha<<24)|(red<<16)|(green<<8)|blue;
-            }
-            else
-            {
-                color = (sled<<24)|(0xff);
-            }
-
-            break;
-        case VALUE_YELLOW_SHADES:
-            if(pvalue>1)
-            {
-                //alpha = value;//0xff - ((0xff - pvalue)*0.75);
-                color = (value<<24)|(0xff<<16)|(0xff<<8);
-            }
-            else
-            {
-                color = (sled<<24)|(0xff);
-            }
-            break;
-        default:
-            break;
-        }
-    }
-    return color;
-}
 void C_radar_data::resetTrack()
 {
     init_time += 3;

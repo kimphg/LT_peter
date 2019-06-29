@@ -455,7 +455,7 @@ bool isSelectingTarget = false;
 void Mainwindow::detectZone()
 {
     //short sx,sy;
-    //float scale_ppi = pRadar->scale_ppi;
+    //float scale_ppi = pRadar->getScale_ppi();
     if(selZone_x1>selZone_x2)
     {
         short tmp = selZone_x1;
@@ -1011,7 +1011,7 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
     //float x,y;
     //    short sx,sy;
     //    short sx1=0,sy1=0;
-    //float scale_ppi = pRadar->scale_ppi;
+    //float scale_ppi = pRadar->getScale_ppi();
     //short targetId = 0;
     p->setPen(penCyan);
     std::vector<object_t>* pObjList = &(pRadar->mFreeObjList);
@@ -1022,6 +1022,7 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
         //p->drawPoint(sTrack.x,sTrack.y);
         p->drawRect(sTrack.x-5,sTrack.y-5,10,10);
     }
+    //draw unconfirmed new datection
     for (uint i = 0;i<pRadar->mTrackList.size();i++)
     {
         C_primary_track* track = &(pRadar->mTrackList[i]);
@@ -1238,7 +1239,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     QRectF screen(0,0,SCR_W,SCR_H);
     if(isHeadUp)//isHeadUp)
     {
-        QImage newImg = pRadar->img_ppi->transformed(mTrans);
+        QImage newImg = pRadar->getMimg_ppi()->transformed(mTrans);
         QRectF signRectTemp = QRectF(newImg.width()/2-(radCtX),newImg.height()/2-(radCtY),SCR_W,SCR_H);
         p.drawImage(screen,newImg,signRectTemp,Qt::AutoColor);
 
@@ -1249,7 +1250,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     else
     {
         QRectF signRect(RAD_DISPLAY_RES-(radCtX),RAD_DISPLAY_RES-(radCtY),SCR_W,SCR_H);
-        p.drawImage(screen,*pRadar->img_ppi,signRect,Qt::AutoColor);
+        p.drawImage(screen,*pRadar->getMimg_ppi(),signRect,Qt::AutoColor);
     }
 
     //    QPixmap dstPix = QPixmap::fromImage(*pRadar->img_ppi);
@@ -1295,12 +1296,12 @@ void Mainwindow::DrawIADArea(QPainter* p)
     if(zoom_mode==ZoomIAD)
     {
         //        printf("\nDraw IAD");
-        if((pRadar->img_zoom_ar==nullptr)||(pRadar->img_zoom_ar->isNull()))return;
+        if((pRadar->getMimg_zoom_ar()==nullptr)||(pRadar->getMimg_zoom_ar()->isNull()))return;
         //        printf("\nDraw IAD");
         p->setPen(QPen(Qt::white,2));
 
 
-        QImage img = pRadar->img_zoom_ar->scaled(mIADrect.width(),mIADrect.height(),Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
+        QImage img = pRadar->getMimg_zoom_ar()->scaled(mIADrect.width(),mIADrect.height(),Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
         p->drawImage(mIADrect,img);//todo:resize
         p->setFont(QFont("Times",10));
         p->drawText(mIADrect.x()+mIADrect.width()-50,mIADrect.y()+mIADrect.height()-10,
@@ -1328,8 +1329,8 @@ void Mainwindow::DrawIADArea(QPainter* p)
     else if(zoom_mode==ZoomZoom)
     {
         //        printf("\nDraw ZoomZoom");
-        //if((!pRadar->img_zoom_ppi)||(pRadar->img_zoom_ppi->isNull()))return;
-        p->drawImage(mIADrect,*pRadar->img_zoom_ppi,pRadar->img_zoom_ppi->rect());
+        //if((!pRadar->getMimg_zoom_ppi())||(pRadar->getMimg_zoom_ppi()->isNull()))return;
+        p->drawImage(mIADrect,*pRadar->getMimg_zoom_ppi(),pRadar->getMimg_zoom_ppi()->rect());
         if(mRangeIndex>2)
         {
 
@@ -1342,15 +1343,15 @@ void Mainwindow::DrawIADArea(QPainter* p)
     else if(zoom_mode==ZoomHistogram)
     {
 
-        p->drawImage(mIADrect,*pRadar->img_histogram,
-                     pRadar->img_histogram->rect());
+        p->drawImage(mIADrect,*pRadar->getMimg_histogram(),
+                     pRadar->getMimg_histogram()->rect());
 
     }
     else if(zoom_mode==ZoomSpectre)
     {
 
-        p->drawImage(mIADrect,*pRadar->img_spectre,
-                     pRadar->img_spectre->rect());
+        p->drawImage(mIADrect,*pRadar->getMimg_spectre(),
+                     pRadar->getMimg_spectre()->rect());
     }
     else if(zoom_mode==ZoomRamp)
     {
@@ -1359,23 +1360,23 @@ void Mainwindow::DrawIADArea(QPainter* p)
         rect1.adjust(0,0,0,-mIADrect.height()/2);
         //        pengrid.setWidth(10);
         //        p->setPen(pengrid);
-        p->drawImage(rect1,*pRadar->img_RAmp);
+        p->drawImage(rect1,*pRadar->getMimg_RAmp());
         double rampos = ui->horizontalSlider_ramp_pos_2->value()/(double(ui->horizontalSlider_ramp_pos_2->maximum()));
         QRect rect2 = mIADrect;
         rect2.adjust(0,mIADrect.height()/2,0,0);
         int zoomw = rect2.width()/2;
-        int ramposInt = (pRadar->img_RAmp->width()-zoomw)*rampos;
-        QRect srect(ramposInt,0,zoomw,pRadar->img_RAmp->height());
-        p->drawImage(rect2,*pRadar->img_RAmp,srect);
-        //p->drawRect(rect1,pRadar->img_RAmp->width()+5,pRadar->img_RAmp->height()+5);
+        int ramposInt = (pRadar->getMimg_RAmp()->width()-zoomw)*rampos;
+        QRect srect(ramposInt,0,zoomw,pRadar->getMimg_RAmp()->height());
+        p->drawImage(rect2,*pRadar->getMimg_RAmp(),srect);
+        //p->drawRect(rect1,pRadar->getMimg_RAmp()->width()+5,pRadar->getMimg_RAmp()->height()+5);
         //        pengrid.setWidth(2);
         //        pengrid.setColor(QColor(128,128,0,120));
         //        p->setPen(pengrid);
-        //        for(short i=60;i<pRadar->img_RAmp->height();i+=50)
+        //        for(short i=60;i<pRadar->getMimg_RAmp()->height();i+=50)
         //        {
-        //            p->drawLine(0,height()-i,pRadar->img_RAmp->width()+5,height()-i);
+        //            p->drawLine(0,height()-i,pRadar->getMimg_RAmp()->width()+5,height()-i);
         //        }
-        //        for(short i=110;i<pRadar->img_RAmp->width();i+=100)
+        //        for(short i=110;i<pRadar->getMimg_RAmp()->width();i+=100)
         //        {
         //            p->drawLine(i,height()-266,i,height());
         //        }
@@ -2126,7 +2127,7 @@ void Mainwindow::Update100ms()
     mIADCenter.x = mIADrect.x()+(mIADrect.width())/2;
     mIADCenter.y = mIADrect.y()+(mIADrect.height())/2;
     mZoomScale = double(mIADrect.width())/zoom_size;
-    zoom_size = mIADrect.width()/pRadar->scale_zoom_ppi*pRadar->scale_ppi;
+    zoom_size = mIADrect.width()/pRadar->getScale_zoom_ppi()*pRadar->getScale_ppi();
     if(ui->tabWidget_iad->isHidden())
     {
         zoom_mode = ZoomHiden;
@@ -2940,7 +2941,7 @@ void Mainwindow::SendCommandControl()
 
 void Mainwindow::on_horizontalSlider_brightness_valueChanged(int value)
 {
-    pRadar->brightness = 0.5f+(float)value/ ui->horizontalSlider_brightness->maximum()*4.0f;
+    pRadar->setBrightness(0.5f+(float)value/ ui->horizontalSlider_brightness->maximum()*4.0f);
 }
 
 /*void MainWindow::on_horizontalSlider_3_valueChanged(int value)
@@ -3368,7 +3369,7 @@ void Mainwindow::on_toolButton_centerView_clicked()
 
 void Mainwindow::on_comboBox_img_mode_currentIndexChanged(int index)
 {
-    pRadar->imgMode = imgDrawMode(index) ;
+    pRadar->setImgMode(imgDrawMode(index));
 }
 
 
@@ -4019,7 +4020,7 @@ void Mainwindow::on_toolButton_sled_clicked()
 
 void Mainwindow::on_toolButton_sled_toggled(bool checked)
 {
-    pRadar->isShowSled=checked;
+    pRadar->SetSled(checked);
     CConfig::setValue("isShowSled",int(checked));
 }
 
@@ -4336,7 +4337,7 @@ void Mainwindow::on_toolButton_xl_nguong_4_clicked(bool checked)
 
 void Mainwindow::on_toolButton_sled_clicked(bool checked)
 {
-    pRadar->isShowSled=checked;
+    pRadar->SetSled(checked);
 }
 
 void Mainwindow::on_toolButton_xl_dopler_clicked(bool checked)
