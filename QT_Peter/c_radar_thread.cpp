@@ -664,10 +664,7 @@ void dataProcessingThread::inputAISData(QByteArray inputdata)
 
     return;
 }
-void dataProcessingThread::processRadarData()
-{
 
-}
 static unsigned long int lastFrameCount=0;
 
 static uchar mReceiveBuff[NAV_FRAME_LEN];

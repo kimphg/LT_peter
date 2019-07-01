@@ -607,7 +607,7 @@ void C_primary_track::update()
             objectList.erase(objectList.begin());
             if(mState==TrackState::newDetection)
             {
-                if(abs(mDoplerFit)>1)//todo:find optimized value
+                if(isDoplerShifted())
                     if(mSpeedkmhFit<TARGET_MAX_SPEED_MARINE)
                     {
 
@@ -2990,6 +2990,8 @@ void C_radar_data::ProcessObject(object_t *obj1)
     // check if object_t belonging to another obj
     if(checkBelongToObj(obj1))return ;
     // add to mFreeObjList if inside DW
+    {addFreeObj(obj1); return ;}
+    //todo: implement detection here
     if(checkInsideDWOneTime(degrees(obj1->azRad),obj1->rgKm)){addFreeObj(obj1); return ;}
     if(checkInsideDW(degrees(obj1->azRad),obj1->rgKm))
     {

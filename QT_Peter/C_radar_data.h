@@ -316,6 +316,7 @@ public:
         isUpdating = false;
         uniqId =-1;
     }
+    bool isDoplerShifted(){return (abs(mDoplerFit)>1);}
     bool isConfirmed(){return mState==TrackState::confirmed;}
     qint64 startTime;
     double fitProbability;
