@@ -19,6 +19,10 @@ AIS_object_t::AIS_object_t()
 QString AIS_object_t::printData()
 {
     QString output;
+    if(mMMSI==574004060)
+    {
+        mMMSI=mMMSI;
+    }
     if(mMMSI)output.append(QString::fromUtf8("MMSI:")+QString::number(mMMSI)+"\n");
     if(mImo)output.append(QString::fromUtf8("IMO:")+QString::number(mImo)+"\n");
     if(mName.size())output.append(QString::fromUtf8("Tên:")+mName+"\n");
@@ -249,7 +253,7 @@ const struct AIS::AisParamPosPair* AIS::AisMsgParams[AIS_MSG_MAX] = {
 
 AIS::AIS()
 {
-    msgType=AIS_MSG_MAX;
+//    msgType=AIS_MSG_MAX;
     //msglen = 0;
     lastMesID = -1;
 }
@@ -396,23 +400,16 @@ AIS_object_t AIS::GetAisObject()
 {
     AIS_object_t obj;
     obj.mMMSI = get_mmsi();
-
-    if(get_type()==AIS::AIS_MSG_24_STATIC_DATA_REPORT)
+    obj.mName = QString::fromLatin1(get_shipname());
+    if(get_type()==AIS::AIS_MSG_24_STATIC_DATA_REPORT&&(get_partno()==0))
     {
-        if(get_partno()==0)
-        {
-            obj.mName = QString::fromLatin1(get_shipname());
+            //obj.mName = QString::fromLatin1(get_shipname());
             obj.mType = 0;
-        }
-        else
-        {
-            obj.mType = get_shiptype();
 
-        }
     }
     else
     {
-        obj.mName = QString::fromLatin1(get_shipname());
+       // obj.mName = QString::fromLatin1(get_shipname());
         obj.mType = get_shiptype();
     }
     obj.mDst = QString(get_destination());

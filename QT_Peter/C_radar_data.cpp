@@ -2990,7 +2990,10 @@ void C_radar_data::ProcessObject(object_t *obj1)
     // check if object_t belonging to another obj
     if(checkBelongToObj(obj1))return ;
     // add to mFreeObjList if inside DW
-    {addFreeObj(obj1); return ;}
+    if(obj1->dopler!=0){
+        addFreeObj(obj1);
+        return ;
+    }
     //todo: implement detection here
     if(checkInsideDWOneTime(degrees(obj1->azRad),obj1->rgKm)){addFreeObj(obj1); return ;}
     if(checkInsideDW(degrees(obj1->azRad),obj1->rgKm))

@@ -12,7 +12,7 @@ static QPen penTargetFriendSelected(QBrush(QColor(50,255,255 ,255)),3);
 static QPen penCyan(QBrush(QColor(50,255,255 ,255)),1);//xoay mui tau
 static enum ZoomMode {ZoomHiden =0,ZoomIAD=1,ZoomHistogram=2,ZoomSpectre=3,ZoomRamp=4,ZoomZoom=5} zoom_mode=ZoomHiden;
 static PointAziRgkm AutoSelP1,AutoSelP2;
-
+static bool hideAisFishingBoat = true;
 //#ifdef THEON
 //static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),224+SCR_BORDER_SIZE);
 //static QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
@@ -217,7 +217,7 @@ void Mainwindow::drawAisTarget(QPainter *p)
         short y = (fy*mScale);//+radCtY;
         rotateVector(trueShiftDeg,&x,&y);*/
         PointInt s = ConvWGSToScrPoint(aisObj.mLong,aisObj.mLat);
-        if((aisObj.mType/10)==3)continue;
+        if(hideAisFishingBoat&&(aisObj.mType==30))continue;
         if(!isInsideViewZone(s.x,s.y))continue;
         if(aisObj.isNewest)
         {
@@ -1013,7 +1013,8 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
     //    short sx1=0,sy1=0;
     //float scale_ppi = pRadar->getScale_ppi();
     //short targetId = 0;
-    p->setPen(penCyan);
+    //drawing sub object
+    /*p->setPen(penCyan);
     std::vector<object_t>* pObjList = &(pRadar->mFreeObjList);
     for (uint i = 0;i<pObjList->size();i++)
     {
@@ -1033,7 +1034,7 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
             p->drawRect(sTrack.x-5,sTrack.y-5,10,10);
             //p->drawText(sTrack.x+10,sTrack.y+10,100,50,0,QString::number(track->objectList.size()));
         }
-    }
+    }*/
     //    p->setPen(penTargetBlue);
 
     bool blink = (CConfig::time_now_ms/500)%2;
@@ -1493,7 +1494,7 @@ void Mainwindow::showTrackContext()
     //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
     contextMenu.addAction(&action10);
     //Dopler
-    QAction action5(QString::fromUtf8("Dopler:    ")+QString::number(track->mDopler), this);
+    QAction action5(QString::fromUtf8("Dopler:    ")+QString::number(track->mDoplerFit,'f',1), this);
     //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
     contextMenu.addAction(&action5);
     //Dopler
@@ -5339,4 +5340,9 @@ void Mainwindow::on_toolButton_chong_nhieu_ppy_2_clicked(bool checked)
         processing->sendCommand(&comand[0]);
     }
     else sendToRadarHS("2bab00");
+}
+
+void Mainwindow::on_toolButton_ais_hide_fishing_clicked(bool checked)
+{
+    hideAisFishingBoat =checked;
 }

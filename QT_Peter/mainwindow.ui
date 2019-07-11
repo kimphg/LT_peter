@@ -23456,7 +23456,7 @@ background-color: rgba(255, 255, 255, 0);</string>
      <bool>false</bool>
     </property>
     <property name="currentIndex">
-     <number>4</number>
+     <number>1</number>
     </property>
     <property name="elideMode">
      <enum>Qt::ElideNone</enum>
@@ -26738,7 +26738,31 @@ background-color: rgba(255, 255, 255, 0);</string>
        <string>AIS</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_13">
-       <item row="0" column="1">
+       <item row="0" column="0">
+        <widget class="QCustomButton" name="toolButton_ais_show">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>AIS</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
         <widget class="QCustomButton" name="toolButton_ais_reset">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -26759,8 +26783,8 @@ background-color: rgba(255, 255, 255, 0);</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QCustomButton" name="toolButton_ais_show">
+       <item row="0" column="1">
+        <widget class="QCustomButton" name="toolButton_ais_hide_fishing">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -26773,7 +26797,7 @@ background-color: rgba(255, 255, 255, 0);</string>
           </font>
          </property>
          <property name="text">
-          <string>AIS</string>
+          <string>Ẩn tàu cá</string>
          </property>
          <property name="checkable">
           <bool>true</bool>

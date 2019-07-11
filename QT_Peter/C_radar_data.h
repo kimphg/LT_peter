@@ -13,10 +13,10 @@
 #define TRACK_DELETE_TIME 90000
 #define TRACK_MAX_DTIME 60000
 #define TRACK_MIN_DTIME 500
-#define TRACK_STABLE_LEN          6
+#define TRACK_STABLE_LEN          12
 #define TARGET_MAX_SPEED_MARINE     100.0
 #define AZI_ERROR_STD 0.05//1.5 deg
-#define MAX_TRACKS_COUNT          300
+#define MAX_TRACKS_COUNT          2000
 #define RAD_DISPLAY_RES             700//768
 #else
 #define TRACK_STABLE_LEN          3
@@ -316,7 +316,7 @@ public:
         isUpdating = false;
         uniqId =-1;
     }
-    bool isDoplerShifted(){return (abs(mDoplerFit)>1);}
+    bool isDoplerShifted(){return (abs(mDoplerFit)>2.0);}
     bool isConfirmed(){return mState==TrackState::confirmed;}
     qint64 startTime;
     double fitProbability;

@@ -708,6 +708,8 @@ private slots:
 
     void on_toolButton_chong_nhieu_ppy_2_clicked(bool checked);
 
+    void on_toolButton_ais_hide_fishing_clicked(bool checked);
+
 private:
 
 //    bool mShowobjects,

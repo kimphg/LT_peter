@@ -49,7 +49,7 @@ void dataProcessingThread::ReadDataBuffer()
         mRadarData->processSocketData(pData,dataLen);
 //        if(dataLen==1058)
 //            dataLen=dataLen;
-        if(isRecording)
+        if(isRecording&&dataLen)
         {
             signRecFile.write((char*)&dataLen,2);
             signRecFile.write((char*)pData,dataLen);
@@ -294,7 +294,7 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
 
     if(readNmea(mReceiveBuff,len))
     {
-        if(isRecording)
+        if(isRecording&&dataLen)
         {
             signRecFile.write((char*)&dataLen,2);
             signRecFile.write((char*)mReceiveBuff,dataLen);
@@ -364,12 +364,12 @@ void dataProcessingThread::SerialDataRead()
 void dataProcessingThread::processSerialData(QByteArray inputData)
 {
 
-    unsigned short len = inputData.length();
+    unsigned short dataLen = inputData.length();
     unsigned char* data = (unsigned char*)inputData.data();
-    if(isRecording)
+    if(isRecording&&dataLen)
     {
-        signRecFile.write((char*)&len,2);
-        signRecFile.write((char*)data,len);
+        signRecFile.write((char*)&dataLen,2);
+        signRecFile.write((char*)data,dataLen);
     }
     if(data[0]==0xff)//encoder data
     {
@@ -550,7 +550,7 @@ void dataProcessingThread::playbackRadarData()
             }
             else if(len)
                 ProcessNavData((unsigned char*)buff.data(),len);
-            if(isRecording)
+            if(isRecording&&len)
             {
                 signRecFile.write((char*)&len,2);
                 signRecFile.write(buff.data(),len);
