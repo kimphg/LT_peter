@@ -596,7 +596,7 @@ void C_primary_track::update()
         //update dopler
         mDopler = possibleObj.dopler;
         if(mDopler>7)mDopler-=16;
-        mDoplerFit += (mDopler-mDoplerFit)/4.0;;
+        mDoplerFit += (mDopler-mDoplerFit)/(double(TRACK_STABLE_LEN));
         //
         lastTimeMs = possibleObj.timeMs;
 

@@ -3,6 +3,7 @@
 
 #include <QDir>
 #define NAV_FRAME_LEN 1500
+#define FRAME_LEN_MAX 5000
 #define MAX_IREC 2000
 //#include <QGeoCoordinate>
 //#include <QNmeaPositionInfoSource>
@@ -49,11 +50,11 @@ void dataProcessingThread::ReadDataBuffer()
         mRadarData->processSocketData(pData,dataLen);
 //        if(dataLen==1058)
 //            dataLen=dataLen;
-        if(isRecording&&dataLen)
-        {
-            signRecFile.write((char*)&dataLen,2);
-            signRecFile.write((char*)pData,dataLen);
-        }
+//        if(isRecording&&dataLen)
+//        {
+//            signRecFile.write((char*)&dataLen,2);
+//            signRecFile.write((char*)pData,dataLen);
+//        }
         iRead++;
         if(iRead>=MAX_IREC)iRead=0;
     }
@@ -294,11 +295,11 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
 
     if(readNmea(mReceiveBuff,len))
     {
-        if(isRecording&&dataLen)
-        {
-            signRecFile.write((char*)&dataLen,2);
-            signRecFile.write((char*)mReceiveBuff,dataLen);
-        }
+//        if(isRecording&&dataLen)
+//        {
+//            signRecFile.write((char*)&dataLen,2);
+//            signRecFile.write((char*)mReceiveBuff,dataLen);
+//        }
         return;
     }
     else if(readMay22Msg(mReceiveBuff,len))//system messages
@@ -366,11 +367,11 @@ void dataProcessingThread::processSerialData(QByteArray inputData)
 
     unsigned short dataLen = inputData.length();
     unsigned char* data = (unsigned char*)inputData.data();
-    if(isRecording&&dataLen)
-    {
-        signRecFile.write((char*)&dataLen,2);
-        signRecFile.write((char*)data,dataLen);
-    }
+//    if(isRecording&&dataLen)
+//    {
+//        signRecFile.write((char*)&dataLen,2);
+//        signRecFile.write((char*)data,dataLen);
+//    }
     if(data[0]==0xff)//encoder data
     {
         mazi = (data[1]<<16) + (data[2]<<8)+(data[3]);
@@ -537,24 +538,20 @@ void dataProcessingThread::playbackRadarData()
             {
                 signRepFile.seek(0);
                 mRadarData->SelfRotationReset();
+                CConfig::AddMessage("Reset file replay");
                 //togglePlayPause(false);
                 return;
             }
+            if(!len)
+                continue;
+            if(len>5000)
+                continue;
             QByteArray buff;
             buff.resize(len);
 
             signRepFile.read(buff.data(),len);
-            if(len>NAV_FRAME_LEN||((len==1058)&&(buff.data()[0]==4))){
-                //mRadarData->assembleDataFrame((unsigned char*)buff.data(),buff.size());
-                mRadarData->processSocketData((unsigned char*)buff.data(),len);
-            }
-            else if(len)
-                ProcessNavData((unsigned char*)buff.data(),len);
-            if(isRecording&&len)
-            {
-                signRecFile.write((char*)&len,2);
-                signRecFile.write(buff.data(),len);
-            }
+            ProcessData((unsigned char*)buff.data(),len);
+
             if(playRate<10){togglePlayPause(false);return;}
         }
         return;
@@ -623,7 +620,7 @@ void dataProcessingThread::inputAISData(QByteArray inputdata)
                     objExist = true;
                     oldObj.isNewest = false;
                     obj.isSelected = oldObj.isSelected;
-                    if(obj.mName.isEmpty()&&(!oldObj.mName.isEmpty()))
+                    if(obj.mName.length()>oldObj.mName.length())
                         obj.mName = oldObj.mName;
                     obj.mUpdateTime = clock();
                     if(obj.mLat<5)obj.mLat = oldObj.mLat;
@@ -667,51 +664,63 @@ void dataProcessingThread::inputAISData(QByteArray inputdata)
 
 static unsigned long int lastFrameCount=0;
 
-static uchar mReceiveBuff[NAV_FRAME_LEN];
+static uchar mReceiveBuff[FRAME_LEN_MAX];
 void dataProcessingThread::CalculateRFR()
 {
     double fDrame = double(CConfig::mStat.mFrameCount-lastFrameCount);
     mFramesPerSec = fDrame*5;
     lastFrameCount=CConfig::mStat.mFrameCount;
 }
+void dataProcessingThread::ProcessData(unsigned char* data,unsigned short len)
+{
+
+    if(isRecording)
+    {
+
+        signRecFile.write((char*)&len,2);
+        signRecFile.write((char*)data,len);
+    }
+    if(len==4)
+    {
+//                radarSocket->readDatagram((char*)&mReceiveBuff[0],len);
+        if(mReceiveBuff[0]==0xAA&&
+                mReceiveBuff[1]==0xAA&&
+                mReceiveBuff[2]==0xAA&&
+                mReceiveBuff[3]==0xAA)mCudaAge200ms = 0;
+        return;
+    }
+    if(len<NAV_FRAME_LEN&&(data[0]!=4))// rs485 packets
+    {
+//        radarSocket->readDatagram((char*)&mReceiveBuff[0],len);
+        ProcessNavData(data,len);
+        return;
+
+    }
+    else  if(len<=MAX_FRAME_SIZE)
+    {
+        memcpy(&(dataB[iRec].data[0]),data,len);
+        dataB[iRec].len = len;
+        iRec++;
+        if(iRec>=MAX_IREC)iRec = 0;
+        return;
+        //nframe++;
+    }
+}
 void dataProcessingThread::run()
 {
     while(true)
     {
-        //int nframe=0;
         while(radarSocket->hasPendingDatagrams())
         {
-            int len = radarSocket->pendingDatagramSize();
+            unsigned short len = radarSocket->pendingDatagramSize();
+            radarSocket->readDatagram((char*)&mReceiveBuff[0],len);
             if(!len)
             {
-                radarSocket->readDatagram((char*)&mReceiveBuff[0],1);
                 continue;
             }
-            if(len==4)
-            {
-                radarSocket->readDatagram((char*)&mReceiveBuff[0],len);
-                if(mReceiveBuff[0]==0xAA&&
-                        mReceiveBuff[1]==0xAA&&
-                        mReceiveBuff[2]==0xAA&&
-                        mReceiveBuff[3]==0xAA)mCudaAge200ms = 0;
-                continue;
-            }
-            if(len<NAV_FRAME_LEN&&(len!=1100))// system packets
-            {
-                radarSocket->readDatagram((char*)&mReceiveBuff[0],len);
-                ProcessNavData((unsigned char*)mReceiveBuff,len);
-                continue;
+            else
+                ProcessData(mReceiveBuff,len);
 
-            }
-            else  if(len<=MAX_FRAME_SIZE)
-            {
-                radarSocket->readDatagram(( char*)&(dataB[iRec].data[0]),len);
-                dataB[iRec].len = len;
-                iRec++;
-                if(iRec>=MAX_IREC)iRec = 0;
-                continue;
-                //nframe++;
-            }
 
         }
 //        sleep(1);
