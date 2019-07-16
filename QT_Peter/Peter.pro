@@ -44,8 +44,6 @@ SOURCES += main.cpp\
     c_radar_simulation.cpp \
     dialoginputvalue.cpp \
     dialogconfig.cpp
-
-
 HEADERS  += \
     qcustombutton.h \
     qcustomframe.h \

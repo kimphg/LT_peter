@@ -100,6 +100,7 @@ inline double sinFast(double a)
     double a2 = a*a;
     return a-a2*a/6.0+a2*a2*a/120.0-a2*a2*a2*a/5040.0;
 }
+typedef std::map<std::pair<int,int>, int> DensityMap;
 inline void bin2hex(unsigned char byte, char* str)
 {
     switch (byte>>4) {
@@ -553,7 +554,7 @@ private:
 //    void        drawSgn(short azi_draw, short r_pos);
 //    void        drawSgnZoom(short azi_draw, short r_pos);
     unsigned char command_feedback[8];
-    void        polarToXY(float *x, float *y, float azi, float range);
+    void        ConvPolarToXY(double *x, double *y, double azi, double range);
     bool        isProcessing;
 //    bool        isSharpEye;
     float       noiseAverage,rainLevel,noiseVar;
@@ -590,6 +591,7 @@ private:
     void addFreeObj(object_t *obj1);
     bool checkSimilarityToExistingTracks(object_t *obj1);
     void UpdateTrackStatistic();
+    void getDensity(double azi, double range);
 public:
     void updateTerrain();
     void saveTerrain();
@@ -624,6 +626,8 @@ public:
     QImage *getMimg_zoom_ar() const;
     double getScale_ppi() const;
     double getScale_zoom_ppi() const;
+    DensityMap getDensityMap();
+    void addDensityPoint(double lat, double lon);
 };
 
 //extern C_radar_data radarData;

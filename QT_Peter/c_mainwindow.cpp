@@ -5346,3 +5346,8 @@ void Mainwindow::on_toolButton_ais_hide_fishing_clicked(bool checked)
 {
     hideAisFishingBoat =checked;
 }
+
+void Mainwindow::on_customButton_load_density_clicked()
+{
+    processing->loadTargetDensityMap();
+}

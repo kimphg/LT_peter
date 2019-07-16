@@ -43,6 +43,10 @@ static int indexCurrRecAzi = 0;
 //qint64   CConfig::time_now_ms ;
 static int                     zoom_ar_w,zoom_ar_h,zoom_ar_a0,zoom_ar_r0,zoom_ar_a1,zoom_ar_r1;
 static int                     zoom_ar_size_a,zoom_ar_size_r;
+//#define TARGET_DENSITY_MAP_SIZE 3000
+
+DensityMap targetDensityMap;
+//static unsigned short targetDensityMap[TARGET_DENSITY_MAP_SIZE][TARGET_DENSITY_MAP_SIZE];
 typedef struct  {
     //processing dataaziQueue
     unsigned char level [MAX_AZIR][RADAR_RESOLUTION];
@@ -67,8 +71,10 @@ typedef struct  {
     short ykm[MAX_AZIR_DRAW][RAD_DISPLAY_RES+1];
     short xzoom[MAX_AZIR_DRAW][DISPLAY_RES_ZOOM];
     short yzoom[MAX_AZIR_DRAW][DISPLAY_RES_ZOOM];
+
 } signal_map_t;
 static signal_map_t data_mem;
+
 
 uint getColor(unsigned char pvalue,unsigned char dopler,unsigned char sled)
 {
@@ -850,6 +856,7 @@ double xsum=0,x2sum=0,ysum=0,xysum=0;
 
 C_radar_data::C_radar_data()
 {
+    //memset(targetDensityMap,0,TARGET_DENSITY_MAP_SIZE*TARGET_DENSITY_MAP_SIZE);
     isTxOn = false;
     cut_terrain=false;
     mTerrainAvailable = false;
@@ -2025,8 +2032,29 @@ QImage *C_radar_data::getMimg_ppi() const
     return img_ppi;
 }
 
+void C_radar_data::getDensity(double azi,double range)
+{
 
-
+}
+DensityMap C_radar_data::getDensityMap()
+{
+    return targetDensityMap;
+}
+void C_radar_data::addDensityPoint(double lat,double lon)
+{
+    int dmPosX  =   lon*1000;
+    int dmPosY  =   lat*1000;
+    std::pair<int,int> key(dmPosX,dmPosY);
+    DensityMap::iterator it =targetDensityMap.find(key);
+    if ( it == targetDensityMap.end() )
+    {
+        targetDensityMap.insert(std::pair<std::pair<int,int>,int>(key,1));
+    }
+    else
+    {
+        it->second++;
+    }
+}
 #define POLY_DEG 2
 void C_radar_data::LeastSquareFit(C_primary_track* track)
 {
@@ -2621,11 +2649,11 @@ void C_radar_data::procPix(short proc_azi,short lastAzi,short range)//_______sig
 //static short ctX=0,ctY=0;
 //static float dr = 0;
 */
-void C_radar_data::polarToXY(float *x, float *y, float azi, float range)
+void C_radar_data::ConvPolarToXY(double *x, double *y, double azi, double range)
 {
 
-    *x = ((sinf(azi)))*range;
-    *y = ((cosf(azi)))*range;
+    *x = ((sin(azi)))*range;
+    *y = ((cos(azi)))*range;
 }
 
 float C_radar_data::getNoiseAverage() const

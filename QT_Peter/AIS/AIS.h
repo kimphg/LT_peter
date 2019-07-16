@@ -218,8 +218,8 @@ private:
 	static const uint8_t destination_strlen = 20; // a bits
 	static const uint8_t callsign_strlen = 7; // a 6 bits
 	static const uint8_t vendorid_strlen = 3; // a 6 bits
-    QString payloadFirstHalf;
-    int lastMesID;
+    QString payloadBuff1,payloadBuff2;
+    int buffMesID1,buffMesID2;
 	uint8_t msg[msg_max];
 	unsigned int msgLen;
 	Nmea0183AisMessages msgType;

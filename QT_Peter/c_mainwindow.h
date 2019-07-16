@@ -710,6 +710,8 @@ private slots:
 
     void on_toolButton_ais_hide_fishing_clicked(bool checked);
 
+    void on_customButton_load_density_clicked();
+
 private:
 
 //    bool mShowobjects,

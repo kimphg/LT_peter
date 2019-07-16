@@ -99,6 +99,7 @@ public:
     unsigned int realazi1,realazi2;
     bool   isHeadingAvaible;
     double          mAntennaAzi,mAntennaAziOld;
+    void loadTargetDensityMap();
 signals:
     void HeadingDataReceived(double heading);
 private:
@@ -133,6 +134,7 @@ private:
     bool readNmea(unsigned char *mReceiveBuff,int len);
     bool readMay22Msg(unsigned char *mReceiveBuff, int len);
     void ProcessData(unsigned char *data, unsigned short len);
+    void AIStoDensityMap(QByteArray inputdata);
 private slots:
     void ReadDataBuffer();
     void Timer200ms();

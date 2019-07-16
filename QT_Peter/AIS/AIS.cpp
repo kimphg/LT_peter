@@ -255,7 +255,8 @@ AIS::AIS()
 {
 //    msgType=AIS_MSG_MAX;
     //msglen = 0;
-    lastMesID = -1;
+    buffMesID1 = -1;
+    buffMesID2 = -1;
 }
 bool AIS::ProcessPayload(const char *AISbitstream, unsigned int fillBits)
 {
@@ -398,19 +399,32 @@ bool AIS::getdata(unsigned int begin, unsigned int cnt, uint8_t *data, bool isSi
 
 AIS_object_t AIS::GetAisObject()
 {
+    //
     AIS_object_t obj;
     obj.mMMSI = get_mmsi();
-    obj.mName = QString::fromLatin1(get_shipname());
-    if(get_type()==AIS::AIS_MSG_24_STATIC_DATA_REPORT&&(get_partno()==0))
+    int msgType = get_type();
+    if(obj.mMMSI==574092898)
     {
-            //obj.mName = QString::fromLatin1(get_shipname());
-            obj.mType = 0;
-
+        printf("\n obj.mMMSI:%d ; type:%d",574092898,msgType);
+        flushall();
     }
-    else
-    {
-       // obj.mName = QString::fromLatin1(get_shipname());
-        obj.mType = get_shiptype();
+
+    switch (msgType) {
+    case AIS::AIS_MSG_24_STATIC_DATA_REPORT:
+        if(get_partno()==0)obj.mName = QString::fromLatin1(get_shipname());
+        else obj.mType = get_type();
+        break;
+    case AIS::AIS_MSG_21_AID_TO_NAVIGATION:
+        obj.mName = QString::fromLatin1(get_shipname());
+        break;
+    case AIS::AIS_MSG_19_CS_POS_REPORT_EXT_CLASS_B:
+        obj.mName = QString::fromLatin1(get_shipname());
+        break;
+    case AIS::AIS_MSG_5_STATIC_AND_VOYAGE:
+        obj.mName = QString::fromLatin1(get_shipname());
+        break;
+    default:
+        break;
     }
     obj.mDst = QString(get_destination());
     obj.mImo = get_imo();
@@ -456,7 +470,7 @@ enum AIS::Nmea0183AisMessages AIS::numericToMessage(uint8_t msgNumeric)
         }
         i++;
     }
-    printf("\nAIS unsupported type:%d",msgNumeric);
+    printf("\nAIS unsupported:%d",msgNumeric);
     return AIS_MSG_MAX;
 }
 
@@ -609,17 +623,33 @@ bool AIS::ProcessNMEA(QString data)
     {
         if(senNum==1)
         {
-            payloadFirstHalf = fieldList.at(5);
-            lastMesID =fieldList.at(3).toInt();
+            if(buffMesID1==-1)
+            {
+            payloadBuff1 = fieldList.at(5);
+            buffMesID1 =fieldList.at(3).toInt();
+            }
+            else if(buffMesID2==-1)
+            {
+            payloadBuff2 = fieldList.at(5);
+            buffMesID2 =fieldList.at(3).toInt();
+            }
+            return false;
         }
         else if(senNum==2)
         {
-            if(lastMesID==fieldList.at(3).toInt())
+            if(buffMesID1==fieldList.at(3).toInt())
             {
-                payloadFirstHalf += fieldList.at(5);
-                return ProcessPayload(payloadFirstHalf.toStdString().data(),padding);
-                lastMesID=-1;// !!!
+                payloadBuff1 += fieldList.at(5);
+                return ProcessPayload(payloadBuff1.toStdString().data(),padding);
+                buffMesID1=-1;
             }
+            if(buffMesID2==fieldList.at(3).toInt())
+            {
+                payloadBuff2 += fieldList.at(5);
+                return ProcessPayload(payloadBuff2.toStdString().data(),padding);
+                buffMesID2=-1;
+            }
+            return false;
 
         }
 
@@ -630,7 +660,7 @@ bool AIS::ProcessNMEA(QString data)
     }
 
 
-    return true;
+    return false;
 }
 
 bool AIS::get_flag(enum AIS::Nmea0183AisParams param)
