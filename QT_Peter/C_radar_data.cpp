@@ -2036,9 +2036,9 @@ void C_radar_data::getDensity(double azi,double range)
 {
 
 }
-DensityMap C_radar_data::getDensityMap()
+DensityMap* C_radar_data::getDensityMap()
 {
-    return targetDensityMap;
+    return &targetDensityMap;
 }
 void C_radar_data::addDensityPoint(double lat,double lon)
 {

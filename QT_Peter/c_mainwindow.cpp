@@ -205,6 +205,7 @@ void Mainwindow::drawAisTarget(QPainter *p)
     //    penSelectedtarget.setWidth(2);
 
     p->setBrush(Qt::NoBrush);
+    //if(processing->m_aisList.empty())return;
     QList<AIS_object_t>::iterator iter = processing->m_aisList.begin();
     while(iter!=processing->m_aisList.end())
     {
@@ -688,6 +689,7 @@ Mainwindow::Mainwindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
     initCursor();
     controlPressed = false;
     pMap = new QPixmap(SCR_H,SCR_H);
@@ -826,7 +828,37 @@ void Mainwindow::DrawMap()
     ConvKmToWGS((double(dx))/mScale,(double(-dy))/mScale,&dLong,&dLat);
     osmap->setCenterPos(dLat,dLong);
     QPixmap pix = osmap->getImage(mScale);
+    //
 
+    double minLat ,minLon, maxLat, maxLon;
+    double rangeKm = 50;//pMap->width()/2/mScale;
+    ConvKmToWGS(-rangeKm,
+                -rangeKm,
+                &minLon,
+                &minLat);
+    ConvKmToWGS(rangeKm,
+                rangeKm,
+                &maxLon,
+                &maxLat);
+    int minLatin = minLat*1000;
+    int minLonin = minLon*1000;
+    int maxLatin = maxLat*1000;
+    int maxLonin = maxLon*1000;
+    DensityMap* pDM = pRadar->getDensityMap();
+    for(int latin = minLatin;latin<=maxLatin;latin++)
+    {
+        for(int lonin = minLonin;lonin<=maxLonin;lonin++)
+        {
+            std::pair<int,int> key(latin,lonin);
+            DensityMap::iterator it = pDM->find(key);
+            if ( it != pDM->end() )
+            {
+                int value = it->second/255;
+                value=value;
+            }
+        }
+    }
+     // rotate Map for head up mode
     if(isHeadUp)
     {
         pix=pix.transformed(mTrans);
@@ -1635,6 +1667,7 @@ void Mainwindow::checkCuda()
 }
 void Mainwindow::InitSetting()
 {
+
     //    CalcAziContour(355,500);
     //hide iad
     //    system("taskkill /f /im cudaFFT.exe");

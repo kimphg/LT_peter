@@ -626,7 +626,7 @@ public:
     QImage *getMimg_zoom_ar() const;
     double getScale_ppi() const;
     double getScale_zoom_ppi() const;
-    DensityMap getDensityMap();
+    DensityMap *getDensityMap();
     void addDensityPoint(double lat, double lon);
 };
 

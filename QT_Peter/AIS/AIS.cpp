@@ -317,7 +317,7 @@ void AIS::decode(unsigned int fillBits)
     uint8_t src;
 
     srcIdx = 0;
-    while (srcIdx != msgLen) {
+    while (srcIdx < msgLen) {
         src = msg[srcIdx];
         switch (cnt) {
         case 0:
