@@ -11,6 +11,7 @@
     (((x)>> 8) & 0x0000FF00UL) | \
     (((x)>>24) & 0x000000FFUL) )
 #define htons(x) ( ((x)<<8) | (((x)>>8)&0xFF) )
+QString firstHalfMsg[10];
 AIS_object_t::AIS_object_t()
 {
 
@@ -264,6 +265,8 @@ bool AIS::ProcessPayload(const char *AISbitstream, unsigned int fillBits)
     uint8_t* tmp = (uint8_t*)(AISbitstream);
     int i = 0;
     while (*tmp != '\0') {
+        if(i>500)
+            i=i;
         msg[i] = *tmp;
         i++;
         tmp++;
@@ -470,7 +473,7 @@ enum AIS::Nmea0183AisMessages AIS::numericToMessage(uint8_t msgNumeric)
         }
         i++;
     }
-    printf("\nAIS unsupported:%d",msgNumeric);
+//    printf("\nAIS unsupported:%d",msgNumeric);
     return AIS_MSG_MAX;
 }
 
@@ -608,49 +611,88 @@ const char* AIS::get_string(enum AIS::Nmea0183AisParams param, char* str)
     get_string(str, start, len/bits_pr_char);
     return str;
 }
+int AIS::from_hex(char a)
+{
+  if (a >= 'A' && a <= 'F')
+    return a - 'A' + 10;
+  else if (a >= 'a' && a <= 'f')
+    return a - 'a' + 10;
+  else
+    return a - '0';
+}
+inline int char2int( char input)
+{
+  if(input >= '0' && input <= '9')
+    return input - '0';
+  if(input >= 'A' && input <= 'F')
+    return input - 'A' + 10;
+  if(input >= 'a' && input <= 'f')
+    return input - 'a' + 10;
+  return 0;
+}
+inline void hex2bin1byte(const char* src,unsigned char* target)
+{
+  *(target++) = char2int(*src)*16 + char2int(src[1]);
+}
+inline void hex2bin(const char* src,unsigned char* target)
+{
+  while(*src && src[1])
+  {
+    *(target++) = char2int(*src)*16 + char2int(src[1]);
+    src += 2;
+  }
+  *(target++)=0;
+}
+int nmea0183_checksum(const char *nmea_data)
+{
+    int crc = 0;
+    int i;
+    int len = strlen(nmea_data);
+
+    // the first $ sign and the last two bytes of original CRC + the * sign
+    for (i = 0; i < len ; i ++) {
+        crc ^= nmea_data[i];
+    }
+
+    return crc;
+}
 bool AIS::ProcessNMEA(QString data)
 {
-    //if(!data.contains('*'))return false;
-    //int checkSum = data.split('*').at(1).toInt();
-    QStringList fieldList = data.split(',');
-    if(fieldList.size()<7)return false;
-    if(!(fieldList.at(0).contains("AIVD")))return false;
+    //find and calculate checksum
+    QStringList str=data.split('*');
+    if(str.size()<2)
+        return false;
+    QString msgStr =str.at(0);
+    QString checksumstr = str.at(1);
+    if(checksumstr.length()<2)
+        return false;
+    unsigned char checksum;
+    hex2bin1byte(checksumstr.toStdString().data(),&checksum);
+    if(checksum != nmea0183_checksum(msgStr.toStdString().data()))
+        return false;
+    QStringList fieldList = msgStr.split(',');
+    if(fieldList.size()<7)
+        return false;
+    if(!(fieldList.at(0).contains("AIVD")))
+        return false;
     int numOfSentence = fieldList.at(1).toInt();
-    int senNum = fieldList.at(2).toInt();
-    int padding = fieldList.at(6).split('*').at(0).toInt();
+    int senNum =        fieldList.at(2).toInt();
+    int padding =       fieldList.at(6).toInt();
+
     if(numOfSentence==1)return ProcessPayload(fieldList.at(5).toStdString().data(),padding);
     else if(numOfSentence==2)
     {
+        int msgId = fieldList.at(3).toInt();
+        if(msgId<0||msgId>9)
+            return false;
         if(senNum==1)
         {
-            if(buffMesID1==-1)
-            {
-            payloadBuff1 = fieldList.at(5);
-            buffMesID1 =fieldList.at(3).toInt();
-            }
-            else if(buffMesID2==-1)
-            {
-            payloadBuff2 = fieldList.at(5);
-            buffMesID2 =fieldList.at(3).toInt();
-            }
+            firstHalfMsg[msgId] = fieldList.at(5);
             return false;
         }
         else if(senNum==2)
         {
-            if(buffMesID1==fieldList.at(3).toInt())
-            {
-                payloadBuff1 += fieldList.at(5);
-                return ProcessPayload(payloadBuff1.toStdString().data(),padding);
-                buffMesID1=-1;
-            }
-            if(buffMesID2==fieldList.at(3).toInt())
-            {
-                payloadBuff2 += fieldList.at(5);
-                return ProcessPayload(payloadBuff2.toStdString().data(),padding);
-                buffMesID2=-1;
-            }
-            return false;
-
+            return ProcessPayload(firstHalfMsg[msgId].toStdString().data(),padding);
         }
 
     }

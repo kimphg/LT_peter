@@ -761,6 +761,7 @@ private:
     void saveScreenShot(QString fileName);
     void SetTx(bool onoff);
     bool CheckTxCondition(bool isPopupMsg);
+    PointDouble ConvScrPointToWGS(int x, int y);
 };
 
 #endif // MAINWINDOW_H

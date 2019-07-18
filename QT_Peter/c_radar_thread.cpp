@@ -589,29 +589,10 @@ void dataProcessingThread::togglePlayPause(bool play)
     isPlaying = play;
 
 }
-void dataProcessingThread::AIStoDensityMap(QByteArray inputdata)
-{
-    messageStringbuffer.append(QString::fromLatin1(inputdata));
-    if(messageStringbuffer.size()>1500)messageStringbuffer.clear();
-    QStringList strlist = messageStringbuffer.split("!");
-    if(strlist.size() <= 1)return;
-    for(int i = 0;i<strlist.size()-1;i++)
-    {
-        if(aisMessageHandler.ProcessNMEA(strlist.at(i)))
-        {
+//void dataProcessingThread::LoadDensityMap(QByteArray inputdata)
+//{
 
-//            CConfig::mStat.cAisUpdateTime = clock();
-            double mLat = aisMessageHandler.get_latitude()/600000.0;
-            double mLong = aisMessageHandler.get_longitude()/600000.0;
-            if(abs(mLat)>0.5&&
-                    abs(mLong)>0.5)
-                mRadarData->addDensityPoint(mLat,mLong);
-
-
-        }
-    }
-    messageStringbuffer=strlist.at(strlist.size()-1);
-}
+//}
 void dataProcessingThread::inputAISData(QByteArray inputdata)
 {
     messageStringbuffer.append(QString::fromLatin1(inputdata));
@@ -892,27 +873,27 @@ void dataProcessingThread::radTxOn()
 
 }
 
-void dataProcessingThread::loadTargetDensityMap()
-{
-    QDir directory("D:/HR2D/logs/AIS/");
-    QStringList logfiles = directory.entryList(QStringList() << "*.log" ,QDir::Files);
-    char dataPt[FRAME_LEN_NAV];
-    int nRecord = 0;
-    foreach(QString filename, logfiles) {
-        QFile logFile("D:/HR2D/logs/AIS/"+filename);
-        logFile.open(QIODevice::ReadOnly);
-        for(;;)
-        {
-            nRecord++;
-            int len = logFile.readLine(dataPt,FRAME_LEN_NAV);
-            if(len<0)break;
-            AIStoDensityMap(QByteArray(dataPt,len));
-        }
-        logFile.close();
-        if(nRecord>20000)break;
-    }
+//void dataProcessingThread::loadTargetDensityMap()
+//{
+//    QDir directory("D:/HR2D/logs/AIS/");
+//    QStringList logfiles = directory.entryList(QStringList() << "*.log" ,QDir::Files);
+//    char dataPt[FRAME_LEN_NAV];
+//    int nRecord = 0;
+//    foreach(QString filename, logfiles) {
+//        QFile logFile("D:/HR2D/logs/AIS/"+filename);
+//        logFile.open(QIODevice::ReadOnly);
+//        for(;;)
+//        {
+//            nRecord++;
+//            int len = logFile.readLine(dataPt,FRAME_LEN_NAV);
+//            if(len<0)break;
+//            AIStoDensityMap(QByteArray(dataPt,len));
+//        }
+//        logFile.close();
+//        if(nRecord>20000)break;
+//    }
 
-}
+//}
 void dataProcessingThread::radTxOff()
 {
     //RadarCommand command;

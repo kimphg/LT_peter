@@ -4,6 +4,7 @@
 #include <QString>
 #include <inttypes.h>
 #include <QDateTime>
+#include <vector>
 /* Created by QtCreator
  * AIS references:
  * http://catb.org/gpsd/AIVDM.html#_types_1_2_and_3_position_report_class_a
@@ -220,6 +221,7 @@ private:
 	static const uint8_t vendorid_strlen = 3; // a 6 bits
     QString payloadBuff1,payloadBuff2;
     int buffMesID1,buffMesID2;
+    int buffMesWaittime1,buffMesWaittime2;
 	uint8_t msg[msg_max];
 	unsigned int msgLen;
 	Nmea0183AisMessages msgType;
@@ -228,7 +230,8 @@ private:
 	char shipname[shipname_strlen + 1];
 	char destination[destination_strlen+1];
 	char callsign[callsign_strlen+1];
-	char vendorid[vendorid_strlen+1];
+    char vendorid[vendorid_strlen+1];
+    int from_hex(char a);
 };
 
 

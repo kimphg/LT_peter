@@ -856,6 +856,7 @@ double xsum=0,x2sum=0,ysum=0,xysum=0;
 
 C_radar_data::C_radar_data()
 {
+    loadDensityMap();
     //memset(targetDensityMap,0,TARGET_DENSITY_MAP_SIZE*TARGET_DENSITY_MAP_SIZE);
     isTxOn = false;
     cut_terrain=false;
@@ -2035,6 +2036,23 @@ QImage *C_radar_data::getMimg_ppi() const
 void C_radar_data::getDensity(double azi,double range)
 {
 
+}
+void C_radar_data::loadDensityMap()
+{
+    QFile densityFile("D:/HR2D/target_density.txt");
+    if(!densityFile.exists())return;
+    densityFile.open(QIODevice::ReadOnly);
+    for(;;)
+    {
+
+        QStringList liststr = QString(densityFile.readLine()).split(",");
+        if(liststr.size()<3)break;
+        int lat =   liststr.at(0).toInt();
+        int lon =   liststr.at(1).toInt();
+        int value = liststr.at(2).toInt();
+        targetDensityMap.insert(std::make_pair(std::make_pair(lat,lon),value));
+    }
+    //cout<<"\ntargetDensityMap.size()"<<targetDensityMap.size();
 }
 DensityMap* C_radar_data::getDensityMap()
 {

@@ -79,23 +79,23 @@ static double curAziRad = 3;
 //static TrackPointer* currTrackPt;
 //guard_zone_t gz1,gz2,gz3;
 //static unsigned short cur_object_index = 0;
-short lon2x(float lon)
-{
-    double refLat = mLat*0.00872664625997;
-    return  short(- dx + scrCtX + ((lon - mLon) * 111.31949079327357*cos(refLat))*mScale);
-}
-short lat2y(float lat)
-{
+//short lon2x(float lon)
+//{
+//    double refLat = mLat*0.00872664625997;
+//    return  short(- dx + scrCtX + ((lon - mLon) * 111.31949079327357*cos(refLat))*mScale);
+//}
+//short lat2y(float lat)
+//{
 
-    return (- dy + scrCtY - ((lat - mLat) * 111.31949079327357)*mScale);
-}
+//    return (- dy + scrCtY - ((lat - mLat) * 111.31949079327357)*mScale);
+//}
 double y2lat(short y)
 {
     return (y  )/mScale/111.31949079327357 + mLat;
 }
 double x2lon(short x)
 {
-    double refLat = mLat*0.00872664625997;
+    double refLat = mLat*0.00872664625997*2;
     return (x  )/mScale/111.31949079327357/cos(refLat) + mLon;
 }
 inline QString demicalDegToDegMin(double demicalDeg)
@@ -825,13 +825,15 @@ void Mainwindow::DrawMap()
     //
     QPainter pMapPainter(pMap);
     double dLat, dLong;
-    ConvKmToWGS((double(dx))/mScale,(double(-dy))/mScale,&dLong,&dLat);
+    ConvKmToWGS((double(dx))/mScale,
+                (double(-dy))/mScale,&dLong,&dLat);
     osmap->setCenterPos(dLat,dLong);
     QPixmap pix = osmap->getImage(mScale);
+    QPainter densityPainter(&pix);
     //
 
     double minLat ,minLon, maxLat, maxLon;
-    double rangeKm = 50;//pMap->width()/2/mScale;
+    double rangeKm = pMap->width()/1.5/mScale;
     ConvKmToWGS(-rangeKm,
                 -rangeKm,
                 &minLon,
@@ -845,19 +847,24 @@ void Mainwindow::DrawMap()
     int maxLatin = maxLat*1000;
     int maxLonin = maxLon*1000;
     DensityMap* pDM = pRadar->getDensityMap();
-    for(int latin = minLatin;latin<=maxLatin;latin++)
+    for(auto it:(*pDM))
     {
-        for(int lonin = minLonin;lonin<=maxLonin;lonin++)
+        std::pair<int,int> key=it.first;
+        if(key.first<maxLatin&&
+                key.first>minLatin&&
+                key.second<maxLonin&&
+                key.second>minLonin
+                )
         {
-            std::pair<int,int> key(latin,lonin);
-            DensityMap::iterator it = pDM->find(key);
-            if ( it != pDM->end() )
-            {
-                int value = it->second/255;
-                value=value;
-            }
+            int value = log2(it.second)*40;
+            if(value>255)value=255;
+            PointInt p = ConvWGSToScrPoint(((key.second)+0.5)/1000.0,((key.first)+0.5)/1000.0);
+            densityPainter.setPen(QPen(QColor(value,value,0,value),2));
+            densityPainter.drawPoint(p.x- scrCtX+pix.width()/2,p.y-scrCtY+pix.height()/2);
         }
+
     }
+
      // rotate Map for head up mode
     if(isHeadUp)
     {
@@ -1182,6 +1189,14 @@ PointInt Mainwindow::ConvKmXYToScrPoint(double x, double y)
     s.x   += radCtX;
     s.y   += radCtY;
     return s;
+}
+PointDouble Mainwindow::ConvScrPointToWGS(int x,int y)
+{
+    PointDouble output;
+    output.x  = mLat -  ((y-scrCtY)/mScale)/(111.132954);
+    double refLat = (mLat +(output.x))*0.00872664625997;//3.14159265358979324/180.0/2;
+    output.y = (x-scrCtX)/mScale/(111.31949079327357*cos(refLat))+ mLon;
+    return output;
 }
 PointDouble Mainwindow::ConvScrPointToKMXY(int x, int y)
 {
@@ -2263,8 +2278,12 @@ void Mainwindow::Update100ms()
         ui->label_cursor_range->setText(QString::number(rg,'f',2)+strDistanceUnit);
         ui->label_cursor_azi->setText(QString::number(azi,'f',1)+degreeSymbol);
         ui->label_cursor_azi_2->setText(QString::number(headAzi,'f',1)+degreeSymbol);
-        ui->label_cursor_lat->setText(demicalDegToDegMin( y2lat(-(mMousey - radCtY)))+"'N");
-        ui->label_cursor_long->setText(demicalDegToDegMin(x2lon(mMousex - radCtX))+"'E");
+        PointDouble latlon = ConvScrPointToWGS(
+                    mMousex,
+                    (mMousey )
+                    );
+        ui->label_cursor_lat->setText(demicalDegToDegMin( latlon.x)+"'N");
+        ui->label_cursor_long->setText(demicalDegToDegMin(latlon.y)+"'E");
     }
     else
     {
@@ -5382,5 +5401,5 @@ void Mainwindow::on_toolButton_ais_hide_fishing_clicked(bool checked)
 
 void Mainwindow::on_customButton_load_density_clicked()
 {
-    processing->loadTargetDensityMap();
+//    processing->loadTargetDensityMap();
 }

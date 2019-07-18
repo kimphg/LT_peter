@@ -628,6 +628,7 @@ public:
     double getScale_zoom_ppi() const;
     DensityMap *getDensityMap();
     void addDensityPoint(double lat, double lon);
+    void loadDensityMap();
 };
 
 //extern C_radar_data radarData;
