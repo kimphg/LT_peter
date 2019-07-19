@@ -243,7 +243,7 @@ bool dataProcessingThread::readNmea(unsigned char *mReceiveBuff,int len)
                         //mStat.cGpsUpdateTime = clock();
                         double mLat,mLon;
                         mGPS.get_position(&mLat,&mLon);
-                        CConfig::mStat.setGPSLocation(mLat,mLon);
+                        CConfig::setGPSLocation(mLat,mLon);
                         return true;
                     }
 
@@ -706,10 +706,17 @@ void dataProcessingThread::ProcessData(unsigned char* data,unsigned short len)
     }
     else  if(len<=MAX_FRAME_SIZE)
     {
-        memcpy(&(dataB[iRec].data[0]),data,len);
-        dataB[iRec].len = len;
-        iRec++;
-        if(iRec>=MAX_IREC)iRec = 0;
+        if(isPlaying)
+        {
+            mRadarData->processSocketData(data,len);
+        }
+        else
+        {
+            memcpy(&(dataB[iRec].data[0]),data,len);
+            dataB[iRec].len = len;
+            iRec++;
+            if(iRec>=MAX_IREC)iRec = 0;
+        }
         return;
         //nframe++;
     }

@@ -92,6 +92,13 @@
 #include <queue>
 //#include <c_target_manager.h>
 #include <QtConcurrent/QtConcurrent>
+inline void ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat)
+{
+    *m_Lat  = CConfig::mLat +  (y)/(111.132954);
+    double refLat = (CConfig::mLat +(*m_Lat))*0.00872664625997;//3.14159265358979324/180.0/2;
+    *m_Long = (x)/(111.31949079327357*cos(refLat))+ CConfig::mLon;
+    //tinh toa do lat-lon khi biet xy km (truong hop coi trai dat hinh cau)
+}
 inline double sinFast(double a)
 {
     while (a>PI) {
@@ -319,6 +326,7 @@ public:
         uniqId =-1;
     }
     bool isDoplerShifted(){return (abs(mDoplerFit)>=TRACK_START_DOPLER);}
+    bool isHighDensityPos();
     bool isConfirmed(){return mState==TrackState::confirmed;}
     qint64 startTime;
     double fitProbability;
@@ -390,6 +398,7 @@ public:
     double                  courseDeg;
     double                  rgSpeedkmh;
     double                  xkm,ykm;
+    double                  lat,lon;
     double                  sko_aziDeg;
     double                  sko_rgKm;
     double                  sko_spd;
@@ -402,6 +411,7 @@ public:
     double estimateScore(object_t *obj1);
     static double estimateScore(object_t *obj1, object_t *obj2);
     double aziDeg,rgKm;
+    int getPosDensity();
 private:
     double courseRad;
     double mSpeedkmh;

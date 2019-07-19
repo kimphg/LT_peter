@@ -10,6 +10,7 @@ using namespace std;
 //double CConfig::antennaAziDeg=0;
 std::queue<WarningMessage> CConfig::mWarningList;
 bool CConfig::isChanged = false;
+double  CConfig::mLat = DEFAULT_LAT,CConfig::mLon=DEFAULT_LONG;
 radarStatus_3C CConfig::mStat ;
 radarStatus_3C::radarStatus_3C()
 {
@@ -42,11 +43,11 @@ radarStatus_3C::~radarStatus_3C()
 
 }
 
-void radarStatus_3C::setGPSLocation(double lat, double lon)
-{
-    mLat = lat;mLon = lon;
-    cGpsUpdateTime = clock();
-}
+//void radarStatus_3C::setGPSLocation(double lat, double lon)
+//{
+//    mLat = lat;mLon = lon;
+//    cGpsUpdateTime = clock();
+//}
 
 void radarStatus_3C::setShipCourse(double value)
 {
@@ -130,8 +131,8 @@ CConfig::CConfig(void)
     //hashData.;
     //shipHeadingDeg = 0;
     readFile();
-
-
+    CConfig::mLat = getDouble("mLat");
+    CConfig::mLon = getDouble("mLon");
 }
 
 CConfig::~CConfig(void)

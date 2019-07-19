@@ -13,6 +13,9 @@ static QPen penCyan(QBrush(QColor(50,255,255 ,255)),1);//xoay mui tau
 static enum ZoomMode {ZoomHiden =0,ZoomIAD=1,ZoomHistogram=2,ZoomSpectre=3,ZoomRamp=4,ZoomZoom=5} zoom_mode=ZoomHiden;
 static PointAziRgkm AutoSelP1,AutoSelP2;
 static bool hideAisFishingBoat = true;
+static double trueShiftDeg,headShift;
+QPixmap                     *pMap;// painter cho ban do
+DensityMap* pDensMap;
 //#ifdef THEON
 //static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),224+SCR_BORDER_SIZE);
 //static QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
@@ -40,7 +43,7 @@ static int                         mRangeIndex = 0;
 static int                         mDistanceUnit=0;//0:NM;1:KM
 static double                      mZoomSizeRg = 2;
 static double                      mZoomSizeAz = 10;
-static double                      mLat=DEFAULT_LAT,mLon = DEFAULT_LONG;
+
 //static double                      CConfig::mStat.shipHeadingDeg=20;
 static bool                        isMapOutdated = true;
 static bool isHeadUp = false;
@@ -89,14 +92,49 @@ static double curAziRad = 3;
 
 //    return (- dy + scrCtY - ((lat - mLat) * 111.31949079327357)*mScale);
 //}
+void rotateVector(double angle,int* x,int* y)
+{
+    if(abs(angle)<0.1)return;
+    double theta = radians(angle);
+    double cs = cos(theta);
+    double sn = sin(theta);
+
+    double px = (*x) * cs - (*y) * sn;
+    double py = (*x) * sn + (*y) * cs;
+    (*x) = px;
+    (*y) = py;
+}
+void rotateVector(double angle,double* x,double* y)
+{
+    if(abs(angle)<0.1)return;
+    double theta = radians(angle);
+    double cs = cos(theta);
+    double sn = sin(theta);
+    double px = (*x) * cs - (*y) * sn;
+    double py = (*x) * sn + (*y) * cs;
+    (*x) = px;
+    (*y) = py;
+}
+PointInt ConvWGSToScrPoint(double m_Long,double m_Lat)
+{
+    PointInt s;
+    double refLat = (CConfig::mLat + (m_Lat))*0.00872664625997;//pi/360
+    s.x	= mScale*(((m_Long) - CConfig::mLon) * 111.31949079327357)*cos(refLat);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
+    s.y	= mScale*((CConfig::mLat - (m_Lat)) * 111.132954);
+    rotateVector(trueShiftDeg,&s.x,&s.y);
+    s.x   += radCtX;
+    s.y   += radCtY;
+    return s;
+}
+
 double y2lat(short y)
 {
-    return (y  )/mScale/111.31949079327357 + mLat;
+    return (y  )/mScale/111.31949079327357 + CConfig::mLat;
 }
 double x2lon(short x)
 {
-    double refLat = mLat*0.00872664625997*2;
-    return (x  )/mScale/111.31949079327357/cos(refLat) + mLon;
+    double refLat = CConfig::mLat*0.00872664625997*2;
+    return (x  )/mScale/111.31949079327357/cos(refLat) + CConfig::mLon;
 }
 inline QString demicalDegToDegMin(double demicalDeg)
 {
@@ -307,8 +345,8 @@ void Mainwindow::wheelEvent(QWheelEvent *event)
 void Mainwindow::mouseMoveEvent(QMouseEvent *event) 
 {
 
-    if((mouse_mode&MouseDrag)&&(event->buttons() & Qt::LeftButton)) 
-	{
+    if((mouse_mode&MouseDrag)&&(event->buttons() & Qt::LeftButton))
+    {
         {
             short olddx = dx;
             short olddy = dy;
@@ -332,7 +370,7 @@ void Mainwindow::mouseMoveEvent(QMouseEvent *event)
             mZoomCentery+= olddy - dy;
             mMouseLastX=event->x();
             mMouseLastY=event->y();
-            isMapOutdated = true;
+            //            isMapOutdated = true;
             radCtX = scrCtX-dx;
             radCtY = scrCtY-dy;
         }
@@ -343,7 +381,7 @@ void Mainwindow::keyPressEvent(QKeyEvent *event)
 {
     this->setFocus();
     int key = event->key();
-     if(key == Qt::Key_Space)
+    if(key == Qt::Key_Space)
     {
         int posx = (QCursor::pos()).x();
         int posy = (QCursor::pos()).y();
@@ -693,9 +731,9 @@ Mainwindow::Mainwindow(QWidget *parent) :
     initCursor();
     controlPressed = false;
     pMap = new QPixmap(SCR_H,SCR_H);
-//    processCuda = new QProcess();
+    //    processCuda = new QProcess();
     degreeSymbol= QString::fromLocal8Bit("\260");
-
+    pDensMap = pRadar->getDensityMap();
     //cmLog = new DialogCommandLog();
     ppiRect = QRect(SCR_LEFT_MARGIN+SCR_BORDER_SIZE/2,
                     SCR_TOP_MARGIN+SCR_BORDER_SIZE/2,
@@ -810,10 +848,9 @@ Mainwindow::~Mainwindow()
     if(pMap)delete pMap;
 }
 
-void Mainwindow::DrawMap()
+void DrawMap()
 {
     if(!isMapOutdated)return;
-
     isMapOutdated = false;
     if(!pMap)
     {
@@ -824,48 +861,52 @@ void Mainwindow::DrawMap()
     dyMap = 0;
     //
     QPainter pMapPainter(pMap);
+    //calculate center coordinate
     double dLat, dLong;
     ConvKmToWGS((double(dx))/mScale,
                 (double(-dy))/mScale,&dLong,&dLat);
     osmap->setCenterPos(dLat,dLong);
     QPixmap pix = osmap->getImage(mScale);
-    QPainter densityPainter(&pix);
-    //
-
-    double minLat ,minLon, maxLat, maxLon;
-    double rangeKm = pMap->width()/1.5/mScale;
-    ConvKmToWGS(-rangeKm,
-                -rangeKm,
-                &minLon,
-                &minLat);
-    ConvKmToWGS(rangeKm,
-                rangeKm,
-                &maxLon,
-                &maxLat);
-    int minLatin = minLat*1000;
-    int minLonin = minLon*1000;
-    int maxLatin = maxLat*1000;
-    int maxLonin = maxLon*1000;
-    DensityMap* pDM = pRadar->getDensityMap();
-    for(auto it:(*pDM))
+    //draw density map
+    if(CConfig::getInt("isViewDensityMap"))
     {
-        std::pair<int,int> key=it.first;
-        if(key.first<maxLatin&&
-                key.first>minLatin&&
-                key.second<maxLonin&&
-                key.second>minLonin
-                )
+        QPainter densityPainter(&pix);
+        double minLat ,minLon, maxLat, maxLon;
+        double rangeKm = pMap->width()/1.5/mScale;
+        ConvKmToWGS(-rangeKm,
+                    -rangeKm,
+                    &minLon,
+                    &minLat);
+        ConvKmToWGS(rangeKm,
+                    rangeKm,
+                    &maxLon,
+                    &maxLat);
+        int minLatin = minLat*1000;
+        int minLonin = minLon*1000;
+        int maxLatin = maxLat*1000;
+        int maxLonin = maxLon*1000;
+        for(auto it:(*pDensMap))
         {
-            int value = log2(it.second)*40;
-            if(value>255)value=255;
-            PointInt p = ConvWGSToScrPoint(((key.second)+0.5)/1000.0,((key.first)+0.5)/1000.0);
-            densityPainter.setPen(QPen(QColor(value,value,0,value),2));
-            densityPainter.drawPoint(p.x- scrCtX+pix.width()/2,p.y-scrCtY+pix.height()/2);
+            std::pair<int,int> key=it.first;
+            if(key.first<maxLatin&&
+                    key.first>minLatin&&
+                    key.second<maxLonin&&
+                    key.second>minLonin
+                    )
+            {
+                int value = log2(it.second)*50;
+                if(value>255)value=255;
+                PointInt p = ConvWGSToScrPoint(
+                            ((key.second)+0.5)/1000.0,
+                            ((key.first)+0.5)/1000.0
+                            );
+                densityPainter.setPen(QPen(QColor(value,value,100,value),1+mScale/15));
+                densityPainter.drawPoint(p.x- scrCtX+pix.width()/2,p.y-scrCtY+pix.height()/2);
+            }
+
         }
-
     }
-
-     // rotate Map for head up mode
+    // rotate Map for head up mode
     if(isHeadUp)
     {
         pix=pix.transformed(mTrans);
@@ -874,32 +915,8 @@ void Mainwindow::DrawMap()
     pMapPainter.drawPixmap((-pix.width()/2+pMap->width()/2),
                            (-pix.height()/2+pMap->height()/2),pix.width(),pix.height(),pix
                            );
-    repaint();
-    //view frame
-    //fill back ground
-    //p.setBrush(QColor(40,60,100,255));
-    //p.drawRect(scrCtX+scrCtY,0,width()-scrCtX-scrCtY,height());
-    //p.drawRect(0,0,scrCtX-scrCtY,height());
-    //p.setCompositionMode(QPainter::CompositionMode_SourceOver);
-    //pMapPainter.setOpacity(1);
-    //grid
-    /*if(toolButton_grid_checked)
-    {
 
-        if(ui->toolButton_measuring->isChecked())
-        {
-            DrawGrid(&pMapPainter,mMouseLastX-SCR_LEFT_MARGIN,mMouseLastY);
-        }
-        else
-        {
-            DrawGrid(&pMapPainter,scrCtX- SCR_LEFT_MARGIN-dx,radCtY);
-        }
-    }
-    //frame
-    pMapPainter.setBrush(Qt::NoBrush);
-    pMapPainter.setPen(penBackground);
-    short i=200;
-    pMapPainter.drawEllipse(-i/2,-i/2,SCR_H+i,SCR_H+i);*/
+
 
 }
 void Mainwindow::DrawGrid(QPainter* p,short centerX,short centerY)
@@ -980,29 +997,8 @@ void Mainwindow::initGraphicView()
 //{
 
 //}
-void Mainwindow::rotateVector(double angle,int* x,int* y)
-{
-    if(abs(angle)<0.1)return;
-    double theta = radians(angle);
-    double cs = cos(theta);
-    double sn = sin(theta);
 
-    double px = (*x) * cs - (*y) * sn;
-    double py = (*x) * sn + (*y) * cs;
-    (*x) = px;
-    (*y) = py;
-}
-void Mainwindow::rotateVector(double angle,double* x,double* y)
-{
-    if(abs(angle)<0.1)return;
-    double theta = radians(angle);
-    double cs = cos(theta);
-    double sn = sin(theta);
-    double px = (*x) * cs - (*y) * sn;
-    double py = (*x) * sn + (*y) * cs;
-    (*x) = px;
-    (*y) = py;
-}
+
 void Mainwindow::DrawDetectZones(QPainter* p)//draw radar target from pRadar->mTrackList
 {
     p->setPen((penYellow));
@@ -1164,22 +1160,12 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
 void Mainwindow::ConvWGSToKm(double* x, double *y, double m_Long,double m_Lat)
 {
 
-    double refLat = (mLat + (m_Lat))*0.00872664625997;//pi/360
-    *x	= (((m_Long) - mLon) * 111.31949079327357)*cos(refLat);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
-    *y	= ((mLat - (m_Lat)) * 111.132954);
+    double refLat = (CConfig::mLat + (m_Lat))*0.00872664625997;//pi/360
+    *x	= (((m_Long) - CConfig::mLon) * 111.31949079327357)*cos(refLat);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
+    *y	= ((CConfig::mLat - (m_Lat)) * 111.132954);
     //tinh toa do xy KM so voi diem center khi biet lat-lon
 }
-PointInt Mainwindow::ConvWGSToScrPoint(double m_Long,double m_Lat)
-{
-    PointInt s;
-    double refLat = (mLat + (m_Lat))*0.00872664625997;//pi/360
-    s.x	= mScale*(((m_Long) - mLon) * 111.31949079327357)*cos(refLat);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
-    s.y	= mScale*((mLat - (m_Lat)) * 111.132954);
-    rotateVector(trueShiftDeg,&s.x,&s.y);
-    s.x   += radCtX;
-    s.y   += radCtY;
-    return s;
-}
+
 PointInt Mainwindow::ConvKmXYToScrPoint(double x, double y)
 {
     PointInt s;
@@ -1193,9 +1179,9 @@ PointInt Mainwindow::ConvKmXYToScrPoint(double x, double y)
 PointDouble Mainwindow::ConvScrPointToWGS(int x,int y)
 {
     PointDouble output;
-    output.x  = mLat -  ((y-scrCtY)/mScale)/(111.132954);
-    double refLat = (mLat +(output.x))*0.00872664625997;//3.14159265358979324/180.0/2;
-    output.y = (x-scrCtX)/mScale/(111.31949079327357*cos(refLat))+ mLon;
+    output.x  = CConfig::mLat -  ((y-scrCtY)/mScale)/(111.132954);
+    double refLat = (CConfig::mLat +(output.x))*0.00872664625997;//3.14159265358979324/180.0/2;
+    output.y = (x-scrCtX)/mScale/(111.31949079327357*cos(refLat))+ CConfig::mLon;
     return output;
 }
 PointDouble Mainwindow::ConvScrPointToKMXY(int x, int y)
@@ -1217,13 +1203,7 @@ PointAziRgkm Mainwindow::ConvScrPointToAziRgkm (int x, int y)
     ouput.rg = sqrt(p.x*p.x+p.y*p.y);;
     return ouput;
 }
-void Mainwindow::ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat)
-{
-    *m_Lat  = mLat +  (y)/(111.132954);
-    double refLat = (mLat +(*m_Lat))*0.00872664625997;//3.14159265358979324/180.0/2;
-    *m_Long = (x)/(111.31949079327357*cos(refLat))+ mLon;
-    //tinh toa do lat-lon khi biet xy km (truong hop coi trai dat hinh cau)
-}
+
 
 void Mainwindow::UpdateMouseStat(QPainter *p)
 {
@@ -1605,7 +1585,7 @@ void Mainwindow::removeTrack()
 
         if(mTargetMan.currTrackPt->track)
         {mTargetMan.currTrackPt->track->Remove();
-        mTargetMan.currTrackPt->track = nullptr;
+            mTargetMan.currTrackPt->track = nullptr;
         }
     }
 
@@ -1654,14 +1634,14 @@ void Mainwindow::SetUpTheonGUILayout()
 void Mainwindow::checkCuda()
 {
     //system("taskkill /f /im cudaFFT.exe");
-//    int a=processing->mCudaAge200ms;
+    //    int a=processing->mCudaAge200ms;
     if(processing->mCudaAge200ms<10)return;
     else {
         system("taskkill /f /im cudaFFT.exe");
         QFileInfo check_file("D:\\HR2D\\cudaFFT.exe");
         if (check_file.exists() && check_file.isFile())
         {
-//            processCuda->start("D:\\HR2D\\cudaFFT.exe");
+            //            processCuda->start("D:\\HR2D\\cudaFFT.exe");
 
             system("start D:\\HR2D\\cudaFFT.exe");
             CConfig::AddMessage(QString::fromUtf8("Khởi động core FFT: OK"));
@@ -1745,10 +1725,7 @@ void Mainwindow::InitSetting()
 
     //load map
     osmap = new CMap();
-    SetGPS(CConfig::getDouble("mLat",DEFAULT_LAT), CConfig::getDouble("mLon",DEFAULT_LONG));
-    CConfig::mStat.mLat = mLat;
-    CConfig::mStat.mLon = mLon;
-    osmap->setCenterPos(mLat,mLon);
+    SetGPS(CConfig::mLat, CConfig::mLon);
     osmap->setImgSize(SCR_H,SCR_H);
     osmap->SetType(0);
     mMapOpacity = CConfig::getDouble("mMapOpacity");
@@ -1947,8 +1924,8 @@ void Mainwindow::DrawViewFrame(QPainter* p)
             {
                 p->drawLine(mBorderPoint1,mBorderPoint2);
                 p->drawText(mBorderPoint0.x()-25,mBorderPoint0.y()-10,50,20,
-                        Qt::AlignHCenter|Qt::AlignVCenter,
-                        QString::number(theta));
+                            Qt::AlignHCenter|Qt::AlignVCenter,
+                            QString::number(theta));
             }
             else p->drawPoint(mBorderPoint1);
         }
@@ -1972,8 +1949,8 @@ void Mainwindow::DrawViewFrame(QPainter* p)
             if(!value)continue;
             p->drawLine(mBorderPoint0,mBorderPoint1);
             p->drawText(mBorderPoint2.x()-25,mBorderPoint2.y()-10,50,20,
-                    Qt::AlignHCenter|Qt::AlignVCenter,
-                    QString::number(value));
+                        Qt::AlignHCenter|Qt::AlignVCenter,
+                        QString::number(value));
         }
     }
 
@@ -2211,7 +2188,8 @@ void Mainwindow::Update100ms()
         headShift = CConfig::mStat.shipHeadingDeg;
     }
 
-    DrawMap();
+    if(isMapOutdated)
+        QtConcurrent::run(DrawMap);
     int posx = (QCursor::pos()).x();
     int posy = (QCursor::pos()).y();
     if(posx)mMousex= posx;
@@ -2678,19 +2656,6 @@ void Mainwindow::ViewTrackInfo()
 }
 void Mainwindow::sync1S()//period 1 second
 {
-    //    if(processCuda->state()!=QProcess::Running)
-    //    {
-
-
-    //    }
-    //    else
-    //    {
-    //        QByteArray ba = processCuda->readAllStandardOutput();
-    //        if(ba.size())
-    //        {
-    //            CConfig::AddMessage(QString::fromLatin1(ba));
-    //        }
-    //    }
     checkCuda();
     if(CConfig::getWarningList()->size())
     {
@@ -2869,10 +2834,10 @@ void Mainwindow::showTime()
     ui->label_time->setText(text);
 }
 
-void Mainwindow::on_actionSaveMap_triggered()
-{
-    //vnmap.SaveBinFile();
-}
+//void Mainwindow::on_actionSaveMap_triggered()
+//{
+//    //vnmap.SaveBinFile();
+//}
 
 //void Mainwindow::on_actionSetting_triggered()
 //{
@@ -3528,20 +3493,10 @@ void Mainwindow::on_toolButton_zoom_out_clicked()
 
 void Mainwindow::SetGPS(double lat,double lon)
 {
-    mLat = lat;
-    mLon = lon;
-    //    if(heading!=0)
-    //    {
-    //        mHeadingGPSNew = heading;
-    //    }
-    CConfig::setValue("mLat",mLat);
-    CConfig::setValue("mLon",mLon);
-    //CConfig::setValue("mHeadingGPS",heading);
+    CConfig::setGPSLocation(lat,lon);
     ui->label_gps_lat->setText(demicalDegToDegMin(lat)+"'N");
     ui->label_gps_lon->setText(demicalDegToDegMin(lon)+"'E");
-    //ui->label_gps_heading->setText(QString::number(mHeadingGPSNew,'f',2));
-    //ui->label_azi_heading_gps->setText(QString::number(mHeadingGPSNew,'f',2));
-    osmap->setCenterPos(mLat, mLon);
+    osmap->setCenterPos(lat, lon);
     isMapOutdated = true;
     repaint();
 }
@@ -4003,7 +3958,7 @@ void Mainwindow::UpdateGpsData()
 {
     if(CConfig::mStat.getAgeGps()<3000)
     {
-        SetGPS(CConfig::mStat.mLat, CConfig::mStat.mLon);
+        SetGPS(CConfig::mLat, CConfig::mLon);
     }
     else
     {
@@ -5341,10 +5296,10 @@ void Mainwindow::on_toolButton_cao_ap_2_clicked()
 
 void Mainwindow::on_toolButton_antennaConfigUpdate_clicked()
 {
-   CConfig::setValue("antennaHeadOffset", ui->textEdit_headingAdjust->text().toDouble());
-   pRadar->antennaHeadOffset = ui->textEdit_headingAdjust->text().toDouble();
-   CConfig::setValue("mInverseRotAziCorrection", ui->textEdit_headingAdjustInverse->text().toDouble());
-   pRadar->mInverseRotAziCorrection= ui->textEdit_headingAdjust->text().toDouble();
+    CConfig::setValue("antennaHeadOffset", ui->textEdit_headingAdjust->text().toDouble());
+    pRadar->antennaHeadOffset = ui->textEdit_headingAdjust->text().toDouble();
+    CConfig::setValue("mInverseRotAziCorrection", ui->textEdit_headingAdjustInverse->text().toDouble());
+    pRadar->mInverseRotAziCorrection= ui->textEdit_headingAdjust->text().toDouble();
 }
 
 void Mainwindow::on_toolButton_exit_4_clicked(bool checked)
@@ -5401,5 +5356,5 @@ void Mainwindow::on_toolButton_ais_hide_fishing_clicked(bool checked)
 
 void Mainwindow::on_customButton_load_density_clicked()
 {
-//    processing->loadTargetDensityMap();
+    //    processing->loadTargetDensityMap();
 }

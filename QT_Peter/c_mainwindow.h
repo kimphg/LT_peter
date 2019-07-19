@@ -100,7 +100,7 @@ private:
     c_radar_simulation          *simulator;// thread tao gia tin hieu
     C_radar_data                *pRadar;
     QThread                     *tprocessing;
-    QPixmap                     *pMap;// painter cho ban do
+
     QString degreeSymbol ;
     bool controlPressed;
     c_target_manager mTargetMan;
@@ -166,6 +166,7 @@ public slots:
 protected slots:
     void closeEvent(QCloseEvent *event);
 private:
+
     void setRadarState(radarSate radarState);
     bool ProcDataAIS(BYTE *szBuff, int nLeng );
 //public:
@@ -173,7 +174,7 @@ private:
 //    void drawAisTarget2(QPainter *p);
     void on_actionOpen_rec_file_triggered();
 private slots:
-    void DrawMap();
+//    void DrawMap();
     void readBuffer();
     void sync1S();
     void sync1p();
@@ -187,7 +188,7 @@ private slots:
 //    void on_actionRecording_toggled(bool arg1);
 //
 //    void on_actionOpen_map_triggered();
-    void on_actionSaveMap_triggered();
+//    void on_actionSaveMap_triggered();
 //    void on_actionSetting_triggered();
 //    void on_actionAddTarget_toggled(bool arg1);
 //    void on_actionClear_data_triggered();
@@ -716,14 +717,14 @@ private:
 
 //    bool mShowobjects,
 //    bool mShowTracks;
-    double trueShiftDeg,headShift;
+
 //    unsigned long long mSelectedTrackId;
 //    uint mSelectedTrackTime;
     void initActionsConnections();
     void initGraphicView();
 //    void updateTargetInfo();
     void ConvWGSToKm(double *x, double *y, double m_Long, double m_Lat);
-    void ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat);
+//    void ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat);
     void setScaleRange(double srange);
     void DrawIADArea(QPainter *p);
     bool isInsideViewZone(int x, int y);
@@ -740,15 +741,15 @@ private:
     void CheckRadarStatus();
     void ViewTrackInfo();
     void gotoCenter();
-    void rotateVector(double angle, int *x, int *y);
+//    void rotateVector(double angle, int *x, int *y);
     void SendScaleCommand();
     void DrawDetectZones(QPainter *p);
     void updateSimTargetStatus();
     void ConvXYradar2XYscr();
-    PointInt ConvWGSToScrPoint(double m_Long, double m_Lat);
+//    PointInt ConvWGSToScrPoint(double m_Long, double m_Lat);
     PointDouble ConvScrPointToKMXY(int x, int y);
     QPoint mBorderPoint2,mBorderPoint1,mBorderPoint0;
-    void rotateVector(double angle, double *x, double *y);
+//    void rotateVector(double angle, double *x, double *y);
     void SetUpTheonGUILayout();
     PointAziRgkm ConvScrPointToAziRgkm(int x, int y);
     void showTrackContext();

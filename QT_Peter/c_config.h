@@ -62,7 +62,7 @@ public:
                 &&msgGlobal[18]==0)cTempOkTime = clock();
 
     }
-    void setGPSLocation(double lat, double lon);
+//    void setGPSLocation(double lat, double lon);
     void inputGyro(double heading,double headingRateDps)
     {
         // auto learning algorithm
@@ -103,7 +103,7 @@ private:
 public:
 
     unsigned     long int       mFrameCount;
-    double mLat,mLon;
+//    double mLat,mLon;
     double shipSpeedWater,shipSpeedGround;
     double shipCourseDeg;
     double antennaAziDeg;
@@ -155,8 +155,9 @@ class CConfig
 public:
     CConfig(void);
     ~CConfig(void);
+    static void setGPSLocation(double lat,double lon){mLat=lat;mLon=lon;setValue("mLat",mLat);setValue("mLon",mLon);}
     static radarStatus_3C mStat;
-
+    static double  mLat,mLon;
 //    static double shipHeadingDeg;
 //    static double shipCourseDeg;
 //    static double shipSpeed;
@@ -179,7 +180,6 @@ public:
 private:
     static std::queue<WarningMessage> mWarningList;
     static QHash<QString, QString> readFile(QString fileName);
-
 };
 
 #endif

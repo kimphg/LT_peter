@@ -569,6 +569,21 @@ double C_primary_track::estimateScore(object_t *obj1)
 
 
 }
+bool C_primary_track::isHighDensityPos()
+{
+    return getPosDensity()>2;
+}
+int C_primary_track::getPosDensity()
+{
+    std::pair<int,int> key(lat*1000,lon*1000);
+    DensityMap::iterator it =targetDensityMap.find(key);
+    if ( it != targetDensityMap.end() )
+    {
+        return (it->second);
+    }
+    else
+        return 0;
+}
 void C_primary_track::update()
 {
     isUpdating = true;
@@ -595,7 +610,8 @@ void C_primary_track::update()
         }
         return;
     }
-    if(possibleMaxScore>0)
+
+    if(possibleMaxScore>0)//new plot associated
     {
         // add obj to track
         objectList.push_back(possibleObj);
@@ -605,7 +621,7 @@ void C_primary_track::update()
         mDoplerFit += (mDopler-mDoplerFit)/(double(TRACK_STABLE_LEN));
         //
         lastTimeMs = possibleObj.timeMs;
-
+        //change track status
         while(objectList.size()>TRACK_STABLE_LEN)
         {
             if((lastTimeMs-objectHistory.back().timeMs)>60000)
@@ -613,10 +629,10 @@ void C_primary_track::update()
             objectList.erase(objectList.begin());
             if(mState==TrackState::newDetection)
             {
-                if(isDoplerShifted())
+                if(isDoplerShifted()||
+                        isHighDensityPos())
                     if(mSpeedkmhFit<TARGET_MAX_SPEED_MARINE)
                     {
-
                         LinearFit(TRACK_STABLE_LEN);
                         if(fitProbability<0.5)
                         {
@@ -630,57 +646,16 @@ void C_primary_track::update()
                     }
             }
         }
-
-
+        //reset possibleMaxScore
         possibleMaxScore = 0;
-        if(mState==TrackState::newDetection)
-        {
-            object_t* obj1  = &(objectList.back());
-            object_t* obj2 ;
-            if(objectHistory.size()>2)
-            {
-                obj2 = &(objectHistory.back())-2;
-            }
-            else if(objectHistory.size()>1)
-            {
-                obj2 = &(objectHistory.back())-1;
-            }
-            else
-            {
-                obj2 = &(objectList.at(0));
-            }
-            if(obj1->timeMs != obj2->timeMs)
-            {
-                double dx       = obj1->xkm - obj2->xkm;
-                double dy       = obj1->ykm - obj2->ykm;
-                double dtime    = (obj1->timeMs - obj2->timeMs)/3600000.0;
-                rgSpeedkmh      = (obj1->rgKm - obj2->rgKm)/dtime;
-                //speed param
-                mSpeedkmhFit    = sqrt(dx*dx+dy*dy)/dtime;
-                sko_spd         = mSpeedkmhFit/2.0;
-                //course param
-                courseRadFit    = ConvXYToAziRd(dx,dy);
-                courseDeg = degrees(courseRadFit);
-                sko_cour = 30.0;
-            }
-            else
-            { printf("\ntrung object, khong the tinh van toc");}
-            //xy coordinates
-            xkm             = obj1->xkm;
-            ykm             = obj1->ykm;
-            //range
-            rgKm            = ConvXYToRg(xkm,ykm);
-            sko_rgKm          = obj1->rgStdEr;
-            //azi
-            aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
-            sko_aziDeg         = degrees((obj1->aziStdEr));
 
-        }
-        else if(mState==TrackState::confirmed)
+        if(mState==TrackState::confirmed)
         {
-
             LinearFit(TRACK_STABLE_LEN);
-            object_t* obj1  = &(objectList.back());
+        }
+        object_t* obj1  = &(objectList.back());
+        if(objectHistory.size())
+        {
             object_t* obj2  ;
             if(objectHistory.size()>2)
             {
@@ -714,19 +689,22 @@ void C_primary_track::update()
                 courseDeg       = courseDegNew;
                 sko_cour        +=(sko_courNew-sko_cour)/5.0;
             }
-            //xy
-            xkm             = obj1->xkm;
-            ykm             = obj1->ykm;
-            //range
-            rgKm            = ConvXYToRg(xkm,ykm);
-            double sko_rgNew         = abs(rgKm-obj1->rgKm);
-            sko_rgKm+=(sko_rgNew-sko_rgKm)/5.0;
-            //azi
-            aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
-            double sko_aziNew         = abs(aziDeg-degrees(obj1->azRad));
-            sko_aziDeg += (sko_aziNew-sko_aziDeg)/5.0;
-            generateTTM();
         }
+        //xy
+        xkm             = obj1->xkm;
+        ykm             = obj1->ykm;
+        //lat lon
+        ConvKmToWGS(xkm,ykm,&(this->lon),&(this->lat));
+        //range
+        rgKm            = ConvXYToRg(xkm,ykm);
+        double sko_rgNew         = abs(rgKm-obj1->rgKm);
+        sko_rgKm+=(sko_rgNew-sko_rgKm)/5.0;
+        //azi
+        aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
+        double sko_aziNew         = abs(aziDeg-degrees(obj1->azRad));
+        sko_aziDeg += (sko_aziNew-sko_aziDeg)/5.0;
+        generateTTM();
+
 
 
     }
@@ -946,7 +924,7 @@ C_radar_data::C_radar_data()
 }
 void C_radar_data::setFreqHeadOffsetDeg(double offset)
 {
-   freqHeadOffset= (offset)/360.0*MAX_AZIR;
+    freqHeadOffset= (offset)/360.0*MAX_AZIR;
 }
 
 C_radar_data::~C_radar_data()
@@ -1189,7 +1167,7 @@ void drawAzi(short azi)
     {
         unsigned short value = data_mem.level_disp[azi][r_pos];
         unsigned short dopler = data_mem.dopler[azi][r_pos];
-//        if(r_pos==500)dopler = 16;
+        //        if(r_pos==500)dopler = 16;
         if(DrawZoomAR(azi,r_pos,
                       value,
                       dopler,
@@ -1714,7 +1692,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     }
     uint newAziTrue =0;
 
-     if(isSelfRotation)
+    if(isSelfRotation)
     {
         selfRotationAzi+=selfRotationDazi;
         if(selfRotationAzi>=MAX_AZIR)
@@ -2198,7 +2176,7 @@ bool C_radar_data::UpdateData()
         ProcessData(azi,lastAzi);
         clearAzi(azi);
         drawAzi(azi);
-//        QFuture<void> future = QtConcurrent::run(drawAzi,azi);
+        //        QFuture<void> future = QtConcurrent::run(drawAzi,azi);
         //        clock_t clkEnd = clock();
         //        int ProcessingTime = (clkEnd-clkBegin);
         //        if(ProcessingTime>1)
