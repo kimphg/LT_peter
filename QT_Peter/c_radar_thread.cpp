@@ -94,12 +94,12 @@ dataProcessingThread::dataProcessingThread()
 
 
     QDateTime now = QDateTime::currentDateTime();
-    QString logDirName = "D:\\HR2D\\logs\\"+now.toString("\\dd.MM.YY\\");
+    QString logDirName = "D:\\HR2D\\logs\\"+now.toString("\\yy.MM\\");
     if(!QDir(logDirName).exists())
     {
         QDir().mkdir(logDirName);
     }
-    aisLogFile.setFileName(logDirName+now.toString("dd.MM-hh.mm.ss")+"_ais.log");
+    aisLogFile.setFileName(logDirName+now.toString("yy.MM.dd-hh.mm.ss")+"_ais.log");
     aisLogFile.open(QIODevice::WriteOnly);
 
     mCudaAge200ms=50;
@@ -154,6 +154,12 @@ dataProcessingThread::dataProcessingThread()
 //    signTTMFile.setFileName(filename);
 
 
+}
+
+void dataProcessingThread::forwardOldGps()
+{
+    QString lastGpsMsg = CConfig::getString("lastGpsMsg","$GPGGA,030227.900,2042.373,N,10646.827,E,1,12,1.0,0.0,M,0.0,M,,*68");
+    radarSocket->writeDatagram(lastGpsMsg.toLocal8Bit(),QHostAddress("127.0.0.1"),30001);
 }
 void dataProcessingThread::ReadNavData()
 {
@@ -240,6 +246,7 @@ bool dataProcessingThread::readNmea(unsigned char *mReceiveBuff,int len)
                 {
                     if(mGPS.decode(databegin[i]))
                     {
+                        CConfig::setValue("lastGpsMsg",QString((char*)mReceiveBuff));
                         //mStat.cGpsUpdateTime = clock();
                         double mLat,mLon;
                         mGPS.get_position(&mLat,&mLon);
@@ -298,6 +305,8 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
 
     if(readNmea(mReceiveBuff,len))
     {
+        radarSocket->writeDatagram((const char*)mReceiveBuff,len,QHostAddress("127.0.0.1"),30001);
+
         return;
     }
     else if(readMay22Msg(mReceiveBuff,len))//system messages
@@ -589,10 +598,65 @@ void dataProcessingThread::togglePlayPause(bool play)
     isPlaying = play;
 
 }
-//void dataProcessingThread::LoadDensityMap(QByteArray inputdata)
-//{
+void dataProcessingThread::addAisObj(AIS_object_t obj)
+{
+    QMutableListIterator<AIS_object_t> i(m_aisList);
+    int elecount = 0;
+    bool objExist = false;
+    while (i.hasNext())
+    {
+        AIS_object_t oldObj = i.next();
+        elecount++;
+        if(elecount>3000){i.remove();continue;}
+        if(obj.mMMSI!=oldObj.mMMSI)continue;
+        objExist = true;
+        oldObj.isNewest = false;
+        obj.isSelected = oldObj.isSelected;
+        if(obj.mName.length())
+            obj.mName = oldObj.mName;
+        obj.mUpdateTime = clock();
+        if(abs(obj.mLat)<0.5)obj.mLat = oldObj.mLat;
+        if(abs(obj.mLong)<0.5)obj.mLong = oldObj.mLong;
+        if(obj.mDst.isEmpty())
+            obj.mDst       = oldObj.mDst;
+        if(!obj.mImo)
+            obj.mImo       = oldObj.mImo;
+        if(!obj.mType)
+            obj.mType      = oldObj.mType;
+        if(!obj.mBow)
+            obj.mBow       = oldObj.mBow;
+        if(!obj.mStern)
+            obj.mStern     = oldObj.mStern;
+        if(!obj.mStarboard)
+            obj.mStarboard = oldObj.mStarboard;
+        if(!obj.mPort)
+            obj.mPort      = oldObj.mPort;
+        if(!obj.mSog)
+            obj.mSog       = oldObj.mSog;
+        if(!obj.mCog)
+            obj.mCog       = oldObj.mCog;
+        if(!obj.mCog)
+        {
 
-//}
+            double dLat  = obj.mLat - oldObj.mLat;
+            double dLon  = obj.mLong- oldObj.mLong;
+            if(dLat*dLon!=0)
+            {
+                double heading, speed;
+                C_radar_data::ConvkmxyToPolarDeg(dLat,dLon,&heading,&speed);
+                obj.mCog       =    heading;
+            }
+            else
+            {
+                obj.mCog       =    oldObj.mCog;
+            }
+        }
+        i.setValue(obj);
+        break;
+    }
+    if(!objExist)m_aisList.push_front(obj);
+    mRadarData->integrateAisPoint(obj.mLat,obj.mLong,obj.mMMSI);
+}
 void dataProcessingThread::inputAISData(QByteArray inputdata)
 {
     messageStringbuffer.append(QString::fromLatin1(inputdata));
@@ -606,64 +670,7 @@ void dataProcessingThread::inputAISData(QByteArray inputdata)
         {
 
             CConfig::mStat.cAisUpdateTime = clock();
-            AIS_object_t obj = aisMessageHandler.GetAisObject();
-
-            QMutableListIterator<AIS_object_t> i(m_aisList);
-            int elecount = 0;
-            bool objExist = false;
-            while (i.hasNext())
-            {
-                AIS_object_t oldObj = i.next();
-                elecount++;
-                if(elecount>3000){i.remove();continue;}
-                if(obj.mMMSI!=oldObj.mMMSI)continue;
-                objExist = true;
-                oldObj.isNewest = false;
-                obj.isSelected = oldObj.isSelected;
-                if(obj.mName.length())
-                    obj.mName = oldObj.mName;
-                obj.mUpdateTime = clock();
-                if(abs(obj.mLat)<0.5)obj.mLat = oldObj.mLat;
-                if(abs(obj.mLong)<0.5)obj.mLong = oldObj.mLong;
-                if(obj.mDst.isEmpty())
-                    obj.mDst       = oldObj.mDst;
-                if(!obj.mImo)
-                    obj.mImo       = oldObj.mImo;
-                if(!obj.mType)
-                    obj.mType      = oldObj.mType;
-                if(!obj.mBow)
-                    obj.mBow       = oldObj.mBow;
-                if(!obj.mStern)
-                    obj.mStern     = oldObj.mStern;
-                if(!obj.mStarboard)
-                    obj.mStarboard = oldObj.mStarboard;
-                if(!obj.mPort)
-                    obj.mPort      = oldObj.mPort;
-                if(!obj.mSog)
-                    obj.mSog       = oldObj.mSog;
-                if(!obj.mCog)
-                    obj.mCog       = oldObj.mCog;
-                if(!obj.mCog)
-                {
-
-                    double dLat  = obj.mLat - oldObj.mLat;
-                    double dLon  = obj.mLong- oldObj.mLong;
-                    if(dLat*dLon!=0)
-                    {
-                        double heading, speed;
-                        C_radar_data::kmxyToPolarDeg(dLat,dLon,&heading,&speed);
-                        obj.mCog       =    heading;
-                    }
-                    else
-                    {
-                        obj.mCog       =    oldObj.mCog;
-                    }
-                }
-                i.setValue(obj);
-                break;
-            }
-            if(!objExist)m_aisList.push_front(obj);
-
+            addAisObj(aisMessageHandler.GetAisObject());
         }
     messageStringbuffer=strlist.at(strlist.size()-1);
 

@@ -177,6 +177,7 @@ bool c_target_manager::addTrack(C_primary_track* track)
             }
         }
     }
+    CConfig::AddMessage("Track table full");
     return false;
 }
 TrackPointer* c_target_manager::getTargetById(int id)

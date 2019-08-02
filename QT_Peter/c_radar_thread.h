@@ -67,6 +67,7 @@ public:
     QTimer readUdpBuffTimer;
     QTimer readSerialTimer;
     double mFramesPerSec;
+    void forwardOldGps();
     void PlaybackFile();
     void startRecord(QString fileName);
     void stopRecord();
@@ -99,7 +100,8 @@ public:
     unsigned int realazi1,realazi2;
     bool   isHeadingAvaible;
     double          mAntennaAzi,mAntennaAziOld;
-//    void loadTargetDensityMap();
+    //    void loadTargetDensityMap();
+    void addAisObj(AIS_object_t obj);
 signals:
     void HeadingDataReceived(double heading);
 private:

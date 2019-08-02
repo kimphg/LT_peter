@@ -26807,27 +26807,6 @@ background-color: rgba(255, 255, 255, 0);</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QCustomButton" name="customButton_load_density">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>Target map</string>
-         </property>
-         <property name="checkable">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
     </widget>
@@ -46630,6 +46609,33 @@ color: rgb(255, 0, 0);</string>
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QCustomButton" name="customButton_openCPN">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>320</y>
+      <width>141</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Quản lý AIS</string>
+    </property>
+    <property name="checkable">
+     <bool>false</bool>
+    </property>
+   </widget>
    <zorder>frame</zorder>
    <zorder>groupBox_16</zorder>
    <zorder>groupBox_24</zorder>
@@ -46647,6 +46653,7 @@ color: rgb(255, 0, 0);</string>
    <zorder>toolButton_passive_mode</zorder>
    <zorder>label_am2</zorder>
    <zorder>toolButton_exit_4</zorder>
+   <zorder>customButton_openCPN</zorder>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

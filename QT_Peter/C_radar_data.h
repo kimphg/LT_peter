@@ -9,13 +9,13 @@
 #define THEON
 //#define DEBUGMODE
 #ifdef THEON
-#define TRACK_LOST_TIME 75000
-#define TRACK_DELETE_TIME 90000
-#define TRACK_MAX_DTIME 60000
+#define TRACK_LOST_TIME 110000
+#define TRACK_DELETE_TIME 180000
+#define TRACK_MAX_DTIME 100000
 #define TRACK_MIN_DTIME 500
-#define TRACK_STABLE_LEN          12
+#define TRACK_STABLE_LEN          15
 #define TRACK_START_DOPLER      2.0
-#define TARGET_MAX_SPEED_MARINE     100.0//kmh
+#define TARGET_MAX_SPEED_MARINE     80.0//kmh
 #define AZI_ERROR_STD 0.05//1.5 deg
 #define MAX_TRACKS_COUNT          2000
 #define RAD_DISPLAY_RES             700//768
@@ -30,6 +30,7 @@
 #define MAX_TRACKS_COUNT                  99
 #define RAD_DISPLAY_RES             650//768
 #endif
+#define AIS_UPDATE_TIME 20000
 #define MAX_OBJ_SIZE 0.45//400m
 
 #define ARMA_USE_LAPACK
@@ -92,6 +93,8 @@
 #include <queue>
 //#include <c_target_manager.h>
 #include <QtConcurrent/QtConcurrent>
+
+#include <AIS/AIS.h>
 inline void ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat)
 {
     *m_Lat  = CConfig::mLat +  (y)/(111.132954);
@@ -325,15 +328,23 @@ public:
         isUpdating = false;
         uniqId =-1;
     }
-    bool isDoplerShifted(){return (abs(mDoplerFit)>=TRACK_START_DOPLER);}
+    bool isDoplerShifted(){return (abs(mDoplerFit)>TRACK_START_DOPLER);}
     bool isHighDensityPos();
     bool isConfirmed(){return mState==TrackState::confirmed;}
     qint64 startTime;
-    double fitProbability;
+    int     mAisPossibleMmsi,mAisConfirmedMmsi;
+    double  mAisMaxPosibility;
+    qint64  mAisMaxPosibilityTimeMs;
+    double  fitProbability;
     void init(object_t* obj1,object_t* obj2,int id=-1)
     {
+        mAisPossibleMmsi = 0;
+        mAisConfirmedMmsi= 0;
+        mAisMaxPosibility= 0;
+        mAisMaxPosibilityTimeMs = 0;
         fitProbability=1;
         mDoplerFit = 0;
+        posDensityFit = 0;
         startTime = CConfig::time_now_ms;
         objectList.clear();
         objectHistory.clear();
@@ -385,6 +396,7 @@ public:
 //    uint time;
     int uniqId;
     bool isUpdating;
+    double posDensityFit;
     void update();
     //uint  dtime;
     double lineScore;
@@ -445,7 +457,7 @@ public:
     std::vector<object_t>       mFreeObjList;
     int      antennaHeadOffset;
     int     freqHeadOffset;
-    float rgStdErr;
+    double rgStdErr;
 //    qint64 time_start_ms;
     double sn_scale;
     bool isTrueHeadingFromRadar;
@@ -456,7 +468,7 @@ public:
     //    int                     mEncoderAzi;
     unsigned char           mHeader[FRAME_HEADER_SIZE];
     unsigned char           overload, init_time, clk_adc;
-
+    void                    integrateAisPoint(double lat, double lon, int mmsi);
     short                   curAzirTrue2048,arcMinAzi,arcMaxAzi,arcWidth;
     double                  mRealAziRate,mRealAzi;
     void                    setZoomRectAR(float ctx, float cty, double sizeKM, double sizeDeg);
@@ -503,7 +515,7 @@ public:
     //    void        blackLine(short x0, short y0, short x1, short y1);
     //    void        addTrackManual(double x, double y);
     //    void        addTrack(object_t *mObject);
-    static    void        kmxyToPolarDeg(double x, double y, double *azi, double *range);
+    static    void        ConvkmxyToPolarDeg(double x, double y, double *azi, double *range);
 //    void        setAziOffset(double trueN_deg){
 
 //        while(trueN_deg<0)trueN_deg+=360;
@@ -639,6 +651,8 @@ public:
     DensityMap *getDensityMap();
     void addDensityPoint(double lat, double lon);
     void loadDensityMap();
+    int getDensityLatLon(double lat, double lon);
+    static void ConvWGSToKm(double *x, double *y, double m_Long, double m_Lat);
 };
 
 //extern C_radar_data radarData;

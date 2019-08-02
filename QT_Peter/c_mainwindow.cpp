@@ -84,7 +84,7 @@ static double curAziRad = 3;
 //static unsigned short cur_object_index = 0;
 //short lon2x(float lon)
 //{
-//    double refLat = mLat*0.00872664625997;
+//    double refLat = CConfig::mLat*0.01745329251994;
 //    return  short(- dx + scrCtX + ((lon - mLon) * 111.31949079327357*cos(refLat))*mScale);
 //}
 //short lat2y(float lat)
@@ -133,7 +133,7 @@ double y2lat(short y)
 }
 double x2lon(short x)
 {
-    double refLat = CConfig::mLat*0.00872664625997*2;
+    double refLat = CConfig::mLat*0.01745329251994;
     return (x  )/mScale/111.31949079327357/cos(refLat) + CConfig::mLon;
 }
 inline QString demicalDegToDegMin(double demicalDeg)
@@ -436,6 +436,19 @@ void Mainwindow::keyPressEvent(QKeyEvent *event)
         {
             pRadar->clearPPI();
         }
+        else if(key==Qt::Key_3)
+        {
+            int posx = (QCursor::pos()).x();
+            int posy = (QCursor::pos()).y();
+            if(posx)mMousex= posx;
+            if(posy)mMousey= posy;
+
+            int density = pRadar->getDensityLatLon(y2lat(-(mMousey - radCtY)),
+                   x2lon(mMousex - radCtX)
+                   );
+            ui->label_sn_type->setText(QString::number(density));
+
+        }
         else if(key==Qt::Key_0)
         {
             ShutDown();
@@ -660,7 +673,7 @@ void Mainwindow::checkClickAIS(int xclick, int yclick)
         if(aisObj.isSelected)continue;
         if(!aisObj.isNewest)continue;
         double fx,fy;
-        ConvWGSToKm(&fx,&fy,aisObj.mLong,aisObj.mLat);
+        C_radar_data::ConvWGSToKm(&fx,&fy,aisObj.mLong,aisObj.mLat);
         int x = (fx*mScale)+radCtX;
         int y = (fy*mScale)+radCtY;
         if(abs(x-xclick)<5&&abs(y-yclick)<5)
@@ -1091,7 +1104,6 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
     {
         TrackPointer* trackPt = mTargetMan.getTrackAt(i);
         if(!trackPt)continue;
-
         C_primary_track* track = trackPt->track;
         PointInt sTrack = ConvKmXYToScrPoint(track->xkm,track->ykm);
         if(trackPt->selected)//selected
@@ -1127,26 +1139,23 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
             p->drawText(sTrack.x+6,sTrack.y+6,100,50,0,QString::number(track->uniqId));
             continue;
         }
-        //nornal targets
+        //all targets
         else
         {
-
-            int size = 18000.0/(CConfig::time_now_ms - track->lastTimeMs+400);
+            int size = 10000.0/(CConfig::time_now_ms - track->lastTimeMs+400);
             if(size<TARG_SIZE)size=TARG_SIZE;//rect size depend to time
-            if(track->isConfirmed())
+            if(track->mAisConfirmedMmsi==0&&track->mAisPossibleMmsi==0)
             {
-
                 p->drawEllipse(sTrack.x-size/2,sTrack.y-size/2,size,size);
-                if(track->mSpeedkmhFit>10){
-                    int sx = sTrack.x+short(10*sinFast(track->courseRadFit));
-                    int sy = sTrack.y-short(10*cosFast(track->courseRadFit));
-                    p->drawLine(sx,sy,sTrack.x,sTrack.y);
-                }
-
             }
             else {
                 //p->setPen(penSelTarget);
                 p->drawRect(sTrack.x-size/2,sTrack.y-size/2,size,size);
+            }
+            if(track->mSpeedkmhFit>10){
+                int sx = sTrack.x+short(10*sinFast(track->courseRadFit));
+                int sy = sTrack.y-short(10*cosFast(track->courseRadFit));
+                p->drawLine(sx,sy,sTrack.x,sTrack.y);
             }
             //draw target number
             p->drawText(sTrack.x+6,sTrack.y+6,100,50,0,QString::number(track->uniqId));
@@ -1157,14 +1166,14 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
 
 
 }
-void Mainwindow::ConvWGSToKm(double* x, double *y, double m_Long,double m_Lat)
-{
+//void Mainwindow::ConvWGSToKm(double* x, double *y, double m_Long,double m_Lat)
+//{
 
-    double refLat = (CConfig::mLat + (m_Lat))*0.00872664625997;//pi/360
-    *x	= (((m_Long) - CConfig::mLon) * 111.31949079327357)*cos(refLat);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
-    *y	= ((CConfig::mLat - (m_Lat)) * 111.132954);
-    //tinh toa do xy KM so voi diem center khi biet lat-lon
-}
+//    double refLat = (CConfig::mLat + (m_Lat))*0.00872664625997;//pi/360
+//    *x	= (((m_Long) - CConfig::mLon) * 111.31949079327357)*cos(refLat);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
+//    *y	= ((CConfig::mLat - (m_Lat)) * 111.132954);
+//    //tinh toa do xy KM so voi diem center khi biet lat-lon
+//}
 
 PointInt Mainwindow::ConvKmXYToScrPoint(double x, double y)
 {
@@ -1524,7 +1533,10 @@ void Mainwindow::showTrackContext()
     QAction action5(QString::fromUtf8("Dopler:    ")+QString::number(track->mDoplerFit,'f',1), this);
     //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
     contextMenu.addAction(&action5);
-    //Dopler
+    //density
+    QAction action15(QString::fromUtf8("Density:    ")+QString::number(track->posDensityFit,'f',1), this);
+    contextMenu.addAction(&action15);
+    //time
     int secs = int(track->lastTimeMs-track->startTime)/1000;
     int minutes = secs/60;
     secs = secs%60;
@@ -2232,12 +2244,12 @@ void Mainwindow::Update100ms()
         double azi,rg;
         if(ui->toolButton_measuring->isChecked())
         {
-            C_radar_data::kmxyToPolarDeg((mMousex - mMouseLastX)/mScale,-(mMousey - mMouseLastY)/mScale,&azi,&rg);
+            C_radar_data::ConvkmxyToPolarDeg((mMousex - mMouseLastX)/mScale,-(mMousey - mMouseLastY)/mScale,&azi,&rg);
 
         }
         else
         {
-            C_radar_data::kmxyToPolarDeg((mMousex - radCtX)/mScale,-(mMousey - radCtY)/mScale,&azi,&rg);
+            C_radar_data::ConvkmxyToPolarDeg((mMousex - radCtX)/mScale,-(mMousey - radCtY)/mScale,&azi,&rg);
         }
         rg/=rangeRatio;
         double headAzi ;
@@ -3962,19 +3974,9 @@ void Mainwindow::UpdateGpsData()
     }
     else
     {
-
+        processing->forwardOldGps();//
     }
-    /*if(processing->mGpsData.size())
-    {
 
-        GPSData data = processing->mGpsData.back();
-        if(processing->mGpsData.size()>10)processing->mGpsData.pop();
-        SetGPS(data.lat, data.lon);
-        clock_t gpsAge = clock()-CConfig::mStat.cGpsUpdateTime;
-        //CConfig::mStat.cAisAge = gpsAge;
-        if(gpsAge<3000)   ui->groupBox_gps->setTitle(QString::fromUtf8("GPS"));
-        else              ui->groupBox_gps->setTitle(QString::fromUtf8("GPS(mất kết nối ")+QString::number(gpsAge/1000)+")");
-    }*/
 }
 void Mainwindow::on_toolButton_set_zoom_ar_size_clicked()
 {
@@ -5357,4 +5359,12 @@ void Mainwindow::on_toolButton_ais_hide_fishing_clicked(bool checked)
 void Mainwindow::on_customButton_load_density_clicked()
 {
     //    processing->loadTargetDensityMap();
+}
+
+void Mainwindow::on_customButton_openCPN_clicked()
+{
+    system("taskkill /f /im opencpn.exe");
+    QProcess::startDetached(CConfig::getString("navManager","\"C:\\Program Files (x86)\\OpenCPN\\opencpn.exe\"").toStdString().data());
+//    system("taskkill /f /im opencpn.exe");
+
 }

@@ -7,7 +7,7 @@
 #define FRAME_LEN_NAV 1500
 using namespace std;
 typedef std::pair<int,int> LatLon1000;
-typedef std::map<LatLon1000, int> DensityMap;
+typedef std::map<LatLon1000, unsigned int> DensityMap;
 int nRecord = 0;
 int nLine = 0;
 int nMsg = 0;
@@ -26,7 +26,7 @@ void addDensityPoint(double lat,double lon)
     }
     else
     {
-        it->second++;
+        if(it->second<UINT_MAX)it->second++;
     }
 }
 
@@ -44,22 +44,24 @@ void AIStoDensityMap(QByteArray inputdata)
         if(aisMessageHandler.ProcessNMEA(strlist.at(i)))
         {
             nRecord++;
-//            CConfig::mStat.cAisUpdateTime = clock();
-            double mLat  = aisMessageHandler.get_latitude()/600000.0;
-            double mLong = aisMessageHandler.get_longitude()/600000.0;
-            if(
-                    abs(mLat*mLong)>0.1&&
-                    (mLat)>-90&&
-                    (mLong)>-180&&
-                    (mLat)<90&&
-                    (mLong)<180
-                    )
+            //            CConfig::mStat.cAisUpdateTime = clock();
+            if(aisMessageHandler.get_shiptype()==30)
             {
-                nPoint++;
-                addDensityPoint(mLat,mLong);
+                double mLat  = aisMessageHandler.get_latitude()/600000.0;
+                double mLong = aisMessageHandler.get_longitude()/600000.0;
+                if(
+                        abs(mLat*mLong)>0.1&&
+                        (mLat)>-90&&
+                        (mLong)>-180&&
+                        (mLat)<90&&
+                        (mLong)<180
+                        )
+                {
+                    nPoint++;
+                    addDensityPoint(mLat,mLong);
+                }
+
             }
-            else
-                continue;
         }
     }
     //messageStringbuffer=strlist.at(strlist.size()-1);
@@ -67,8 +69,8 @@ void AIStoDensityMap(QByteArray inputdata)
 int main(int argc, char *argv[])
 {
     ofstream datafile;
-    datafile.open("D:/HR2D/target_density.txt");
-//    QCoreApplication a(argc, argv);
+    datafile.open("D:/HR2D/target_density_fishing.txt");
+    //    QCoreApplication a(argc, argv);
     char dataPt[FRAME_LEN_NAV];
 
     QDirIterator it("D:/HR2D/logs/",
@@ -89,17 +91,17 @@ int main(int argc, char *argv[])
         }
         logFile.close();
     }
-//    int n=0;
+    //    int n=0;
     for (auto it : targetDensityMap)
     {
         datafile <<it.first.first << ","<<it.first.second << ","
-             << it.second <<"\n";
+                << it.second <<"\n";
     }
     cout<<"\nPoints loaded:"<<nPoint
-          <<"\nRecord loaded:"<<nRecord
-          <<"\nMessage loaded:"<<nMsg
-            <<"\nLine loaded:"<<nLine
-       <<"\nPositions:"<<targetDensityMap.size();
+       <<"\nRecord loaded:"<<nRecord
+      <<"\nMessage loaded:"<<nMsg
+     <<"\nLine loaded:"<<nLine
+    <<"\nPositions:"<<targetDensityMap.size();
     flushall();
     datafile.close();
     return 0;

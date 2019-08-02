@@ -713,6 +713,8 @@ private slots:
 
     void on_customButton_load_density_clicked();
 
+    void on_customButton_openCPN_clicked();
+
 private:
 
 //    bool mShowobjects,
@@ -723,7 +725,7 @@ private:
     void initActionsConnections();
     void initGraphicView();
 //    void updateTargetInfo();
-    void ConvWGSToKm(double *x, double *y, double m_Long, double m_Lat);
+//    void ConvWGSToKm(double *x, double *y, double m_Long, double m_Lat);
 //    void ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat);
     void setScaleRange(double srange);
     void DrawIADArea(QPainter *p);
