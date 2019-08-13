@@ -255,12 +255,12 @@ inline double ConvXYToAziRd(double x, double y)
 typedef struct
 {
     bool isRemoved;
-    bool isOneTime;
+    bool isAllowDetection;
     qint64 timeStart;
     double xkm,ykm;
     double aziDeg,rg;
     double maxDrg,maxDazDeg;
-}DetectionWindow;
+}RangeAziWindow;
 typedef struct  {
     short lastA,riseA,fallA;
     short maxA1,maxA2;
@@ -468,7 +468,7 @@ public:
     //    int                     mEncoderAzi;
     unsigned char           mHeader[FRAME_HEADER_SIZE];
     unsigned char           overload, init_time, clk_adc;
-    void                    integrateAisPoint(double lat, double lon, int mmsi);
+    bool                    integrateAisPoint(double lat, double lon, int mmsi);
     short                   curAzirTrue2048,arcMinAzi,arcMaxAzi,arcWidth;
     double                  mRealAziRate,mRealAzi;
     void                    setZoomRectAR(float ctx, float cty, double sizeKM, double sizeDeg);
@@ -557,7 +557,7 @@ public:
     double getArcMaxAziRad() const;
     double getArcMinAziRad() const;
     void addDetectionZone(double x, double y,double dazi,double drg, bool isOneTime);
-    std::vector<DetectionWindow> mDetectZonesList;
+    std::vector<RangeAziWindow> mDetectZonesList;
 private:
     int max_drange_plot;
     QTransform mPPITrans;
@@ -606,10 +606,10 @@ private:
     void LeastSquareFit(C_primary_track* track);
     //    double LinearFitCost(track_t *track, object_t *myobj);
     void ProcessGOData(unsigned char *data, short len, int aziMH);
-    void addDetectionZone(DetectionWindow dw);
+    void addDetectionZone(RangeAziWindow dw);
     int approximateAzi(int newAzi);
-    bool checkInsideDW(double aziDeg, double rgkm);
-    bool checkInsideDWOneTime(double aziDeg, double rgkm);
+    bool checkInsideDWAvoid(double aziDeg, double rgkm);
+    bool checkInsideDWAllow(double aziDeg, double rgkm);
     void addFreeObj(object_t *obj1);
     bool checkSimilarityToExistingTracks(object_t *obj1);
     void UpdateTrackStatistic();
@@ -638,7 +638,7 @@ public:
 //    void setShipHeading(int shipHeading);
     void setShipHeadingDeg(double headingDeg);
     void setAziViewOffsetDeg(double angle);
-    void addDetectionZoneAZ(double az, double rg, double dazi, double drg, bool isOneTime);
+    void addDetectionZoneAZ(double az, double rg, double dazi, double drg, bool isAllowDetection);
     void setFreqHeadOffsetDeg(double offset);
     QImage *getMimg_ppi() const;
     QImage *getMimg_RAmp() const;

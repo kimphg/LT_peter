@@ -7,8 +7,7 @@
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
-
-
+MapDataText mapText;
 uint qHash(const QPoint& p)
 {
     return p.x() * 17 ^ p.y();
@@ -25,6 +24,7 @@ CMap::CMap(QObject *parent): mScale(10),QObject(parent)
     mMapHeight = 1024;
     mapImage = 0;
     this->setPath("D:/HR2D/MapData/GM/" );
+    LoadText("D:/HR2D/mapText.txt");
     //SetType(0);
 }
 void CMap::SetType(int type)
@@ -43,14 +43,14 @@ void CMap::SetType(int type)
     default:
         break;
     }
-    OpenMIF("D:/HR2D/MIF/HP_TEXT.MIF");
+//    OpenMIF("D:/HR2D/MIF/HP_TEXT.MIF");
     Repaint();
 }
 
-void CMap::OpenMIF(const char *fileName)
-{
+//void CMap::OpenMIF(const char *fileName)
+//{
 
-}
+//}
 CMap::~CMap()
 {
 
@@ -86,6 +86,38 @@ void CMap::setPath(QString path)
         }
     }
     m_tilePixmaps.clear();
+
+}
+
+void CMap::LoadText(QString path)
+{
+    QFile mifFile(path);
+    if(!mifFile.exists())return;
+    if (!mifFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        return ;
+    }
+    QTextStream in(&mifFile);
+    in.setCodec("UTF-8");
+    for(;;)
+    {
+        if (in.atEnd()) break;
+        QString line = in.readLine();
+        if(line=="Text")
+        {
+            QString text(in.readLine());
+            QStringList latlon = (in.readLine().split(" "));
+            QString font(in.readLine());
+            if(font.contains("Tahoma"))
+            {
+                if(latlon.size()<4)continue;
+                double lat =(latlon.at(4).toDouble()+latlon.at(6).toDouble())/2.0;
+                double lon =(latlon.at(5).toDouble()+latlon.at(7).toDouble())/2.0;
+                mapText.insert(std::make_pair(std::make_pair(lat,lon),text));
+            }
+        }
+    }
+    mifFile.close();
 
 }
 

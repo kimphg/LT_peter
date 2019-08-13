@@ -359,7 +359,8 @@ double C_primary_track::estimateScore(object_t *obj1,object_t *obj2)
     if(dDopler>7)dDopler=16-dDopler;
     if(dDopler>2)
     {
-        printf("\n 2 objs rejected by dopler diff:%f",dDopler);return -1;
+//        printf("\n 2 objs rejected by dopler diff:%f",dDopler);
+        return -1;
     }
 #endif
     //normalize params
@@ -632,12 +633,14 @@ void C_primary_track::update()
             objectList.erase(objectList.begin());
             if(mState==TrackState::newDetection)
             {
+
                 if(isDoplerShifted()||
                         isHighDensityPos())
                     if(mSpeedkmhFit<TARGET_MAX_SPEED_MARINE)
                     {
+
                         LinearFit(TRACK_STABLE_LEN);
-                        if(fitProbability<0.6)
+                        if(fitProbability<0.7)
                         {
                             printf("\n fitProbability too small:%f",fitProbability);
                         }
@@ -646,6 +649,7 @@ void C_primary_track::update()
                             uniqId = C_primary_track::IDCounter++;
                             mState = TrackState::confirmed;
                         }
+
                     }
             }
         }
@@ -941,7 +945,7 @@ C_radar_data::~C_radar_data()
     //    }
 }
 
-void C_radar_data::integrateAisPoint(double lat, double lon, int mmsi)
+bool C_radar_data::integrateAisPoint(double lat, double lon, int mmsi)
 {
     for(int i=0;i<MAX_TRACKS_COUNT;i++)
     {
@@ -953,23 +957,26 @@ void C_radar_data::integrateAisPoint(double lat, double lon, int mmsi)
         ConvWGSToKm(&aisx,&aisy,lon,lat);
         double dx = aisx-track->xkm;
         double dy = aisy-track->ykm;
-        if(dx*dx+dy*dy>4.0)continue; //distance more than 0.5km
+        if(dx*dx+dy*dy>1.0)continue; //distance more than 0.5km
+
         double az,rg;
         ConvkmxyToPolarDeg(aisx,aisy,&az,&rg);
 
         double AISprobability =
                 fastPow(CONST_E,-sq(    (az-track->aziDeg)   /degrees(AZI_ERROR_STD)  )   )*
                 fastPow(CONST_E,-sq(    (rg-track->rgKm)     /(rgStdErr+0.5)       )   );
-        if(AISprobability>track->mAisMaxPosibility)
+        if(AISprobability>0.1&&AISprobability>track->mAisMaxPosibility)
         {
             track->mAisMaxPosibility = AISprobability;
-            printf("AISprobability:%f az:%f rg:%f",AISprobability,
-                   az-track->aziDeg,rg-track->rgKm);
+            //printf("\nAISprobability:%f az:%f rg:%f",AISprobability,
+            //az-track->aziDeg,rg-track->rgKm);
             track->mAisMaxPosibilityTimeMs   = CConfig::time_now_ms;
             track->mAisPossibleMmsi  = mmsi;
+            return true;
         }
 
     }
+    return false;
 }
 
 double C_radar_data::getArcMaxAziRad() const
@@ -985,11 +992,11 @@ double C_radar_data::getArcMinAziRad() const
     return (result );
 }
 
-void C_radar_data::addDetectionZoneAZ(double az, double rg, double dazi, double drg,bool isOneTime)
+void C_radar_data::addDetectionZoneAZ(double az, double rg, double dazi, double drg,bool isAllowDetection)
 {
 
-    DetectionWindow dw;//todo: save dw to config
-    dw.isOneTime = isOneTime;
+    RangeAziWindow dw;//todo: save dw to config
+    dw.isAllowDetection = isOneTime;
     dw.isRemoved = false;
     dw.timeStart=CConfig::time_now_ms;
     dw.xkm=rg*sin((az));
@@ -1000,7 +1007,7 @@ void C_radar_data::addDetectionZoneAZ(double az, double rg, double dazi, double 
     dw.maxDrg = drg;
     addDetectionZone(dw);
 }
-void C_radar_data::addDetectionZone(DetectionWindow dw)
+void C_radar_data::addDetectionZone(RangeAziWindow dw)
 {
     for(uint i=0;i<mDetectZonesList.size();i++)
     {
@@ -1014,8 +1021,8 @@ void C_radar_data::addDetectionZone(DetectionWindow dw)
 }
 void C_radar_data::addDetectionZone(double x, double y, double dazi, double drg,bool isOneTime)
 {
-    DetectionWindow dw;
-    dw.isOneTime = isOneTime;
+    RangeAziWindow dw;
+    dw.isAllowDetection = isOneTime;
     dw.isRemoved = false;
     dw.timeStart=CConfig::time_now_ms;
     dw.xkm=x;
@@ -2442,7 +2449,7 @@ void C_radar_data::ConvWGSToKm(double* x, double *y, double m_Long,double m_Lat)
 {
     double refLat = (CConfig::mLat + (m_Lat))*0.00872664625997;//pi/360
     *x	= (((m_Long) - CConfig::mLon) * 111.31949079327357)*cos(refLat);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
-    *y	= ((CConfig::mLat - (m_Lat)) * 111.132954);
+    *y	= ((m_Lat- CConfig::mLat ) * 111.132954);
     //tinh toa do xy KM so voi diem center khi biet lat-lon
 }
 
@@ -3064,7 +3071,15 @@ void C_radar_data::ProcessObject(object_t *obj1)
     // check if object_t belonging to another obj
     if(checkBelongToObj(obj1))return ;
     // add to mFreeObjList if inside DW
-    addFreeObj(obj1);
+    if(checkInsideDWAllow(degrees(obj1->azRad),obj1->rgKm))
+    {
+        addFreeObj(obj1);
+    }
+    if(!checkInsideDWAvoid(degrees(obj1->azRad),obj1->rgKm))
+    {
+        addFreeObj(obj1);
+    }
+
     //
     return;
     //ignore the DW and dopler
@@ -3180,13 +3195,13 @@ bool C_radar_data::checkBelongToTrack(object_t *obj1)
         return false;
     }
 }
-bool C_radar_data::checkInsideDWOneTime(double aziDeg,double rgkm)
+bool C_radar_data::checkInsideDWAllow(double aziDeg,double rgkm)
 {
     for(uint i=0;i<mDetectZonesList.size();i++)
     {
-        DetectionWindow *dw = &mDetectZonesList[i];
+        RangeAziWindow *dw = &mDetectZonesList[i];
         if(dw->isRemoved)continue;
-        if(dw->isOneTime)
+        if(dw->isAllowDetection)
         {
             if((CConfig::time_now_ms-dw->timeStart>TRACK_DELETE_TIME)){dw->isRemoved=true;continue;}
             if((abs(aziDeg-dw->aziDeg))<dw->maxDazDeg
@@ -3201,13 +3216,13 @@ bool C_radar_data::checkInsideDWOneTime(double aziDeg,double rgkm)
     return false;
 }
 
-bool C_radar_data::checkInsideDW(double aziDeg,double rgkm)
+bool C_radar_data::checkInsideDWAvoid(double aziDeg,double rgkm)
 {
     for(uint i=0;i<mDetectZonesList.size();i++)
     {
-        DetectionWindow *dw = &mDetectZonesList[i];
+        RangeAziWindow *dw = &mDetectZonesList[i];
         if(dw->isRemoved)continue;
-        if(!dw->isOneTime)
+        if(!dw->isAllowDetection)
         {
             double daz = abs(aziDeg-dw->aziDeg);
             if(daz>180)daz=360-daz;

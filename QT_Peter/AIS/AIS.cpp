@@ -14,16 +14,12 @@
 QString firstHalfMsg[10];
 AIS_object_t::AIS_object_t()
 {
-
+    isMatchToRadarTrack =false;
 }
 
 QString AIS_object_t::printData()
 {
     QString output;
-    if(mMMSI==574004060)
-    {
-        mMMSI=mMMSI;
-    }
     if(mMMSI)output.append(QString::fromUtf8("MMSI:")+QString::number(mMMSI)+"\n");
     if(mImo)output.append(QString::fromUtf8("IMO:")+QString::number(mImo)+"\n");
     if(mName.size())output.append(QString::fromUtf8("Tên:")+mName+"\n");

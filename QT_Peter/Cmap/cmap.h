@@ -8,7 +8,13 @@
 //#include "mitab/mitab/mitab.h"
 class QNetworkReply;
 class QPainter;
-
+typedef  struct
+{
+    double latCt,lonCt;
+    int depth;
+    QString name;
+}MapText;
+typedef std::map<std::pair<double,double>, QString> MapDataText;
 class CMap: public QObject
 {
     Q_OBJECT
@@ -19,6 +25,7 @@ public:
     void setCenterPos(double lat, double lon);
     void setImgSize(int width, int height);
     void setPath(QString path);
+    void LoadText(QString path);
     QPixmap getImage(double scale);
     void ConvKmToWGS_precise(double x, double y, double *m_Long, double *m_Lat);
     void ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat);
@@ -35,7 +42,7 @@ private slots:
 protected:
     QRect tileRect(const QPoint &tp);
 private:
-    void OpenMIF(const char* fileName);
+//    void OpenMIF(const char* fileName);
     void Repaint();
     void render(QPainter *p, const QRect &rect);
     void invalidate();

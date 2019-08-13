@@ -24,7 +24,8 @@
 class AIS_object_t {
 public:
     AIS_object_t();
-    QString printData();
+    QString             printData();
+    bool                isMatchToRadarTrack;
     QString              mName,mDst;
     int                  mMMSI;
     int                  mImo;

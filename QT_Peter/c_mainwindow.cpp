@@ -257,7 +257,9 @@ void Mainwindow::drawAisTarget(QPainter *p)
         rotateVector(trueShiftDeg,&x,&y);*/
         PointInt s = ConvWGSToScrPoint(aisObj.mLong,aisObj.mLat);
         if(hideAisFishingBoat&&(aisObj.mType==30))continue;
+        if(aisObj.isMatchToRadarTrack)continue;
         if(!isInsideViewZone(s.x,s.y))continue;
+
         if(aisObj.isNewest)
         {
             DrawAISMark(s,radians(aisObj.mCog),p,aisObj.isSelected,aisObj.mName,8);
@@ -309,32 +311,7 @@ void Mainwindow::mouseReleaseEvent(QMouseEvent *event)
     //    }
 
     isMapOutdated = true;
-    //    isScreenUp2Date = false;
-    //isDraging = false;
-    /*currMaxRange = (sqrtf(dx*dx+dy*dy)+scrCtY)/signsize;
-    if(currMaxRange>RADAR_MAX_RESOLUTION)currMaxRange = RADAR_MAX_RESOLUTION;
-    if((dx*dx+dy*dy)*3>scrCtX*scrCtX)
-    {
-        if(dx<0)
-        {
-            currMaxAzi = (unsigned short)((atanf((float)dy/(float)dx)-pRadar->trueN)/PI_NHAN2*4096.0f);
-            if(currMaxAzi<0)currMaxAzi+=MAX_AZIR;
-            if(currMaxAzi>MAX_AZIR)currMaxAzi-=MAX_AZIR;
-        }
-        if(dx>0)
-        {
-            currMaxAzi = (unsigned short)(((atanf((float)dy/(float)dx)+PI-pRadar->trueN))/PI_NHAN2*4096.0f);
-            if(currMaxAzi>MAX_AZIR)currMaxAzi-=MAX_AZIR;
-            if(currMaxAzi<0)currMaxAzi+=MAX_AZIR;
-        }
-        currMinAzi = currMaxAzi - MAX_AZIR/2;
-        if(currMinAzi<0)currMinAzi+=MAX_AZIR;
-        //printf("\n currMinAzi:%d currMaxAzi:%d ",currMinAzi,currMaxAzi);
-    }else
-    {
-        currMaxAzi = MAX_AZIR;
-        currMinAzi = 0;
-    }*/
+
 }
 void Mainwindow::wheelEvent(QWheelEvent *event)
 {
@@ -344,7 +321,6 @@ void Mainwindow::wheelEvent(QWheelEvent *event)
 }
 void Mainwindow::mouseMoveEvent(QMouseEvent *event) 
 {
-
     if((mouse_mode&MouseDrag)&&(event->buttons() & Qt::LeftButton))
     {
         {
@@ -577,6 +553,7 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
 
                 double cRg =( AutoSelP1.rg+AutoSelP2.rg)/2;
                 setMouseMode(MouseAutoSelect2,false);
+                setMouseMode(MouseAutoSelect1,false);
 
                 //PointDouble point = ConvScrPointToKMXY(mMousex,mMousey);
                 //int dx = mMousex-radCtX;
@@ -675,7 +652,7 @@ void Mainwindow::checkClickAIS(int xclick, int yclick)
         double fx,fy;
         C_radar_data::ConvWGSToKm(&fx,&fy,aisObj.mLong,aisObj.mLat);
         int x = (fx*mScale)+radCtX;
-        int y = (fy*mScale)+radCtY;
+        int y = radCtY-(fy*mScale);
         if(abs(x-xclick)<5&&abs(y-yclick)<5)
         {
             DialogAisInfo *dialog = new DialogAisInfo(this);
@@ -1017,7 +994,7 @@ void Mainwindow::DrawDetectZones(QPainter* p)//draw radar target from pRadar->mT
     p->setPen((penYellow));
     for (uint i = 0;i<pRadar->mDetectZonesList.size();i++)
     {
-        DetectionWindow *dw = &pRadar->mDetectZonesList[i];
+        RangeAziWindow *dw = &pRadar->mDetectZonesList[i];
         if(dw->isRemoved)continue;
         int dazi = dw->maxDazDeg;
         double azi = 90.0-(trueShiftDeg+dw->aziDeg);
@@ -1536,6 +1513,9 @@ void Mainwindow::showTrackContext()
     //density
     QAction action15(QString::fromUtf8("Density:    ")+QString::number(track->posDensityFit,'f',1), this);
     contextMenu.addAction(&action15);
+    //density
+    QAction action16(QString::fromUtf8("MMSI:    ")+QString::number(track->mAisConfirmedMmsi), this);
+    contextMenu.addAction(&action16);
     //time
     int secs = int(track->lastTimeMs-track->startTime)/1000;
     int minutes = secs/60;

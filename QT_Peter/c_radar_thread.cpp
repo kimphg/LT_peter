@@ -655,7 +655,7 @@ void dataProcessingThread::addAisObj(AIS_object_t obj)
         break;
     }
     if(!objExist)m_aisList.push_front(obj);
-    mRadarData->integrateAisPoint(obj.mLat,obj.mLong,obj.mMMSI);
+    if(mRadarData->integrateAisPoint(obj.mLat,obj.mLong,obj.mMMSI))obj.isMatchToRadarTrack = true;
 }
 void dataProcessingThread::inputAISData(QByteArray inputdata)
 {

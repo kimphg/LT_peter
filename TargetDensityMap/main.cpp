@@ -45,7 +45,7 @@ void AIStoDensityMap(QByteArray inputdata)
         {
             nRecord++;
             //            CConfig::mStat.cAisUpdateTime = clock();
-            if(aisMessageHandler.get_shiptype()==30)
+            if(aisMessageHandler.get_SOG()/10.0>3)
             {
                 double mLat  = aisMessageHandler.get_latitude()/600000.0;
                 double mLong = aisMessageHandler.get_longitude()/600000.0;
@@ -69,7 +69,7 @@ void AIStoDensityMap(QByteArray inputdata)
 int main(int argc, char *argv[])
 {
     ofstream datafile;
-    datafile.open("D:/HR2D/target_density_fishing.txt");
+    datafile.open("D:/HR2D/target_density.txt");
     //    QCoreApplication a(argc, argv);
     char dataPt[FRAME_LEN_NAV];
 

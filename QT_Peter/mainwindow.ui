@@ -23456,7 +23456,7 @@ background-color: rgba(255, 255, 255, 0);</string>
      <bool>false</bool>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <property name="elideMode">
      <enum>Qt::ElideNone</enum>
@@ -23600,7 +23600,7 @@ background-color: rgba(255, 255, 255, 0);</string>
           </font>
          </property>
          <property name="text">
-          <string>Xóa các vùng tự động bám</string>
+          <string>Xóa các vùng  bám</string>
          </property>
         </widget>
        </item>
@@ -23639,7 +23639,7 @@ background-color: rgba(255, 255, 255, 0);</string>
           </font>
          </property>
          <property name="text">
-          <string>Đặt vùng tự động bám</string>
+          <string>Đặt vùng cấm bám</string>
          </property>
          <property name="checkable">
           <bool>true</bool>
