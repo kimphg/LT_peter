@@ -5,7 +5,7 @@
 #include <QtGui>
 #include <QPixmap>
 #include <QUrl>
-//#include "mitab/mitab/mitab.h"
+#include "mitab/mitab.h"
 class QNetworkReply;
 class QPainter;
 typedef  struct

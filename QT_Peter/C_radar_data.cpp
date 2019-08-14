@@ -633,9 +633,9 @@ void C_primary_track::update()
             objectList.erase(objectList.begin());
             if(mState==TrackState::newDetection)
             {
-
-                if(isDoplerShifted()||
-                        isHighDensityPos())
+#ifdef THEON
+                if(isHighDensityPos())
+#endif
                     if(mSpeedkmhFit<TARGET_MAX_SPEED_MARINE)
                     {
 
@@ -841,7 +841,9 @@ double xsum=0,x2sum=0,ysum=0,xysum=0;
 
 C_radar_data::C_radar_data()
 {
+#ifdef THEON
     loadDensityMap();
+#endif
     //memset(targetDensityMap,0,TARGET_DENSITY_MAP_SIZE*TARGET_DENSITY_MAP_SIZE);
     isTxOn = false;
     cut_terrain=false;
@@ -996,7 +998,7 @@ void C_radar_data::addDetectionZoneAZ(double az, double rg, double dazi, double 
 {
 
     RangeAziWindow dw;//todo: save dw to config
-    dw.isAllowDetection = isOneTime;
+    dw.isAllowDetection = isAllowDetection;
     dw.isRemoved = false;
     dw.timeStart=CConfig::time_now_ms;
     dw.xkm=rg*sin((az));
@@ -3075,11 +3077,12 @@ void C_radar_data::ProcessObject(object_t *obj1)
     {
         addFreeObj(obj1);
     }
+#ifdef THEON
     if(!checkInsideDWAvoid(degrees(obj1->azRad),obj1->rgKm))
     {
         addFreeObj(obj1);
     }
-
+#endif
     //
     return;
     //ignore the DW and dopler

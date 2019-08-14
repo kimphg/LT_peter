@@ -184,12 +184,29 @@ bool dataProcessingThread::readGyroMsg(unsigned char *mReceiveBuff,int len)
         n++;
         if(databegin[0]==0x5a&&databegin[1]==0xa5&&databegin[31]==0xAA)
         {
-            double heading = (((databegin[6])<<8)|databegin[7])/182.0444444444444444444444444444444444444444444444444;//65536/360.0
+            double heading = (((databegin[6])<<8)|databegin[7])/182.04444444444444444444444;//65536/360.0
             //double headingRate = degrees((((mReceiveBuff[12])<<8)|mReceiveBuff[13])/10430.21919552736);//deg per sec
             double headingRate = ((databegin[12])<<8)+databegin[13];
             if(headingRate>32768.0)headingRate=headingRate-65536.0;
             headingRate/=32768.0;
             if(!mRadarData->isTrueHeadingFromRadar)CConfig::mStat.inputGyro(heading,degrees(headingRate));
+            mRadarData->setShipHeadingDeg(heading);
+            return true;
+        }
+    }
+    n=0;
+    while(n<len-50)//NAVGP 10/50 Hz message
+    {
+        unsigned char *databegin =&mReceiveBuff[n];
+        n++;
+        if(databegin[0]==0x5a&&databegin[1]==0xa5&&databegin[4]==0x7F)
+        {
+            double heading = (((databegin[23])<<8)|databegin[24])/182.0444444444444444444444444444444444444444444444444;//65536/360.0
+            //double headingRate = degrees((((mReceiveBuff[12])<<8)|mReceiveBuff[13])/10430.21919552736);//deg per sec
+            //double headingRate = ((databegin[12])<<8)+databegin[13];
+            //if(headingRate>32768.0)headingRate=headingRate-65536.0;
+            //headingRate/=32768.0;
+            if(!mRadarData->isTrueHeadingFromRadar)CConfig::mStat.inputGyro(heading,0);
             mRadarData->setShipHeadingDeg(heading);
             return true;
         }
@@ -340,6 +357,7 @@ void dataProcessingThread::initSerialComm()
                 CConfig::AddMessage("Open serial:"+qstr+" at:"+QString::number(serialBaud));}
         }
     }
+
 
 }
 /*bool  dataProcessingThread::getPosition(double *lat,double *lon, double *heading)

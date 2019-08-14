@@ -6,7 +6,7 @@
 //  |Last update: Jan 2019                                     |
 //  |Author: Phung Kim Phuong                                  |
 //  |----------------------------------------------------------|
-#define THEON
+//#define THEON
 //#define DEBUGMODE
 #ifdef THEON
 #define TRACK_LOST_TIME 110000
@@ -328,7 +328,7 @@ public:
         isUpdating = false;
         uniqId =-1;
     }
-    bool isDoplerShifted(){return (abs(mDoplerFit)>TRACK_START_DOPLER);}
+//    bool isDoplerShifted(){return (abs(mDoplerFit)>TRACK_START_DOPLER);}
     bool isHighDensityPos();
     bool isConfirmed(){return mState==TrackState::confirmed;}
     qint64 startTime;

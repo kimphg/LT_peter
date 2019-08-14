@@ -4,10 +4,50 @@
 #include <iostream>
 #include <fstream>
 #include <QDirIterator>
+#include <vector>
+#include <map>
 #define FRAME_LEN_NAV 1500
 using namespace std;
-typedef std::pair<int,int> LatLon1000;
-typedef std::map<LatLon1000, unsigned int> DensityMap;
+typedef struct
+{
+    int lon,lat,level;
+}CellKey;
+typedef std::pair<double,double> PointD;
+class DensityMapCell
+{
+public:
+    DensityMapCell(int isizeLevel)
+    {
+        isOverflow = false;
+        sizeLevel = isizeLevel;
+    }
+    bool addPoint(double lon,double lat)
+    {
+        PointD point(lon,lat);
+        data.push_back(point);
+        if(data.size()>=1000)isOverflow =true;
+        return isOverflow;
+    }
+
+    int sizeLevel;
+    bool isOverflow;
+    std::vector<PointD> data;
+} ;
+struct CellKeyCompare
+{
+   bool operator() (const CellKey& lhs, const CellKey& rhs) const
+   {
+       if( lhs.lon < rhs.lon)return true;
+       if( lhs.lon > rhs.lon)return false;
+       if( lhs.lat < rhs.lat)return true;
+       if( lhs.lat > rhs.lat)return false;
+       if( lhs.level < rhs.level)return true;
+       if( lhs.level > rhs.level)return false;
+       return false;
+
+   }
+};
+typedef std::map<CellKey, DensityMapCell,CellKeyCompare> DensityMap;
 int nRecord = 0;
 int nLine = 0;
 int nMsg = 0;
@@ -16,17 +56,41 @@ DensityMap  targetDensityMap;
 //QString     messageStringbuffer;
 AIS         aisMessageHandler;
 
-void addDensityPoint(double lat,double lon)
+void addDensityPoint(double lon,double lat,int level = 50)
 {
-    LatLon1000 key(lat*1000,lon*1000);
+
+    CellKey key;
+    key.lon = lon*level;
+    key.lat = lat*level;
+    key.level = level;
     DensityMap::iterator it =targetDensityMap.find(key);
     if ( it == targetDensityMap.end() )
     {
-        targetDensityMap.insert(std::pair<LatLon1000,int>(key,1));
+        DensityMapCell newcell(level);
+        newcell.addPoint(lon,lat);
+        targetDensityMap.insert(std::pair<CellKey, DensityMapCell>(key,newcell));
     }
     else
     {
-        if(it->second<UINT_MAX)it->second++;
+        if(it->second.isOverflow)
+        {
+            addDensityPoint(lon,lat,level*2);
+        }
+        else
+        {
+            if(it->second.addPoint(lon,lat))//overflow
+            {
+                if(level>3200)
+                {
+                    it->second.isOverflow = false;
+                    return;
+                }
+                for(PointD dataPoint : it->second.data)
+                {
+                    addDensityPoint(dataPoint.first,dataPoint.second,level*2);
+                }
+            }
+        }
     }
 }
 
@@ -58,7 +122,7 @@ void AIStoDensityMap(QByteArray inputdata)
                         )
                 {
                     nPoint++;
-                    addDensityPoint(mLat,mLong);
+                    addDensityPoint(mLong,mLat);
                 }
 
             }
@@ -94,8 +158,9 @@ int main(int argc, char *argv[])
     //    int n=0;
     for (auto it : targetDensityMap)
     {
-        datafile <<it.first.first << ","<<it.first.second << ","
-                << it.second <<"\n";
+        if(it.second.isOverflow)continue;
+        datafile <<it.first.lon << ","<<it.first.lat << ","<<it.first.level << ","
+                << it.second.data.size() <<"\n";
     }
     cout<<"\nPoints loaded:"<<nPoint
        <<"\nRecord loaded:"<<nRecord

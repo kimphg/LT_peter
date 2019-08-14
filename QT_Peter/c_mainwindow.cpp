@@ -366,7 +366,7 @@ void Mainwindow::keyPressEvent(QKeyEvent *event)
 #ifndef THEON
         if(!isInsideViewZone(mMousex,mMousey))return;
         double azid,rg;
-        C_radar_data::kmxyToPolarDeg((mMousex - radCtX)/mScale,-(mMousey - radCtY)/mScale,&azid,&rg);
+        C_radar_data::ConvkmxyToPolarDeg((mMousex - radCtX)/mScale,-(mMousey - radCtY)/mScale,&azid,&rg);
         int aziBinary = int(azid/360.0*4096);
         unsigned char command[]={0xaa,0x55,0x6a,0x09,
                                  static_cast<unsigned char>(aziBinary>>8),
@@ -1671,6 +1671,8 @@ void Mainwindow::InitSetting()
     SetUpTheonGUILayout();
 #else
     ui->toolButton_hdsd->hide();
+    ui->customButton_openCPN->hide();
+    ui->toolButton_dzs_1->hide();
 #endif
     ui->toolButton_xl_nguong_4->setChecked(CConfig::getInt("cut_noise"));
     ui->toolButton_sled->setChecked(CConfig::getInt("isShowSled"));
@@ -1797,8 +1799,6 @@ void Mainwindow::InitSetting()
 }
 void Mainwindow::ReloadSetting()
 {
-
-
 
 }
 bool Mainwindow::CalcAziContour(double theta, double d)

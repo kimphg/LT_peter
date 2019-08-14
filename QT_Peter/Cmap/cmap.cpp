@@ -8,6 +8,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 MapDataText mapText;
+MIFFile *mifFile;
 uint qHash(const QPoint& p)
 {
     return p.x() * 17 ^ p.y();
@@ -25,6 +26,7 @@ CMap::CMap(QObject *parent): mScale(10),QObject(parent)
     mapImage = 0;
     this->setPath("D:/HR2D/MapData/GM/" );
     LoadText("D:/HR2D/mapText.txt");
+    mifFile = (MIFFile*)IMapInfoFile::SmartOpen("");
     //SetType(0);
 }
 void CMap::SetType(int type)
