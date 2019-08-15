@@ -565,7 +565,8 @@ double C_primary_track::estimateScore(object_t *obj1)
 }
 bool C_primary_track::isHighDensityPos()
 {
-    return posDensityFit>10;
+    if(posDensityFit>1)printf("\nposDensityFit:%f",posDensityFit);
+    return posDensityFit>5;
 }
 int C_primary_track::getPosDensity()
 {
@@ -577,6 +578,7 @@ int C_primary_track::getPosDensity()
     }
     else
         return 0;
+
 }
 void C_primary_track::update()
 {
@@ -863,7 +865,7 @@ C_radar_data::C_radar_data()
     mTrackList = std::vector<C_primary_track>(MAX_TRACKS_COUNT,track);
     giaQuayPhanCung = false;
     //    mShipHeading = 0;
-    isTrueHeadingFromRadar = true;
+    isTrueHeadingFromRadar = CConfig::getInt("isTrueHeadingFromRadar");
     rgStdErr = sn_scale*pow(2,clk_adc);
     azi_er_rad = AZI_ERROR_STD;
     CConfig::time_now_ms = QDateTime::currentMSecsSinceEpoch();
@@ -2075,7 +2077,6 @@ void C_radar_data::loadDensityMap()
     densityFile.open(QIODevice::ReadOnly);
     for(;;)
     {
-
         QStringList liststr = QString(densityFile.readLine()).split(",");
         if(liststr.size()<3)break;
         int lat =   liststr.at(0).toInt();
@@ -2089,7 +2090,8 @@ DensityMap* C_radar_data::getDensityMap()
 {
     return &targetDensityMap;
 }
-void C_radar_data::addDensityPoint(double lat,double lon)
+
+void C_radar_data::addDensityPoint(double lat, double lon)
 {
     int dmPosX  =   lon*1000;
     int dmPosY  =   lat*1000;
@@ -2103,7 +2105,9 @@ void C_radar_data::addDensityPoint(double lat,double lon)
     {
         it->second++;
     }
+    // implement later
 }
+
 #define POLY_DEG 2
 void C_radar_data::LeastSquareFit(C_primary_track* track)
 {

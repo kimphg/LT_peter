@@ -420,8 +420,8 @@ void Mainwindow::keyPressEvent(QKeyEvent *event)
             if(posy)mMousey= posy;
 
             int density = pRadar->getDensityLatLon(y2lat(-(mMousey - radCtY)),
-                   x2lon(mMousex - radCtX)
-                   );
+                                                   x2lon(mMousex - radCtX)
+                                                   );
             ui->label_sn_type->setText(QString::number(density));
 
         }
@@ -861,6 +861,7 @@ void DrawMap()
     if(CConfig::getInt("isViewDensityMap"))
     {
         QPainter densityPainter(&pix);
+
         double minLat ,minLon, maxLat, maxLon;
         double rangeKm = pMap->width()/1.5/mScale;
         ConvKmToWGS(-rangeKm,
@@ -4344,6 +4345,7 @@ void Mainwindow::on_toolButton_setRangeUnit_toggled(bool checked)
 void Mainwindow::on_toolButton_xl_dopler_3_clicked(bool checked)
 {
     pRadar->isTrueHeadingFromRadar = checked;
+    CConfig::setValue("isTrueHeadingFromRadar",checked);
 }
 
 void Mainwindow::on_toolButton_head_up_clicked(bool checked)
@@ -5345,6 +5347,6 @@ void Mainwindow::on_customButton_openCPN_clicked()
 {
     system("taskkill /f /im opencpn.exe");
     QProcess::startDetached(CConfig::getString("navManager","\"C:\\Program Files (x86)\\OpenCPN\\opencpn.exe\"").toStdString().data());
-//    system("taskkill /f /im opencpn.exe");
+    //    system("taskkill /f /im opencpn.exe");
 
 }

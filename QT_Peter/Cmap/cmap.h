@@ -5,7 +5,7 @@
 #include <QtGui>
 #include <QPixmap>
 #include <QUrl>
-#include "mitab/mitab.h"
+//#include "mitab/mitab.h"
 class QNetworkReply;
 class QPainter;
 typedef  struct
@@ -13,8 +13,8 @@ typedef  struct
     double latCt,lonCt;
     int depth;
     QString name;
-}MapText;
-typedef std::map<std::pair<double,double>, QString> MapDataText;
+}MapObj;
+typedef std::map<std::pair<int,int>, MapObj> MapDataText;
 class CMap: public QObject
 {
     Q_OBJECT
