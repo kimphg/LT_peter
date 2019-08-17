@@ -35,7 +35,7 @@ void dataProcessingThread::ReadDataBuffer()
     if(iRec!=iRead)
     {
         if(isSimulationMode)return;
-        CConfig::mStat.c21UpdateTime = clock();
+
     }
     while(iRec!=iRead)
     {
@@ -189,8 +189,13 @@ bool dataProcessingThread::readGyroMsg(unsigned char *mReceiveBuff,int len)
             double headingRate = ((databegin[12])<<8)+databegin[13];
             if(headingRate>32768.0)headingRate=headingRate-65536.0;
             headingRate/=32768.0;
-            if(!mRadarData->isTrueHeadingFromRadar)CConfig::mStat.inputGyro(heading,degrees(headingRate));
-            mRadarData->setShipHeadingDeg(heading);
+            if(CConfig::mStat.getAgeGyro21()>3000)
+            {
+                CConfig::mStat.inputGyroDeg(heading,degrees(headingRate));
+
+//                mRadarData->setShipHeadingDeg(heading);
+            }
+            //CConfig::mStat.setcGyroUpdateTime();
             return true;
         }
     }
@@ -208,8 +213,10 @@ bool dataProcessingThread::readGyroMsg(unsigned char *mReceiveBuff,int len)
                 //double headingRate = ((databegin[12])<<8)+databegin[13];
                 //if(headingRate>32768.0)headingRate=headingRate-65536.0;
                 //headingRate/=32768.0;
-                if(!mRadarData->isTrueHeadingFromRadar)CConfig::mStat.inputGyro(heading,0);
-                mRadarData->setShipHeadingDeg(heading);
+                if(CConfig::mStat.getAgeGyro21()>3000)
+                {
+                    CConfig::mStat.inputGyroDeg(heading,0);
+                }
                 return true;
             }
         }

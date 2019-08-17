@@ -865,7 +865,7 @@ C_radar_data::C_radar_data()
     mTrackList = std::vector<C_primary_track>(MAX_TRACKS_COUNT,track);
     giaQuayPhanCung = false;
     //    mShipHeading = 0;
-    isTrueHeadingFromRadar = CConfig::getInt("isTrueHeadingFromRadar");
+//    isTrueHeadingFromRadar = CConfig::getInt("isTrueHeadingFromRadar");
     rgStdErr = sn_scale*pow(2,clk_adc);
     azi_er_rad = AZI_ERROR_STD;
     CConfig::time_now_ms = QDateTime::currentMSecsSinceEpoch();
@@ -1636,14 +1636,14 @@ int C_radar_data::ssiDecode(ushort nAzi)
     mEncoderVal = nAzi;
     return nAzi>>1;
 }
-void C_radar_data::setShipHeadingDeg(double headingDeg)
-{
-    if(!isTrueHeadingFromRadar)
-    {
-        mShipHeading2048 = (headingDeg)/360.0*MAX_AZIR;
-    }
+//void C_radar_data::setShipHeadingDeg(double headingDeg)
+//{
+//    if(!isTrueHeadingFromRadar)
+//    {
+//        mShipHeading2048 = (headingDeg)/360.0*MAX_AZIR;
+//    }
+//}
 
-}
 
 int C_radar_data::approximateAzi(int newAzi)
 {
@@ -1673,6 +1673,7 @@ int C_radar_data::approximateAzi(int newAzi)
 }
 void C_radar_data::processSocketData(unsigned char* data,short len)
 {
+    CConfig::mStat.c21UpdateTime = clock();
     CConfig::mStat.mFrameCount++;
 #ifndef THEON
     //bool isGo = (data[0]==4);// du lieu may hoi
@@ -1760,6 +1761,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
     }
     else
     {
+
 #ifdef THEON
         newAziTrue =  ((data[11]<<8)|data[12])>>5;
         newAziTrue+= (mShipHeading2048+antennaHeadOffset+freqHeadOffset);
@@ -1778,10 +1780,15 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
             newAziTrue = ssiDecode(newAziTrue);
 
         }
-        if(isTrueHeadingFromRadar)
+        int mShipHeading2048new = (((data[13]<<8)|data[14]))/65536.0*MAX_AZIR;
+        if(mShipHeading2048new!=mShipHeading2048)
         {
-            mShipHeading2048 = (((data[13]<<8)|data[14]))/65536.0*MAX_AZIR;
-            CConfig::mStat.inputGyro(mShipHeading2048*360.0/MAX_AZIR,0);
+            mShipHeading2048 = mShipHeading2048new;
+            CConfig::mStat.inputGyroDeg21(mShipHeading2048*360.0/MAX_AZIR,0);
+
+        }
+        else {
+            mShipHeading2048 = CConfig::mStat.shipHeadingDeg/360.0*MAX_AZIR;
         }
         newAziTrue+= (mShipHeading2048+antennaHeadOffset);
         while(newAziTrue>=MAX_AZIR)newAziTrue-=MAX_AZIR;

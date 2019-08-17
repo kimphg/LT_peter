@@ -6,7 +6,7 @@
 //  |Last update: Jan 2019                                     |
 //  |Author: Phung Kim Phuong                                  |
 //  |----------------------------------------------------------|
-#define THEON
+//#define THEON
 //#define DEBUGMODE
 #ifdef THEON
 #define TRACK_LOST_TIME 110000
@@ -460,7 +460,7 @@ public:
     double rgStdErr;
 //    qint64 time_start_ms;
     double sn_scale;
-    bool isTrueHeadingFromRadar;
+//    bool isTrueHeadingFromRadar;
     clock_t mUpdateTime;
     //    double mShipHeading;
 
@@ -636,7 +636,7 @@ public:
     //    inline static double ConvXYToAziRad(double x, double y);
     void resetGain();
 //    void setShipHeading(int shipHeading);
-    void setShipHeadingDeg(double headingDeg);
+//    void setShipHeadingDeg(double headingDeg);
     void setAziViewOffsetDeg(double angle);
     void addDetectionZoneAZ(double az, double rg, double dazi, double drg, bool isAllowDetection);
     void setFreqHeadOffsetDeg(double offset);

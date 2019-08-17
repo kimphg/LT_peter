@@ -63,13 +63,21 @@ public:
 
     }
 //    void setGPSLocation(double lat, double lon);
-    void inputGyro(double heading,double headingRateDps)
+    void inputGyroDeg(double heading,double headingRateDps)
     {
         // auto learning algorithm
         shipHeadingRate_dps = headingRateDps;
         shipHeadingDeg = heading;
         cGyroUpdateTime = clock();
     }
+    void inputGyroDeg21(double heading,double headingRateDps)
+    {
+        // auto learning algorithm
+        shipHeadingRate_dps = headingRateDps;
+        shipHeadingDeg = heading;
+        cGyroUpdateTime21 = clock();
+    }
+    void setcGyroUpdateTime(){cGyroUpdateTime = clock();}
     void inputHDT(double heading)
     {
         if(getAgeGyro()<3000){isGyro = true; return;}
@@ -120,7 +128,7 @@ public:
     clock_t c22UpdateTime;
     clock_t c21UpdateTime;
     clock_t cBHUpdateTime;
-    clock_t cGyroUpdateTime;
+    clock_t cGyroUpdateTime,cGyroUpdateTime21;
     clock_t cVeloUpdateTime;
     clock_t cHDTUpdateTime;
     clock_t cCourseUpdateTime;
@@ -141,6 +149,7 @@ public:
     clock_t getAge21(){return clock()- c21UpdateTime;}
     clock_t getAgeBH(){return clock()- cBHUpdateTime;}
     clock_t getAgeGyro(){return clock()-cGyroUpdateTime;}
+    clock_t getAgeGyro21(){return clock()-cGyroUpdateTime21;}
     clock_t getAgeVelo(){return clock()-cVeloUpdateTime;}
     clock_t getAgeHDT(){return clock()-cHDTUpdateTime;}
     clock_t getAgeTempOk(){return clock()-cTempOkTime;}

@@ -634,7 +634,7 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
             }
             else if(isInsideIADZone(posx,posy))
             {
-                checkClickAIS(posx,posy);//not work yet , todo: here
+                checkClickAIS(posx,posy);//not work yet , todo: implement here
             }
         }
     }
@@ -1131,8 +1131,8 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
                 p->drawRect(sTrack.x-size/2,sTrack.y-size/2,size,size);
             }
             if(track->mSpeedkmhFit>10){
-                int sx = sTrack.x+short(10*sinFast(track->courseRadFit));
-                int sy = sTrack.y-short(10*cosFast(track->courseRadFit));
+                int sx = sTrack.x+short(10*sinFast(track->courseRadFit+radians(trueShiftDeg)));
+                int sy = sTrack.y-short(10*cosFast(track->courseRadFit+radians(trueShiftDeg)));
                 p->drawLine(sx,sy,sTrack.x,sTrack.y);
             }
             //draw target number
@@ -1589,7 +1589,8 @@ void Mainwindow::addToTargets()
     if(error.size())
     {
         QMessageBox msgBox;
-        msgBox.setText(QString::fromUtf8("Lỗi:")+error);
+        msgBox.setWindowTitle("Lỗi đặt chỉ thị");
+        msgBox.setText(error);
         msgBox.exec();
     }
 }
@@ -2557,9 +2558,10 @@ void Mainwindow::ViewTrackInfo()
             row++;
 
         }
+//        ui->tableWidgetTarget->setRowCount(row);
 
     }
-    if(row<(ui->tableWidgetTarget->rowCount()-1))ui->tableWidgetTarget->setRowCount(row+1);
+    if(row<(ui->tableWidgetTarget->rowCount()))ui->tableWidgetTarget->setRowCount(row);
     /*for(int i=row;i<ui->tableWidgetTarget->rowCount();i++)
     {
         for(int col = 0;col<5;col++)
@@ -4342,11 +4344,11 @@ void Mainwindow::on_toolButton_setRangeUnit_toggled(bool checked)
 
 }
 
-void Mainwindow::on_toolButton_xl_dopler_3_clicked(bool checked)
-{
-    pRadar->isTrueHeadingFromRadar = checked;
-    CConfig::setValue("isTrueHeadingFromRadar",checked);
-}
+//void Mainwindow::on_toolButton_xl_dopler_3_clicked(bool checked)
+//{
+//    //pRadar->isTrueHeadingFromRadar = checked;
+////    CConfig::setValue("isTrueHeadingFromRadar",checked);
+//}
 
 void Mainwindow::on_toolButton_head_up_clicked(bool checked)
 {

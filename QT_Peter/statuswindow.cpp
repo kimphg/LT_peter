@@ -61,11 +61,12 @@ StatusWindow::StatusWindow(dataProcessingThread *radar,QWidget *parent) :
     item = new QTableWidgetItem(QString::fromUtf8("Switch Ethernet 3"));ui->tableWidget_connection->setItem(2,0,item);
     item = new QTableWidgetItem(QString::fromUtf8("Định vị GPS"));      ui->tableWidget_connection->setItem(3,0,item);
     item = new QTableWidgetItem(QString::fromUtf8("AIS"));              ui->tableWidget_connection->setItem(4,0,item);
-    item = new QTableWidgetItem(QString::fromUtf8("Con quay"));         ui->tableWidget_connection->setItem(5,0,item);
-    item = new QTableWidgetItem(QString::fromUtf8("Tính đường"));       ui->tableWidget_connection->setItem(6,0,item);
-    item = new QTableWidgetItem(QString::fromUtf8("Máy 2-1"));          ui->tableWidget_connection->setItem(7,0,item);
-    item = new QTableWidgetItem(QString::fromUtf8("Máy 2-2"));          ui->tableWidget_connection->setItem(8,0,item);
-    item = new QTableWidgetItem(QString::fromUtf8("Mô đun báo hỏng"));  ui->tableWidget_connection->setItem(9,0,item);
+    item = new QTableWidgetItem(QString::fromUtf8("Con quay t.tiếp"));  ui->tableWidget_connection->setItem(5,0,item);
+    item = new QTableWidgetItem(QString::fromUtf8("Con quay máy 2.1")); ui->tableWidget_connection->setItem(6,0,item);
+    item = new QTableWidgetItem(QString::fromUtf8("Tính đường"));       ui->tableWidget_connection->setItem(7,0,item);
+    item = new QTableWidgetItem(QString::fromUtf8("Máy 2-1"));          ui->tableWidget_connection->setItem(8,0,item);
+    item = new QTableWidgetItem(QString::fromUtf8("Máy 2-2"));          ui->tableWidget_connection->setItem(9,0,item);
+    item = new QTableWidgetItem(QString::fromUtf8("Mô đun báo hỏng"));  ui->tableWidget_connection->setItem(10,0,item);
 }
 void StatusWindow::closeEvent(QCloseEvent *event)
 {
@@ -77,10 +78,11 @@ void StatusWindow::readConectionStat()
     item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAgeGps()<3000)));   ui->tableWidget_connection->setItem(3,1,item);
     item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAgeAis()<3000)));   ui->tableWidget_connection->setItem(4,1,item);
     item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAgeGyro()<3000)));  ui->tableWidget_connection->setItem(5,1,item);
-    item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAgeVelo()<10000)));  ui->tableWidget_connection->setItem(6,1,item);
-    item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAge21()<3000)));    ui->tableWidget_connection->setItem(7,1,item);
-    item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAge22()<10000)));    ui->tableWidget_connection->setItem(8,1,item);
-    item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAgeBH()<3000)));    ui->tableWidget_connection->setItem(9,1,item);
+    item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAgeGyro21()<3000)));ui->tableWidget_connection->setItem(6,1,item);
+    item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAgeVelo()<10000))); ui->tableWidget_connection->setItem(7,1,item);
+    item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAge21()<3000)));    ui->tableWidget_connection->setItem(8,1,item);
+    item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAge22()<10000)));   ui->tableWidget_connection->setItem(9,1,item);
+    item = new QTableWidgetItem(QString::number((int)(CConfig::mStat.getAgeBH()<3000)));    ui->tableWidget_connection->setItem(10,1,item);
 }
 void StatusWindow::readGlobalStatus()
 {
