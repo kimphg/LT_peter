@@ -16,6 +16,7 @@ enum mouseMode
     MouseMeasuring =    0x0010,
     MouseELB =          0x0020,
     MouseVRM =          0x0040,
+    MouseManualTrack =  0x0080,
 };
 inline int char2int( char input)
 {

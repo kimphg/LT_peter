@@ -125,7 +125,7 @@ private:
     QUdpSocket      *ARPADataSocket;
     double selsynEncoderAzi;
 //    void listenToRadar();
-    void initSerialComm();
+//    void initSerialComm();
     void processSerialData(QByteArray inputData);
     //    bool ProcDataAIS(BYTE *szBuff, int nLeng);
     bool checkFeedback();

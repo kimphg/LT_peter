@@ -34,7 +34,7 @@
 #include "Cmap/cmap.h"
 #include "dialogcommandlog.h"
 #include "dialogconfig.h"
-
+#include <QtConcurrent/QtConcurrent>
 #include <QMenu>
 #include <QMessageBox>
 #ifdef THEON
@@ -714,6 +714,10 @@ private slots:
     void on_customButton_load_density_clicked();
 
     void on_customButton_openCPN_clicked();
+
+    void on_lineEdit_simulation_lost_editingFinished();
+
+    void on_toolButton_manual_tracking_clicked(bool checked);
 
 private:
 

@@ -26,7 +26,7 @@ class target_t
 public:
 
     target_t();
-    void init(double tx, double ty, double tspeedKmh, double tbearing, int dople =5);
+    void init(double tx, double ty, double tspeedKmh, double tbearing, int dople =5, int tlostRate=0);
     void generateSignal();
     void eraseSIgnal();
     void update();
@@ -59,11 +59,12 @@ public:
     void play();
     void pause();
     void run();
-    void setTarget(int id, double aziDeg, double rangeKm, double tbearingDeg, double tspeed, int dople =0);
+    void setTarget(int id, double aziDeg, double rangeKm, double tbearingDeg, double tspeed, int dople =0, int tlostRate=0);
     void setRange(int clk_adc);
     C_radar_data* mRadarData;
     bool getIsPlaying() const;
 
+    void setLostRate(int rate);
 public slots:
     void sendData();
 private:

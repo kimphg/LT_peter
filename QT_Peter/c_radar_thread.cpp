@@ -147,7 +147,7 @@ dataProcessingThread::dataProcessingThread()
     commandSendTimer.start(200);
     connect(&readUdpBuffTimer, &QTimer::timeout, this, &dataProcessingThread::ReadDataBuffer);
     readUdpBuffTimer.start(20);
-    initSerialComm();
+//    initSerialComm();
 //    QDateTime now = QDateTime::currentDateTime();
 //    QString filename = "D:/HR2D/ttm_rec_"+ now.toString("dd.MM.yy_hh.mm")+ ".log";
 
@@ -347,29 +347,29 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
     }
 
 }
-void dataProcessingThread::initSerialComm()
-{
-    int serialBaud ;
-    // baudrate at 4800 standart for low speed encoder and ais
-    serialBaud = 38400;
-    QList<QSerialPortInfo> portlist = QSerialPortInfo::availablePorts();
-    for(int i = 0;i<portlist.size();i++)
-    {
-        if(!portlist.at(i).isBusy())
-        {
-            QSerialPort *newport = new QSerialPort(this);
-            QString qstr = portlist.at(i).portName();
-            newport->setPortName(qstr);
-            newport->setBaudRate(serialBaud);
-            newport->open(QIODevice::ReadWrite);
-            if(newport->isOpen())
-            {serialPorts.push_back(newport);
-                CConfig::AddMessage("Open serial:"+qstr+" at:"+QString::number(serialBaud));}
-        }
-    }
+//void dataProcessingThread::initSerialComm()
+//{
+//    int serialBaud ;
+//    // baudrate at 4800 standart for low speed encoder and ais
+//    serialBaud = 38400;
+//    QList<QSerialPortInfo> portlist = QSerialPortInfo::availablePorts();
+//    for(int i = 0;i<portlist.size();i++)
+//    {
+//        if(!portlist.at(i).isBusy())
+//        {
+//            QSerialPort *newport = new QSerialPort(this);
+//            QString qstr = portlist.at(i).portName();
+//            newport->setPortName(qstr);
+//            newport->setBaudRate(serialBaud);
+//            newport->open(QIODevice::ReadWrite);
+//            if(newport->isOpen())
+//            {serialPorts.push_back(newport);
+//                CConfig::AddMessage("Open serial:"+qstr+" at:"+QString::number(serialBaud));}
+//        }
+//    }
 
 
-}
+//}
 /*bool  dataProcessingThread::getPosition(double *lat,double *lon, double *heading)
 {
     if(!geoLocation)return false;

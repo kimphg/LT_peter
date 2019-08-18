@@ -11,6 +11,7 @@ double ConvXYToR(double x, double y)
     return sqrt(x*x + y*y);
 
 }
+int lostRate =0;
 double ConvXYToAziRad(double x, double y)
 {
     double azi;
@@ -47,8 +48,9 @@ target_t::target_t()
     isManeuver = false;
 }
 
-void target_t::init(double tx, double ty, double tspeedKmh, double tbearing, int dople)
+void target_t::init(double tx, double ty, double tspeedKmh, double tbearing, int dople, int tlostRate)
 {
+    lostRate = tlostRate;
     enabled = true;
     speedKmh = tspeedKmh;
     x = tx;
@@ -130,7 +132,7 @@ void target_t::update()
     //
     azi = (ConvXYToAziRad(x, y) + distribAzi(generator))/ 3.141592653589*1024.0;
     range	= ConvXYToR(x, y) / rResolution;
-    generateSignal();
+    if(rand()%100>lostRate)generateSignal();
 }
 
 bool target_t::getIsManeuver() const
@@ -180,7 +182,10 @@ bool c_radar_simulation::getIsPlaying() const
 {
     return isPlaying;
 }
-
+void c_radar_simulation::setLostRate(int rate)
+{
+    lostRate = rate%100;
+}
 c_radar_simulation::c_radar_simulation(C_radar_data *radarData)//QObject *parent)
 {
     for (int i = 0; i < MAX_AZI; i++)
@@ -212,14 +217,15 @@ void c_radar_simulation::pause()
 {
     isPlaying = false;
 }
-void c_radar_simulation::setTarget(int id,double aziDeg, double rangeKm,  double tbearingDeg,double tspeedKn, int dople)
+void c_radar_simulation::setTarget(int id,double aziDeg, double rangeKm,  double tbearingDeg,double tspeedKn, int dople,int tlostRate)
 {
     //target_t newTarget(tx,ty,tspeed,tbearing,dople);
     if(id>=target.size())return;
     double tx,ty;
     tx = rangeKm*CONST_NM*sin(radians(aziDeg));
     ty = rangeKm*CONST_NM*cos(radians(aziDeg));
-    target[id].init(tx,ty,tspeedKn*CONST_NM,tbearingDeg,1);//(double tx, double ty, double tspeedKmh, double tbearing, int dople)
+    int lostRate = tlostRate%100;
+    target[id].init(tx,ty,tspeedKn*CONST_NM,tbearingDeg,dople,lostRate);//(double tx, double ty, double tspeedKmh, double tbearing, int dople)
 }
 void c_radar_simulation::setRange(int clk_adc)
 {

@@ -16,17 +16,16 @@
 #define TRACK_STABLE_LEN          15
 #define TRACK_START_DOPLER      2.0
 #define TARGET_MAX_SPEED_MARINE     80.0//kmh
-#define AZI_ERROR_STD 0.05//1.5 deg
+//#define AZI_ERROR_STD 0.05//1.5 deg
 #define MAX_TRACKS_COUNT          2000
 #define RAD_DISPLAY_RES             700//768
 #else
 #define TRACK_STABLE_LEN          3
-#define TRACK_MAX_DTIME 70000
-#define TRACK_MIN_DTIME 500
-#define TRACK_LOST_TIME 90000
-#define TRACK_DELETE_TIME 120000
-#define TARGET_MAX_SPEED_MARINE     150.0
-#define AZI_ERROR_STD 0.06
+#define TRACK_MAX_DTIME     130000
+#define TRACK_MIN_DTIME     500
+#define TRACK_LOST_TIME     150000
+#define TRACK_DELETE_TIME   180000
+//#define AZI_ERROR_STD 0.06
 #define MAX_TRACKS_COUNT                  99
 #define RAD_DISPLAY_RES             650//768
 #endif
@@ -92,9 +91,17 @@
 #include <time.h>
 #include <queue>
 //#include <c_target_manager.h>
-#include <QtConcurrent/QtConcurrent>
+//#include <QtConcurrent/QtConcurrent>
 
 #include <AIS/AIS.h>
+inline double dlon2xkm(double lon1,double lon2,double refLatDeg)
+{
+    return  (((lon1 - lon2) * 111.31949079327357*cos(radians(refLatDeg))));
+}
+inline double dlat2ykm(double lat1,double lat2)
+{
+    return (((lat1 - lat2) * 111.132954));
+}
 inline void ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat)
 {
     *m_Lat  = CConfig::mLat +  (y)/(111.132954);
@@ -273,7 +280,8 @@ typedef struct  {
 } plot_t;
 typedef struct  {
     //    int uniqID;
-    double          azRad ,rg,xkm,ykm;
+    double          azRad ,rg,xkm,ykm,lat,lon;
+    bool isUserInitialized;
     //    double          xkmfit,ykmfit;
     //    double          azRadfit,rgKmfit;
     double          rgKm;
@@ -309,10 +317,11 @@ typedef struct  {
 //};
 
 //using Eigen::MatrixXf;
-enum class TrackState {newDetection=0,
-                       confirmed=3,
-                       lost = 2,
-                       removed=1};
+enum class TrackState {newDetection = 0,
+                       confirmed    = 3,
+                       lost         = 2,
+                       manualTrack  = 4,
+                       removed      = 1};
 class C_primary_track
 {
 public:
@@ -336,8 +345,11 @@ public:
     double  mAisMaxPosibility;
     qint64  mAisMaxPosibilityTimeMs;
     double  fitProbability;
+    bool isUserInitialised;
+    void init(double txkm,double tykm);
     void init(object_t* obj1,object_t* obj2,int id=-1)
     {
+        isUserInitialised = obj2->isUserInitialized;
         mAisPossibleMmsi = 0;
         mAisConfirmedMmsi= 0;
         mAisMaxPosibility= 0;
@@ -363,6 +375,8 @@ public:
         possibleMaxScore= 0;
         xkm             = obj1->xkm;
         ykm             = obj1->ykm;
+        lat = obj1->lat;
+        lon = obj1->lon;
         rgKm            = ConvXYToRg(xkm,ykm);
         aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
         lastTimeMs = obj1->timeMs;
@@ -419,6 +433,7 @@ public:
     int                     mDopler;
     void LinearFit(int nEle);
     void addPossible(object_t *obj, double score);
+    void addManualPossible(double xkm,double ykm);
     double LinearFitProbability(object_t *myobj);
     double estimateScore(object_t *obj1);
     static double estimateScore(object_t *obj1, object_t *obj2);
@@ -451,13 +466,21 @@ public:
     bool                        cut_terrain;
     double                      mInverseRotAziCorrection;
     double                      rotation_per_min ;
-    double                      azi_er_rad;
-    std::vector<C_primary_track>        mTrackList;
+//    double                      azi_er_rad;
+    std::vector<C_primary_track>mTrackList;
     std::vector<plot_t>         plot_list;
     std::vector<object_t>       mFreeObjList;
+    bool isManualTracking;
+    void setManualTracking(bool isManual)
+    {
+        isManualTracking = isManual;
+    }
+    void addManualTrack(double xkm,double ykm);
+    C_primary_track*  getManualTrackzone(double xkm,double ykm,double rgkm);
+//    double manualTrackX,manualTracky,manualTrackR;
     int      antennaHeadOffset;
     int     freqHeadOffset;
-    double rgStdErr;
+    double rgStdErrKm;
 //    qint64 time_start_ms;
     double sn_scale;
 //    bool isTrueHeadingFromRadar;
@@ -653,6 +676,7 @@ public:
     void loadDensityMap();
     int getDensityLatLon(double lat, double lon);
     static void ConvWGSToKm(double *x, double *y, double m_Long, double m_Lat);
+//    bool CheckInsideManualZone(double xkm, double ykm);
 };
 
 //extern C_radar_data radarData;

@@ -4,8 +4,8 @@
 
 
 #define MAX_VIEW_RANGE_KM   50
-static QPen penTargetHistory(QBrush(Qt::gray),1);
-static QPen penTargetEnemy(QBrush(Qt::magenta),1);
+static QPen penTargetHistory(QBrush(Qt::gray),2);
+static QPen penTargetEnemy(QBrush(Qt::magenta),2);
 static QPen penTargetFriend(QBrush(QColor(0,200,200 ,255)),2);
 static QPen penTargetEnemySelected(QBrush(Qt::magenta),2);
 static QPen penTargetFriendSelected(QBrush(QColor(50,255,255 ,255)),3);
@@ -82,16 +82,7 @@ static double curAziRad = 3;
 //static TrackPointer* currTrackPt;
 //guard_zone_t gz1,gz2,gz3;
 //static unsigned short cur_object_index = 0;
-//short lon2x(float lon)
-//{
-//    double refLat = CConfig::mLat*0.01745329251994;
-//    return  short(- dx + scrCtX + ((lon - mLon) * 111.31949079327357*cos(refLat))*mScale);
-//}
-//short lat2y(float lat)
-//{
 
-//    return (- dy + scrCtY - ((lat - mLat) * 111.31949079327357)*mScale);
-//}
 void rotateVector(double angle,int* x,int* y)
 {
     if(abs(angle)<0.1)return;
@@ -148,6 +139,7 @@ void Mainwindow::ConvXYradar2XYscr()
 }
 void Mainwindow::mouseDoubleClickEvent( QMouseEvent * e )
 {
+
     if ( e->button() == Qt::LeftButton )
     {
         int posx = e->x();
@@ -157,14 +149,24 @@ void Mainwindow::mouseDoubleClickEvent( QMouseEvent * e )
         if(isInsideViewZone(mMousex,mMousey))
         {
             PointDouble point = ConvScrPointToKMXY(mMousex,mMousey);
-            int dx = mMousex-radCtX;
-            int dy = mMousey-radCtY;
-            double rgKM = sqrt((dx*dx)+(dy*dy));
-            pRadar->addDetectionZone(point.x,point.y,200/(rgKM)+1,7.0/mScale,true);
-            //select radar target
-            //select ais target
+            if(mouse_mode&MouseManualTrack)
+            {
+               pRadar->addManualTrack(point.x,point.y);
+            }
+            else
+            {
+                int dx = mMousex-radCtX;
+                int dy = mMousey-radCtY;
+                double rgKM = sqrt((dx*dx)+(dy*dy));
+                pRadar->addDetectionZone(point.x,point.y,200/(rgKM)+1,7.0/mScale,true);
+            }
         }
         //ui->toolButton_manual_track->setChecked(false);
+
+    }
+    else if(e->button()==Qt::RightButton)
+    {
+
 
     }
     //Test doc AIS
@@ -524,11 +526,22 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
 
 
     if(event->buttons() & Qt::LeftButton) {
-
         if(posx)mMousex= posx;
         if(posy)mMousey= posy;
         if(isInsideViewZone(mMousex,mMousey))
         {
+            if(mouse_mode&MouseManualTrack)//add mouse manual object
+            {
+                PointDouble point = ConvScrPointToKMXY(mMousex,mMousey);
+                double rgKm = pRadar->sn_scale*80.0;
+                C_primary_track*track= pRadar->getManualTrackzone(point.x,point.y,rgKm);
+                if(track)
+                {
+                    track->addManualPossible(point.x,point.y);
+                    return;
+                }
+
+            }
             if(!isHeadUp)setMouseMode(MouseDrag,true);
             if(mouse_mode&MouseAutoSelect1)
             {
@@ -592,39 +605,11 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
                 }
             }
         }
-        /*if(mouse_mode&MouseScope)
-        {
-            double azid,rg;
-            C_radar_data::kmxyToPolarDeg((mMouseLastX - radCtX)/mScale,-(mMouseLastY - radCtY)/mScale,&azid,&rg);
 
-            pRadar->drawRamp(azid);
-        }*/
-        /*else if(ui->toolButton_create_zone->isChecked())
-        {
-            gz1.isActive = 1;
-            gz1.x1 = event->x();
-            gz1.y1 = event->y();
-        }
-        else if(ui->toolButton_create_zone_2->isChecked())
-        {
-            gz2.isActive = 1;
-            gz2.x1 = event->x();
-            gz2.y1 = event->y();
-        }
-        else if(ui->toolButton_create_zone_3->isChecked())
-        {
-            gz3.isActive = 1;
-            gz3.x1 = event->x();
-            gz3.y1 = event->y();
-        }
-        else*/
-        {
-
-            //mouse_mode=MouseDrag;//isDraging = true;
-        }
     }
     else if(event->buttons() & Qt::RightButton)
     {
+
 
         if(ui->toolButton_ais_show->isChecked())
         {
@@ -1048,20 +1033,21 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
         PointInt sTrack = ConvKmXYToScrPoint(pObjList->at(i).xkm,pObjList->at(i).ykm);
         //p->drawPoint(sTrack.x,sTrack.y);
         p->drawRect(sTrack.x-5,sTrack.y-5,10,10);
-    }
+    }*/
     //draw unconfirmed new datection
+    p->setPen(penCyan);
     for (uint i = 0;i<pRadar->mTrackList.size();i++)
     {
         C_primary_track* track = &(pRadar->mTrackList[i]);
-        if(track->mState==TrackState::newDetection)
+        if(track->mState==TrackState::newDetection&&track->isUserInitialised)
         {
             PointInt sTrack = ConvKmXYToScrPoint(track->objectList.back().xkm,track->objectList.back().ykm);
             //p->drawPoint(sTrack.x,sTrack.y);
             p->drawRect(sTrack.x-5,sTrack.y-5,10,10);
             //p->drawText(sTrack.x+10,sTrack.y+10,100,50,0,QString::number(track->objectList.size()));
         }
-    }*/
-    //    p->setPen(penTargetBlue);
+    }
+
 
     bool blink = (CConfig::time_now_ms/500)%2;
     //draw targeted tracks
@@ -1092,8 +1078,9 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
             {
                 object_t* obj1 = &(track->objectHistory[j]);
                 object_t* obj2 = &(track->objectHistory[j+1]);
-                PointInt s = ConvKmXYToScrPoint(obj1->xkm,obj1->ykm);
-                PointInt s1 = ConvKmXYToScrPoint(obj2->xkm,obj2->ykm);
+
+                PointInt s = ConvWGSToScrPoint(obj1->lon,obj1->lat);
+                PointInt s1 = ConvWGSToScrPoint(obj2->lon,obj2->lat);
                 p->drawLine(s1.x,s1.y,s.x,s.y);
             }
             if(trackPt->flag>=0)p->setPen(penTargetEnemySelected);
@@ -1204,8 +1191,28 @@ void Mainwindow::UpdateMouseStat(QPainter *p)
     p->setPen(penYellow);
     p->drawText(mMousex,mMousey+25,100,15,0,ui->label_cursor_range->text());
     p->drawText(mMousex,mMousey+15,100,15,0,ui->label_cursor_azi->text());
+    if(mouse_mode&MouseManualTrack)
+    {
 
-    if((mouse_mode&MouseVRM)||(mouse_mode&MouseELB)||(mouse_mode&MouseAutoSelect1)||(mouse_mode&MouseAutoSelect2))
+        if(isInsideViewZone(mMousex,mMousey))
+        {
+            PointDouble point = ConvScrPointToKMXY(mMousex,mMousey);
+            double rgKm = pRadar->sn_scale*80.0;
+            double rgXY = rgKm*mScale;
+            p->drawEllipse(QPoint(mMousex,mMousey),int(rgXY),int(rgXY));
+            C_primary_track*track= pRadar->getManualTrackzone(point.x,point.y,rgKm);
+            if(track)
+            {
+                PointInt sTrack = ConvKmXYToScrPoint(track->xkm,track->ykm);
+                p->drawRect(sTrack.x-9,sTrack.y-9,18,18);
+            }
+            //select radar target
+            //select ais target
+        }
+        //ui->toolButton_manual_track->setChecked(false);
+
+    }
+    else if((mouse_mode&MouseVRM)||(mouse_mode&MouseELB)||(mouse_mode&MouseAutoSelect1)||(mouse_mode&MouseAutoSelect2))
     {
         short r = sqrt((mMousex - radCtX)*(mMousex - radCtX)+(mMousey - radCtY)*(mMousey - radCtY));
 
@@ -1504,9 +1511,12 @@ void Mainwindow::showTrackContext()
     //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
     contextMenu.addAction(&action9);
     //Tốc độ:
-    QAction action10(QString::fromUtf8("Tốc độ:   ")+QString::number(nm(track->mSpeedkmhFit),'f',1) , this);
+    QAction action10(QString::fromUtf8("Tốc độ(nm/h):   ")+QString::number(nm(track->mSpeedkmhFit),'f',1) , this);
     //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
     contextMenu.addAction(&action10);
+    QAction action17(QString::fromUtf8("T.độ hướng tâm:   ")+QString::number(nm(track->rgSpeedkmh),'f',1) , this);
+    //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
+    contextMenu.addAction(&action17);
     //Dopler
     QAction action5(QString::fromUtf8("Dopler:    ")+QString::number(track->mDoplerFit,'f',1), this);
     //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
@@ -1525,7 +1535,7 @@ void Mainwindow::showTrackContext()
     //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
     contextMenu.addAction(&action11);
 
-    contextMenu.exec((QCursor::pos()));
+    contextMenu.exec(QPoint(10,300));
 }
 void Mainwindow::trackTableItemMenu(int row,int col)
 {
@@ -4654,6 +4664,7 @@ void Mainwindow::on_toolButton_start_simulation_set_clicked(bool checked)
 }
 void Mainwindow::updateSimTargetStatus()
 {
+
     if(ui->checkBox->isChecked())
     {
         ui->doubleSpinBox_1->setEnabled(false);
@@ -5351,4 +5362,15 @@ void Mainwindow::on_customButton_openCPN_clicked()
     QProcess::startDetached(CConfig::getString("navManager","\"C:\\Program Files (x86)\\OpenCPN\\opencpn.exe\"").toStdString().data());
     //    system("taskkill /f /im opencpn.exe");
 
+}
+
+void Mainwindow::on_lineEdit_simulation_lost_editingFinished()
+{
+    simulator->setLostRate(ui->lineEdit_simulation_lost->text().toInt());
+}
+
+void Mainwindow::on_toolButton_manual_tracking_clicked(bool checked)
+{
+    setMouseMode( MouseManualTrack,checked);
+    pRadar->setManualTracking(checked);
 }
