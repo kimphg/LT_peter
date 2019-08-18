@@ -33,7 +33,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //#endif
 #include <math.h>
 #include <stdlib.h>
-#include <string>
+//#include <string>
 #define _GPS_VERSION 13 // software version of this library
 #define _GPS_MPH_PER_KNOT 1.15077945
 #define _GPS_MPS_PER_KNOT 0.51444444
@@ -58,7 +58,7 @@ public:
     c_gps();
     bool decode(char c); // process one character received from GPS
     c_gps &operator << (char c) {decode(c); return *this;}
-    static std::string generateGGA(double lat, double lon, std::string time);
+    //static std::string generateGGA(double lat, double lon, std::string time);
     // lat/long in MILLIONTHs of a degree and age of fix in milliseconds
     // (note: versions 12 and earlier gave lat/long in 100,000ths of a degree.
 

@@ -99,11 +99,11 @@ bool c_gps::decode(char c)
   return valid_sentence;
 }
 
-std::string c_gps::generateGGA(double lat, double lon, std::string time)
-{
-    std::string a;// not implemented
-    return a;
-}
+//std::string c_gps::generateGGA(double lat, double lon, std::string time)
+//{
+//    std::string a;// not implemented
+//    return a;
+//}
 
 #ifndef _GPS_NO_STATS
 void c_gps::stats(unsigned long *chars, unsigned short *sentences, unsigned short *failed_cs)

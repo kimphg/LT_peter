@@ -523,11 +523,8 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
     int posy = event->y();
     if(posx)mMouseLastX= posx;
     if(posy)mMouseLastY= posy;
-
-
-    if(event->buttons() & Qt::LeftButton) {
-        if(posx)mMousex= posx;
-        if(posy)mMousey= posy;
+    if(event->buttons() & Qt::MiddleButton)
+    {
         if(isInsideViewZone(mMousex,mMousey))
         {
             if(mouse_mode&MouseManualTrack)//add mouse manual object
@@ -542,6 +539,15 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
                 }
 
             }
+        }
+    }
+
+    else if(event->buttons() & Qt::LeftButton) {
+        if(posx)mMousex= posx;
+        if(posy)mMousey= posy;
+        if(isInsideViewZone(mMousex,mMousey))
+        {
+
             if(!isHeadUp)setMouseMode(MouseDrag,true);
             if(mouse_mode&MouseAutoSelect1)
             {
@@ -670,16 +676,7 @@ void Mainwindow::checkClickAIS(int xclick, int yclick)
         }
     }
 }
-/*void MainWindow::wheelEvent(QWheelEvent *event)
-{
-//    if(event->delta()>0)ui->horizontalSlider->raise();
-//    if(event->delta()<0)ui->horizontalSlider->setValue(3);
-//    if(scale>SCALE_MAX)scale=SCALE_MAX;
-//    if(scale<SCALE_MIN)scale=SCALE_MIN;
-//    //signsize = SIGNAL_SCALE/scale;
-//    DrawMap();
-//    update();
-}*/
+
 void Mainwindow::initCursor()
 {
     QPixmap cursor_pixmap = QPixmap(31,31);
@@ -768,52 +765,7 @@ void Mainwindow::PlaybackRecFile()//
 
 
 }
-//void MainWindow::createActions()
-//{
-//    a_openShp = new QAction(tr("&Open Shp"), this);
-//    a_openShp->setShortcuts(QKeySequence::Open);
-//    a_openShp->setStatusTip(tr("Open shp file"));
-//    connect(a_openShp, SIGNAL(triggered()), this, SLOT(openShpFile()));
-//    //______________________________________//
-//    a_openPlace = new QAction(tr("&Open place file"), this);
-//    a_openPlace->setStatusTip(tr("Open place file"));
-//    connect(a_openPlace, SIGNAL(triggered()), this, SLOT(openPlaceFile()));
-//    //______________________________________//
-//    a_gpsOption = new QAction(tr("&GPS option"), this);
-//    a_gpsOption->setStatusTip(tr("GPS option"));
-//    connect(a_gpsOption, SIGNAL(triggered()), this, SLOT(gpsOption()));
-//    //______________________________________//
-//    a_openSignal = new QAction(tr("&Open signal file"), this);
-//    a_openSignal->setStatusTip(tr("Mở file tín hiệu đã lưu."));
-//    connect(a_openSignal, SIGNAL(triggered()), this, SLOT(openSignalFile()));
 
-//}
-//void MainWindow::openSignalFile()
-//{
-//    //printf("shp file max ");
-//    QString fileName = QFileDialog::getOpenFileName(this,
-//        tr("Open signal file"), NULL, tr("Signal data Files (*.dat)"));
-//    rawData.OpenFile(fileName.toStdString().c_str());
-
-//    //SHPHandle hSHP = SHPOpen(fileName.toStdString().c_str(), "rb" );
-//    //if(hSHP == NULL) return;
-//}
-/*
-static short curMapLayer=0;
-
-void MainWindow::openShpFile()
-{
-    QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Open SHP file"), NULL, tr("Shp Files (*.shp)"));
-    if(!fileName.size())return;
-    vnmap.OpenShpFile(fileName.toStdString().c_str(), curMapLayer );
-    vnmap.LoadPlaces(fileName.toStdString().c_str());
-    curMapLayer++;
-    DrawMap();
-    //DrawToPixmap(pPixmap);
-    update();
-
-}*/
 
 Mainwindow::~Mainwindow()
 {
@@ -822,26 +774,32 @@ Mainwindow::~Mainwindow()
 
     if(pMap)delete pMap;
 }
-
+//bool isMapbusy=false;
+double trueShiftDegOldMap;
 void DrawMap()
 {
-    if(!isMapOutdated)return;
     isMapOutdated = false;
     if(!pMap)
     {
         pMap = new QPixmap(SCR_H,SCR_H);
     }
+    //calculate center coordinate
+    double newLat, newLong;
+    ConvKmToWGS((double(dx))/mScale,
+                (double(-dy))/mScale,&newLong,&newLat);
+    osmap->setCenterPos(newLat,newLong);
+    trueShiftDegOldMap = trueShiftDeg;
+    //clear the map
     pMap->fill(Qt::black);
+    //clear the offset
     dxMap = 0;
     dyMap = 0;
     //
     QPainter pMapPainter(pMap);
-    //calculate center coordinate
-    double dLat, dLong;
-    ConvKmToWGS((double(dx))/mScale,
-                (double(-dy))/mScale,&dLong,&dLat);
-    osmap->setCenterPos(dLat,dLong);
+
+//    isMapbusy = true;
     QPixmap pix = osmap->getImage(mScale);
+#ifdef THEON
     //draw density map
     if(CConfig::getInt("isViewDensityMap"))
     {
@@ -882,6 +840,7 @@ void DrawMap()
 
         }
     }
+#endif
     // rotate Map for head up mode
     if(isHeadUp)
     {
@@ -892,7 +851,7 @@ void DrawMap()
                            (-pix.height()/2+pMap->height()/2),pix.width(),pix.height(),pix
                            );
 
-
+//    isMapbusy = false;
 
 }
 void Mainwindow::DrawGrid(QPainter* p,short centerX,short centerY)
@@ -1014,34 +973,27 @@ void Mainwindow::DrawDetectZones(QPainter* p)//draw radar target from pRadar->mT
 void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from pRadar->mTrackList
 {
     p->setFont(QFont("Times", 8));
-
-
-    //penTargetBlue.setStyle(Qt::DashLine);
-    //QPen penARPATrack(Qt::darkYellow);
-    //draw radar targets
-    //float x,y;
-    //    short sx,sy;
-    //    short sx1=0,sy1=0;
-    //float scale_ppi = pRadar->getScale_ppi();
-    //short targetId = 0;
-    //drawing sub object
-    /*p->setPen(penCyan);
-    std::vector<object_t>* pObjList = &(pRadar->mFreeObjList);
-    for (uint i = 0;i<pObjList->size();i++)
-    {
-        if(pObjList->at(i).isRemoved)continue;
-        PointInt sTrack = ConvKmXYToScrPoint(pObjList->at(i).xkm,pObjList->at(i).ykm);
-        //p->drawPoint(sTrack.x,sTrack.y);
-        p->drawRect(sTrack.x-5,sTrack.y-5,10,10);
-    }*/
-    //draw unconfirmed new datection
+    //draw location history
     p->setPen(penCyan);
+    std::vector<std::pair<double, double> > *locationHistory = CConfig::GetLocationHistory();
+    if(locationHistory->size())
+    {
+        PointInt s0 = ConvWGSToScrPoint(locationHistory->at(0).first,locationHistory->at(0).second);
+
+        for(int i=0;i<locationHistory->size();i++)
+        {
+            PointInt s1 = ConvWGSToScrPoint(locationHistory->at(i).first,locationHistory->at(i).second);
+            p->drawLine(s0.x,s0.y,s1.x,s1.y);
+            s0=s1;
+        }
+    }
+    //draw unconfirmed new datection
     for (uint i = 0;i<pRadar->mTrackList.size();i++)
     {
         C_primary_track* track = &(pRadar->mTrackList[i]);
         if(track->mState==TrackState::newDetection&&track->isUserInitialised)
         {
-            PointInt sTrack = ConvKmXYToScrPoint(track->objectList.back().xkm,track->objectList.back().ykm);
+            PointInt sTrack = ConvWGSToScrPoint(track->objectList.back().lon,track->objectList.back().lat);
             //p->drawPoint(sTrack.x,sTrack.y);
             p->drawRect(sTrack.x-5,sTrack.y-5,10,10);
             //p->drawText(sTrack.x+10,sTrack.y+10,100,50,0,QString::number(track->objectList.size()));
@@ -1057,7 +1009,7 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
         TrackPointer* trackPt = mTargetMan.getTargetAt(i);
         if(!trackPt)continue;
         C_primary_track* track = trackPt->track;
-        PointInt s = ConvKmXYToScrPoint(track->xkm,track->ykm);
+        PointInt s = ConvWGSToScrPoint(track->lon,track->lat);
         p->drawLine(s.x-20,s.y,s.x-10,s.y);
         p->drawLine(s.x+20,s.y,s.x+10,s.y);
         p->drawLine(s.x,s.y-20,s.x,s.y-10);
@@ -1069,20 +1021,26 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
         TrackPointer* trackPt = mTargetMan.getTrackAt(i);
         if(!trackPt)continue;
         C_primary_track* track = trackPt->track;
-        PointInt sTrack = ConvKmXYToScrPoint(track->xkm,track->ykm);
+        PointInt sTrack = ConvWGSToScrPoint(track->lon,track->lat);
         if(trackPt->selected)//selected
         {
             // draw track history
             p->setPen(penTargetHistory);
-            for (int j = 0;j<track->objectHistory.size()-1;j++)
+            object_t* obj1 = &(track->objectHistory[0]);
+            for (int j = 1;j<track->objectHistory.size();j++)
             {
-                object_t* obj1 = &(track->objectHistory[j]);
-                object_t* obj2 = &(track->objectHistory[j+1]);
+                object_t* obj2 = &(track->objectHistory[j]);
 
                 PointInt s = ConvWGSToScrPoint(obj1->lon,obj1->lat);
                 PointInt s1 = ConvWGSToScrPoint(obj2->lon,obj2->lat);
                 p->drawLine(s1.x,s1.y,s.x,s.y);
+                obj1 = obj2;
             }
+            object_t *obj2  = &(track->objectList.back());
+            PointInt s      = ConvWGSToScrPoint(obj1->lon,obj1->lat);
+            PointInt s1     = ConvWGSToScrPoint(obj2->lon,obj2->lat);
+            p->drawLine(s1.x,s1.y,s.x,s.y);
+
             if(trackPt->flag>=0)p->setPen(penTargetEnemySelected);
             else  p->setPen(penTargetFriendSelected);
         }
@@ -1247,6 +1205,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
 {
     //CConfig::time_now_ms  = QDateTime::currentMSecsSinceEpoch();
     clkBegin = clock();
+
     //printf("paint:%ld\n",clkBegin);
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing, true);
@@ -1497,41 +1456,41 @@ void Mainwindow::showTrackContext()
     QAction action1(QString::fromUtf8("Xóa"), this);
     connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
     contextMenu.addAction(&action1);
-
+    contextMenu.addSeparator();
     //Ph. vị
-    QAction action7(QString::fromUtf8("Ph. vị:    ")+QString::number(track->aziDeg,'f',1) , this);
+    QAction action7(QString::fromUtf8("Ph. vị:          ")+QString::number(track->aziDeg,'f',1) , this);
     //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
     contextMenu.addAction(&action7);
     //Cự ly
-    QAction action8(QString::fromUtf8("Cự ly(Nm): ")+QString::number(nm(track->rgKm),'f',2) , this);
+    QAction action8(QString::fromUtf8("Cự ly(Nm):       ")+QString::number(nm(track->rgKm),'f',2) , this);
     //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
     contextMenu.addAction(&action8);
     //Hướng cđ:
-    QAction action9(QString::fromUtf8("Hướng cđ:  ")+QString::number(track->courseDeg,'f',1)  , this);
+    QAction action9(QString::fromUtf8("Hướng cđ:        ")+QString::number(track->courseDeg,'f',1)  , this);
     //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
     contextMenu.addAction(&action9);
     //Tốc độ:
-    QAction action10(QString::fromUtf8("Tốc độ(nm/h):   ")+QString::number(nm(track->mSpeedkmhFit),'f',1) , this);
+    QAction action10(QString::fromUtf8("Tốc độ thực (nm/h): ")+QString::number(nm(track->mSpeedkmhFit),'f',1) , this);
     //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
     contextMenu.addAction(&action10);
-    QAction action17(QString::fromUtf8("T.độ hướng tâm:   ")+QString::number(nm(track->rgSpeedkmh),'f',1) , this);
+    QAction action17(QString::fromUtf8("Tốc độ hướng tâm:   ")+QString::number(nm(-track->rgSpeedkmh),'f',1) , this);
     //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
     contextMenu.addAction(&action17);
     //Dopler
-    QAction action5(QString::fromUtf8("Dopler:    ")+QString::number(track->mDoplerFit,'f',1), this);
+    QAction action5(QString::fromUtf8("Kinh độ:         ")+demicalDegToDegMin(track->lon), this);
     //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
     contextMenu.addAction(&action5);
     //density
-    QAction action15(QString::fromUtf8("Density:    ")+QString::number(track->posDensityFit,'f',1), this);
+    QAction action15(QString::fromUtf8("Vĩ độ:          ")+demicalDegToDegMin(track->lat), this);
     contextMenu.addAction(&action15);
     //density
     QAction action16(QString::fromUtf8("MMSI:    ")+QString::number(track->mAisConfirmedMmsi), this);
     contextMenu.addAction(&action16);
     //time
-    int secs = int(track->lastTimeMs-track->startTime)/1000;
+    int secs = int(CConfig::time_now_ms-track->lastTimeMs)/1000;
     int minutes = secs/60;
     secs = secs%60;
-    QAction action11(QString::fromUtf8("T.gian theo dõi: ")+QString::number(minutes)+"p"+QString::number(secs)+QString::fromUtf8("giây"), this);
+    QAction action11(QString::fromUtf8("T.gian cập nhật: ")+QString::number(minutes)+"p"+QString::number(secs)+QString::fromUtf8("giây"), this);
     //connect(&action1, &QAction::triggered, this, &Mainwindow::removeTrack);
     contextMenu.addAction(&action11);
 
@@ -1637,10 +1596,13 @@ void Mainwindow::SetUpTheonGUILayout()
 }
 void Mainwindow::checkCuda()
 {
+
     //system("taskkill /f /im cudaFFT.exe");
     //    int a=processing->mCudaAge200ms;
     if(processing->mCudaAge200ms<10)return;
+
     else {
+        if(CConfig::getInt("runWithOutCuda",0))return;
         system("taskkill /f /im cudaFFT.exe");
         QFileInfo check_file("D:\\HR2D\\cudaFFT.exe");
         if (check_file.exists() && check_file.isFile())
@@ -1732,7 +1694,7 @@ void Mainwindow::InitSetting()
     //load map
     osmap = new CMap();
     SetGPS(CConfig::mLat, CConfig::mLon);
-    osmap->setImgSize(SCR_H,SCR_H);
+    osmap->setImgSize(SCR_H-20,SCR_H-20);
     osmap->SetType(0);
     mMapOpacity = CConfig::getDouble("mMapOpacity");
     //config.setMapOpacity(value/50.0);
@@ -2184,7 +2146,8 @@ void Mainwindow::Update100ms()
         headShift = 0;
         //        pRadar->setAziViewOffsetDeg(trueShiftDeg);
         mTrans.reset();
-        mTrans = mTrans.rotate((-CConfig::mStat.shipHeadingDeg));
+        mTrans = mTrans.rotate(trueShiftDeg);
+        isMapOutdated = true;
     }
     else
     {
@@ -2192,8 +2155,7 @@ void Mainwindow::Update100ms()
         headShift = CConfig::mStat.shipHeadingDeg;
     }
 
-    if(isMapOutdated)
-        QtConcurrent::run(DrawMap);
+    if(isMapOutdated)DrawMap();
     int posx = (QCursor::pos()).x();
     int posy = (QCursor::pos()).y();
     if(posx)mMousex= posx;
@@ -2674,7 +2636,7 @@ void Mainwindow::sync1S()//period 1 second
             listMsg->pop();
         }
     }
-
+    isMapOutdated=true;
     CheckRadarStatus();
     UpdateGpsData();
     ViewTrackInfo();
@@ -2860,22 +2822,6 @@ void Mainwindow::showTime()
 
 //}
 
-
-
-
-//void Mainwindow::on_actionClear_data_triggered()
-//{
-//    pRadar->resetData();
-//    //    isScreenUp2Date = false;
-//}
-
-//void Mainwindow::on_actionView_grid_triggered(bool checked)
-//{
-//    gridOff = checked;
-//    dx=0;dy=0;
-//    DrawMap();
-//    //UpdateSetting();
-//}
 
 
 void Mainwindow::on_actionPlayPause_toggled(bool arg1)
@@ -3499,8 +3445,15 @@ void Mainwindow::on_toolButton_zoom_out_clicked()
 void Mainwindow::SetGPS(double lat,double lon)
 {
     CConfig::setGPSLocation(lat,lon);
-    ui->label_gps_lat->setText(demicalDegToDegMin(lat)+"'N");
-    ui->label_gps_lon->setText(demicalDegToDegMin(lon)+"'E");
+//    PointDouble point;
+//    point.x = lon;
+//    point.y = lat;
+//    latlonHistory.push_back(point);
+    //
+    if(lat>0)ui->label_gps_lat->setText(demicalDegToDegMin(lat)+"'N");
+    else ui->label_gps_lat->setText(demicalDegToDegMin(lat)+"'S");
+    if(lon>0)ui->label_gps_lon->setText(demicalDegToDegMin(lon)+"'E");
+    else ui->label_gps_lon->setText(demicalDegToDegMin(lon)+"'W");
     osmap->setCenterPos(lat, lon);
     isMapOutdated = true;
     repaint();

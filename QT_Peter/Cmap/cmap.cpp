@@ -129,6 +129,7 @@ void CMap::setCenterPos(double lat, double lon)
     mCenterLat = lat;
     mCenterLon = lon;
     Repaint();
+    return;
 }
 
 

@@ -269,11 +269,15 @@ bool dataProcessingThread::readNmea(unsigned char *mReceiveBuff,int len)
             }
             else if((databegin[1]=='G')&&(databegin[2]=='P'))//GPS
             {
-                for(int i = 0;i<len;i++)
+                CConfig::setValue("lastGpsMsg",QString((char*)mReceiveBuff));
+                for(int i = 0;i<=len;i++)
                 {
-                    if(mGPS.decode(databegin[i]))
+                    bool endValid ;
+                    if(i<len)endValid = mGPS.decode(databegin[i]);
+                    else endValid = mGPS.decode('\r');//in case the sentence has no ending
+                    if(endValid)
                     {
-                        CConfig::setValue("lastGpsMsg",QString((char*)mReceiveBuff));
+
                         //mStat.cGpsUpdateTime = clock();
                         double mLat,mLon;
                         mGPS.get_position(&mLat,&mLon);

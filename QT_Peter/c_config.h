@@ -164,15 +164,17 @@ class CConfig
 public:
     CConfig(void);
     ~CConfig(void);
-    static void setGPSLocation(double lat,double lon){mLat=lat;mLon=lon;setValue("mLat",mLat);setValue("mLon",mLon);}
+    static void setGPSLocation(double lat,double lon);
     static radarStatus_3C mStat;
     static double  mLat,mLon;
+    static std::vector<std::pair<double,double>>* GetLocationHistory();
 //    static double shipHeadingDeg;
 //    static double shipCourseDeg;
 //    static double shipSpeed;
 //    static double antennaAziDeg;
     static volatile qint64 time_now_ms;
     static QHash<QString, QString> mHashData;
+
     static void    setValue(QString key, double value);
     static void    setValue(QString key,QString value);
     static double  getDouble(QString key, double defaultValue=0);

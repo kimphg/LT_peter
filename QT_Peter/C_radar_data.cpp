@@ -601,6 +601,17 @@ void C_primary_track::init(double txkm, double tykm)
 {
     uniqId = C_primary_track::IDCounter++;
     mState = TrackState::confirmed;
+    isUserInitialised = true;
+    mAisPossibleMmsi = 0;
+    mAisConfirmedMmsi= 0;
+    mAisMaxPosibility= 0;
+    mAisMaxPosibilityTimeMs = 0;
+    fitProbability=1;
+    mDoplerFit = 0;
+    posDensityFit = 0;
+    startTime = CConfig::time_now_ms;
+    objectList.clear();
+    objectHistory.clear();
     object_t newobject;
     newobject.timeMs = CConfig::time_now_ms;
     newobject.isRemoved = false;
@@ -1795,6 +1806,7 @@ int C_radar_data::approximateAzi(int newAzi)
     else if(intAzi<0)  {mRealAzi+=MAX_AZIR;intAzi+=MAX_AZIR;}
     return intAzi;
 }
+int heading16bitold;
 void C_radar_data::processSocketData(unsigned char* data,short len)
 {
     CConfig::mStat.c21UpdateTime = clock();
@@ -1904,10 +1916,11 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
             newAziTrue = ssiDecode(newAziTrue);
 
         }
-        int mShipHeading2048new = (((data[13]<<8)|data[14]))/65536.0*MAX_AZIR;
-        if(mShipHeading2048new!=mShipHeading2048)
+        int heading16bitnew = (((data[13]<<8)|data[14]));
+        if(heading16bitnew!=heading16bitold)
         {
-            mShipHeading2048 = mShipHeading2048new;
+            heading16bitold =heading16bitnew;
+            mShipHeading2048 = heading16bitnew/65536.0*MAX_AZIR;
             CConfig::mStat.inputGyroDeg21(mShipHeading2048*360.0/MAX_AZIR,0);
 
         }

@@ -138,6 +138,28 @@ CConfig::CConfig(void)
 CConfig::~CConfig(void)
 {
 }
+std::vector<std::pair<double,double>> locationHistory;
+void CConfig::setGPSLocation(double lat, double lon)
+{
+
+    mLat=lat;
+    mLon=lon;
+    mStat.cGpsUpdateTime=clock();
+    setValue("mLat",mLat);
+    setValue("mLon",mLon);
+
+    //save if distance>100m
+    if(locationHistory.size()>2)
+    if(abs(locationHistory.back().second-lat)<0.001&&
+            abs(locationHistory.back().first- lon)<0.001)return ;
+    locationHistory.push_back(std::make_pair(lon,lat));
+
+}
+
+std::vector<std::pair<double, double> > *CConfig::GetLocationHistory()
+{
+    return &locationHistory;
+}
 
 void CConfig::SaveToFile()
 {
