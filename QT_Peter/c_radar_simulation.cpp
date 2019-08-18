@@ -42,10 +42,11 @@ void regenerate(int azi)
         dataPointer[i] = rand()%16;
     }
 }
+bool isManeuver;
 target_t::target_t()
 {
     enabled = false;
-    isManeuver = false;
+
 }
 
 void target_t::init(double tx, double ty, double tspeedKmh, double tbearing, int dople, int tlostRate)
@@ -182,12 +183,18 @@ bool c_radar_simulation::getIsPlaying() const
 {
     return isPlaying;
 }
+
+void c_radar_simulation::setIsManeuver(bool checked)
+{
+    isManeuver = checked;
+}
 void c_radar_simulation::setLostRate(int rate)
 {
     lostRate = rate%100;
 }
 c_radar_simulation::c_radar_simulation(C_radar_data *radarData)//QObject *parent)
 {
+    isManeuver = false;
     for (int i = 0; i < MAX_AZI; i++)
     {
         regenerate(i);

@@ -149,17 +149,14 @@ void Mainwindow::mouseDoubleClickEvent( QMouseEvent * e )
         if(isInsideViewZone(mMousex,mMousey))
         {
             PointDouble point = ConvScrPointToKMXY(mMousex,mMousey);
-            if(mouse_mode&MouseManualTrack)
-            {
-               pRadar->addManualTrack(point.x,point.y);
-            }
-            else
-            {
-                int dx = mMousex-radCtX;
-                int dy = mMousey-radCtY;
-                double rgKM = sqrt((dx*dx)+(dy*dy));
-                pRadar->addDetectionZone(point.x,point.y,200/(rgKM)+1,7.0/mScale,true);
-            }
+            pRadar->addManualTrack(point.x,point.y);
+
+//            {
+//                int dx = mMousex-radCtX;
+//                int dy = mMousey-radCtY;
+//                double rgKM = sqrt((dx*dx)+(dy*dy));
+//                pRadar->addDetectionZone(point.x,point.y,200/(rgKM)+1,7.0/mScale,true);
+//            }
         }
         //ui->toolButton_manual_track->setChecked(false);
 
@@ -1111,9 +1108,9 @@ PointInt Mainwindow::ConvKmXYToScrPoint(double x, double y)
 PointDouble Mainwindow::ConvScrPointToWGS(int x,int y)
 {
     PointDouble output;
-    output.x  = CConfig::mLat -  ((y-scrCtY)/mScale)/(111.132954);
+    output.x  = CConfig::mLat -  ((y-scrCtY+dx)/mScale)/(111.132954);
     double refLat = (CConfig::mLat +(output.x))*0.00872664625997;//3.14159265358979324/180.0/2;
-    output.y = (x-scrCtX)/mScale/(111.31949079327357*cos(refLat))+ CConfig::mLon;
+    output.y = (x-scrCtX+dy)/mScale/(111.31949079327357*cos(refLat))+ CConfig::mLon;
     return output;
 }
 PointDouble Mainwindow::ConvScrPointToKMXY(int x, int y)
@@ -1430,6 +1427,7 @@ void Mainwindow::showTrackContext()
     C_primary_track* track = mTargetMan.currTrackPt->track;
     if(!track)return;
     QMenu contextMenu(tr("Context menu"), this);
+    contextMenu.setStyleSheet("background-color: rgb(16, 32, 64);color:rgb(255, 255, 255);font: bold 12pt \"MS Shell Dlg 2\";");
     QAction action2(QString::fromUtf8("Đặt cờ địch"), this);
     connect(&action2, SIGNAL(triggered()), this, SLOT(setEnemy()));
     contextMenu.addAction(&action2);
@@ -4612,7 +4610,7 @@ void Mainwindow::on_toolButton_start_simulation_start_clicked(bool checked)
 void Mainwindow::on_toolButton_start_simulation_set_clicked(bool checked)
 {
 
-    simulator->target[0].setIsManeuver(checked);
+    simulator->setIsManeuver(checked);
 
 }
 void Mainwindow::updateSimTargetStatus()

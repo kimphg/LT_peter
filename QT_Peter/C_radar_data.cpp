@@ -3281,6 +3281,7 @@ bool C_radar_data::checkBelongToTrack(object_t *obj1)
         }
         //object_t *obj2 = &(track->objectList.back());
         double score = track->estimateScore(obj1);//todo: optimize this score
+        printf("\nscore:%f",score);
         //object_t* obj2 = &(track->objectList.back());
         //unsigned int dtime = (obj1->timeMs - obj2->timeMs);
         /*if(dtime<500)

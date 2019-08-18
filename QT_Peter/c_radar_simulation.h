@@ -39,7 +39,7 @@ public:
     void setEnabled(bool value);
 
 private:
-    bool isManeuver;
+//    bool isManeuver;
     bool enabled;
     double speedKmh, x, y, azi, range;
     double bearing,rot;
@@ -63,7 +63,8 @@ public:
     void setRange(int clk_adc);
     C_radar_data* mRadarData;
     bool getIsPlaying() const;
-
+//    bool isManeuver;
+    void setIsManeuver(bool checked);
     void setLostRate(int rate);
 public slots:
     void sendData();
