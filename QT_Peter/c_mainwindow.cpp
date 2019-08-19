@@ -1148,7 +1148,6 @@ void Mainwindow::UpdateMouseStat(QPainter *p)
     p->drawText(mMousex,mMousey+15,100,15,0,ui->label_cursor_azi->text());
     if(mouse_mode&MouseManualTrack)
     {
-
         if(isInsideViewZone(mMousex,mMousey))
         {
             PointDouble point = ConvScrPointToKMXY(mMousex,mMousey);
@@ -1158,7 +1157,7 @@ void Mainwindow::UpdateMouseStat(QPainter *p)
             C_primary_track*track= pRadar->getManualTrackzone(point.x,point.y,rgKm);
             if(track)
             {
-                PointInt sTrack = ConvKmXYToScrPoint(track->xkm,track->ykm);
+                PointInt sTrack = ConvWGSToScrPoint(track->lon,track->lat);
                 p->drawRect(sTrack.x-9,sTrack.y-9,18,18);
             }
             //select radar target
@@ -1894,10 +1893,14 @@ void Mainwindow::DrawViewFrame(QPainter* p)
             else p->drawPoint(mBorderPoint1);
         }
     }
-    if(CalcAziContour((CConfig::mStat.antennaAziDeg)+trueShiftDeg,SCR_H-SCR_BORDER_SIZE-20))
+    double antennaAngle = (CConfig::mStat.antennaAziDeg)+trueShiftDeg;
+    if(CalcAziContour(antennaAngle,SCR_H-SCR_BORDER_SIZE-20))
     {
         p->setPen(QPen(Qt::red,4,Qt::SolidLine,Qt::RoundCap));
         p->drawLine(mBorderPoint2,mBorderPoint1);
+        QPoint p1(radCtX+20*sin(radians(antennaAngle)),
+                  radCtY-20*cos(radians(antennaAngle)));
+        p->drawLine(p1.x(),p1.y(),radCtX,radCtY);
         //draw text
 
     }
@@ -1923,19 +1926,20 @@ void Mainwindow::DrawViewFrame(QPainter* p)
     {
         radHeading=0;
     }else radHeading = (CConfig::mStat.shipHeadingDeg);
+    //drawn ship
     p->setPen(QPen(Qt::cyan,1,Qt::SolidLine,Qt::RoundCap));
     if(CalcAziContour(radHeading,SCR_H-SCR_BORDER_SIZE-18))
     {
-        QPoint p1(radCtX+23*sin(radians(radHeading)),
-                  radCtY-23*cos(radians(radHeading)));
-        QPoint p2(radCtX+15*sin(radians(radHeading+30)),
-                  radCtY-15*cos(radians(radHeading+30)));
-        QPoint p3(radCtX+15*sin(radians(radHeading+150)),
-                  radCtY-15*cos(radians(radHeading+150)));
-        QPoint p4(radCtX+15*sin(radians(radHeading-150)),
-                  radCtY-15*cos(radians(radHeading-150)));
-        QPoint p5(radCtX+15*sin(radians(radHeading-30)),
-                  radCtY-15*cos(radians(radHeading-30)));
+        QPoint p1(radCtX+30*sin(radians(radHeading)),
+                  radCtY-30*cos(radians(radHeading)));
+        QPoint p2(radCtX+15*sin(radians(radHeading+45)),
+                  radCtY-15*cos(radians(radHeading+45)));
+        QPoint p3(radCtX+25*sin(radians(radHeading+155)),
+                  radCtY-25*cos(radians(radHeading+155)));
+        QPoint p4(radCtX+25*sin(radians(radHeading-155)),
+                  radCtY-25*cos(radians(radHeading-155)));
+        QPoint p5(radCtX+15*sin(radians(radHeading-45)),
+                  radCtY-15*cos(radians(radHeading-45)));
         p->drawLine(p1,mBorderPoint1);
         p->drawLine(p1,p2);
         p->drawLine(p2,p3);
@@ -3617,7 +3621,7 @@ void Mainwindow::on_toolButton_tx_clicked()
 #endif
 
     //restart cuda
-    system("taskkill /f /im cudaFFT.exe");
+    //system("taskkill /f /im cudaFFT.exe");
     SetTx(true);
     unsigned char command[]={0xaa,0x55,0x67,0x0c,
                              0x00,
@@ -5324,4 +5328,9 @@ void Mainwindow::on_toolButton_manual_tracking_clicked(bool checked)
 {
     setMouseMode( MouseManualTrack,checked);
     pRadar->setManualTracking(checked);
+}
+
+void Mainwindow::on_toolButton_start_simulation_set_all_clicked(bool checked)
+{
+    simulator->setAllTarget();
 }

@@ -206,18 +206,22 @@ bool dataProcessingThread::readGyroMsg(unsigned char *mReceiveBuff,int len)
         n++;
         if(databegin[0]==0x5a&&databegin[1]==0xa5&&databegin[4]==0x7F)
         {
-            if(databegin[22]==0x00&&databegin[23]==0x65)
+            for(int k = 10;k<26;k++)
             {
-                double heading = (((databegin[24])<<8)|databegin[25])/182.0444444444444444444444444444444444444444444444444;//65536/360.0
-                //double headingRate = degrees((((mReceiveBuff[12])<<8)|mReceiveBuff[13])/10430.21919552736);//deg per sec
-                //double headingRate = ((databegin[12])<<8)+databegin[13];
-                //if(headingRate>32768.0)headingRate=headingRate-65536.0;
-                //headingRate/=32768.0;
-                if(CConfig::mStat.getAgeGyro21()>3000)
+                if(databegin[k]==0x00&&databegin[k+1]==0x65)
                 {
-                    CConfig::mStat.inputGyroDeg(heading,0);
+                    double heading = (((databegin[k+2])<<8)|databegin[k+3])/182.0444444444444444444444444444444444444444444444444;//65536/360.0
+                    //double headingRate = degrees((((mReceiveBuff[12])<<8)|mReceiveBuff[13])/10430.21919552736);//deg per sec
+                    //double headingRate = ((databegin[12])<<8)+databegin[13];
+                    //if(headingRate>32768.0)headingRate=headingRate-65536.0;
+                    //headingRate/=32768.0;
+                    if(CConfig::mStat.getAgeGyro21()>3000)
+                    {
+                        CConfig::mStat.inputGyroDeg(heading,0);
+                    }
+                    else CConfig::mStat.setcGyroUpdateTime();
+                    return true;
                 }
-                return true;
             }
         }
     }

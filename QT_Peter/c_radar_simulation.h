@@ -16,7 +16,7 @@
 #define PI                       3.14159265358979323846
 #define DEG_RAD 57.295779513
 #define MAX_AZI 2048
-#define NUM_OF_TARG 8
+#define NUM_OF_TARG 50
 using namespace std;
 
 extern unsigned char outputFrame[MAX_AZI][OUTPUT_FRAME_SIZE];
@@ -26,7 +26,8 @@ class target_t
 public:
 
     target_t();
-    void init(double tx, double ty, double tspeedKmh, double tbearing, int dople =5, int tlostRate=0);
+    void init();
+    void init(double tx, double ty, double tspeedKmh, double tbearing, int dople =5);
     void generateSignal();
     void eraseSIgnal();
     void update();
@@ -66,6 +67,7 @@ public:
 //    bool isManeuver;
     void setIsManeuver(bool checked);
     void setLostRate(int rate);
+    void setAllTarget();
 public slots:
     void sendData();
 private:

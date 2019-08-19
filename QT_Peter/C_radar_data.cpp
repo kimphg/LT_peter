@@ -96,7 +96,7 @@ uint getColor(unsigned char pvalue,unsigned char dopler,unsigned char sled)
     uint color;
     if((dopler&0xF0))
     {
-        color = 0xffffff|(alpha<<24);
+        color = 0xffffff|(150<<24);
     }
     else
     {
@@ -599,6 +599,10 @@ bool C_primary_track::isHighDensityPos()
 
 void C_primary_track::init(double txkm, double tykm)
 {
+    sko_aziDeg=0;
+    sko_cour=0;
+    sko_rgKm=0;
+    sko_spdKmh=0;
     uniqId = C_primary_track::IDCounter++;
     mState = TrackState::confirmed;
     isUserInitialised = true;
@@ -778,7 +782,7 @@ void C_primary_track::update()
                 //speed param
                 double mSpeedkmhFitNew    = sqrt(dx*dx+dy*dy)/dtime;
                 double sko_spdNew = abs(mSpeedkmhFitNew-mSpeedkmhFit);
-                sko_spd         +=(sko_spdNew-sko_spd)/5.0;
+                sko_spdKmh         +=(sko_spdNew-sko_spdKmh)/5.0;
                 mSpeedkmhFit    +=(mSpeedkmhFitNew-mSpeedkmhFit)/5.0;
                 //course param
                 courseRadFit   = ConvXYToAziRd(dx,dy);
@@ -800,12 +804,10 @@ void C_primary_track::update()
         posDensityFit += (getPosDensity()-posDensityFit)/(TRACK_STABLE_LEN);
         //range
         rgKm            = ConvXYToRg(xkm,ykm);
-        double sko_rgNew         = abs(rgKm-obj1->rgKm);
-        sko_rgKm+=(sko_rgNew-sko_rgKm)/5.0;
+        sko_rgKm=obj1->rgStdEr/2;
         //azi
         aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
-        double sko_aziNew         = abs(aziDeg-degrees(obj1->azRad));
-        sko_aziDeg += (sko_aziNew-sko_aziDeg)/5.0;
+        sko_aziDeg =degrees(obj1->aziStdEr)/2;
 #ifdef THEON
         generateTTM();
 #endif
@@ -1661,7 +1663,10 @@ void C_radar_data::ProcessData(unsigned short azi,unsigned short lastAzi)
             data_mem.level_disp[azi][r_pos]=displayVal;
         }
         if(data_mem.may_hoi[azi/2][r_pos])
+        {
             data_mem.dopler[azi][r_pos]|=0x10;
+            if(displayVal<245)data_mem.level_disp[azi][r_pos]+=10;
+        }
 
     }
     // display value if isManualTune
@@ -1713,16 +1718,16 @@ void C_radar_data::ProcessEach90Deg()
     }
 
     //
-    if(nObj>1000)
-    {
-        if(kgain_auto<7.5)
-        {
-            kgain_auto*=1.05;
-            printf("\ntoo many obj,kgain_auto:%f",kgain_auto);
-        }
-    }
-    else if(nObj<20)
-    {if(kgain_auto>4.2)kgain_auto/=1.05;}
+//    if(nObj>1000)
+//    {
+//        if(kgain_auto<7.5)
+//        {
+//            kgain_auto*=1.05;
+//            printf("\ntoo many obj,kgain_auto:%f",kgain_auto);
+//        }
+//    }
+//    else if(nObj<20)
+//    {if(kgain_auto>4.2)kgain_auto/=1.05;}
     if(mFalsePositiveCount>500)//ENVAR
     {
         if(kgain_auto<10)kgain_auto*=1.05;
@@ -3281,7 +3286,7 @@ bool C_radar_data::checkBelongToTrack(object_t *obj1)
         }
         //object_t *obj2 = &(track->objectList.back());
         double score = track->estimateScore(obj1);//todo: optimize this score
-        printf("\nscore:%f",score);
+//        printf("\nscore:%f",score);
         //object_t* obj2 = &(track->objectList.back());
         //unsigned int dtime = (obj1->timeMs - obj2->timeMs);
         /*if(dtime<500)

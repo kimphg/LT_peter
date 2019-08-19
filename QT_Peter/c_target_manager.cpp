@@ -425,10 +425,10 @@ void c_target_manager::OutputTargetToKasu()
         dataPacket[15] = (unsigned char)(skoCourse);
         dataPacket[16] = (unsigned char)(skoCourse>>8);
         //sko speed
-        int skoSpd = int(target->sko_spd/3.6*256);
+        int skoSpd = int(target->sko_spdKmh/3.6*256);
         if(skoSpd>=50*256)
         {
-            printf("\nTarget %d too big skoSpeed value: %f",i+1,target->sko_spd);
+            printf("\nTarget %d too big skoSpeed value: %f",i+1,target->sko_spdKmh);
             skoSpd = 50*256;
         }
         dataPacket[17] = (unsigned char)(skoSpd);

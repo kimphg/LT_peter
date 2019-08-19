@@ -49,9 +49,25 @@ target_t::target_t()
 
 }
 
-void target_t::init(double tx, double ty, double tspeedKmh, double tbearing, int dople, int tlostRate)
+void target_t::init()
 {
-    lostRate = tlostRate;
+    enabled = true;
+    speedKmh = rand()%50+5;
+    x = (rand()%80)*((rand()%2)*2-1);
+    y = (rand()%80)*((rand()%2)*2-1);
+    bearing = radians(rand()%360);
+    azi = ConvXYToAziRad(x, y) / 3.141592653589*1024.0;
+    range = ConvXYToR(x, y);
+    dopler = 0;
+    targetSize = 10;
+    nUpdates = 0;
+    timeLast = time(nullptr);
+    rot = 0;
+}
+
+void target_t::init(double tx, double ty, double tspeedKmh, double tbearing, int dople)
+{
+//    lostRate = tlostRate;
     enabled = true;
     speedKmh = tspeedKmh;
     x = tx;
@@ -231,8 +247,15 @@ void c_radar_simulation::setTarget(int id,double aziDeg, double rangeKm,  double
     double tx,ty;
     tx = rangeKm*CONST_NM*sin(radians(aziDeg));
     ty = rangeKm*CONST_NM*cos(radians(aziDeg));
-    int lostRate = tlostRate%100;
-    target[id].init(tx,ty,tspeedKn*CONST_NM,tbearingDeg,dople,lostRate);//(double tx, double ty, double tspeedKmh, double tbearing, int dople)
+    lostRate = tlostRate%100;
+    target[id].init(tx,ty,tspeedKn*CONST_NM,tbearingDeg,dople);//(double tx, double ty, double tspeedKmh, double tbearing, int dople)
+}
+void c_radar_simulation::setAllTarget()
+{
+    for(int i =0;i<target.size();i++)
+    {
+        target[i].init();
+    }
 }
 void c_radar_simulation::setRange(int clk_adc)
 {

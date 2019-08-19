@@ -14,7 +14,7 @@ double  CConfig::mLat = DEFAULT_LAT,CConfig::mLon=DEFAULT_LONG;
 radarStatus_3C CConfig::mStat ;
 radarStatus_3C::radarStatus_3C()
 {
-//    isStatChange = false;
+    //    isStatChange = false;
     mFrameCount = 0;
     shipSpeedWater=0;
     shipSpeedGround=0;
@@ -41,6 +41,11 @@ radarStatus_3C::radarStatus_3C()
 radarStatus_3C::~radarStatus_3C()
 {
 
+}
+
+void radarStatus_3C::setCGyroUpdateTime(const clock_t &value)
+{
+    cGyroUpdateTime = value;
 }
 
 //void radarStatus_3C::setGPSLocation(double lat, double lon)
@@ -96,7 +101,7 @@ void CConfig::setValue(QString key, QString value)
 double CConfig::getDouble(QString key,double defaultValue )
 {
     if(mHashData.find(key)!=mHashData.end())
-    return mHashData.value(key).toDouble();
+        return mHashData.value(key).toDouble();
     else
     {
         setValue(key,defaultValue);
@@ -107,7 +112,7 @@ double CConfig::getDouble(QString key,double defaultValue )
 int CConfig::getInt(QString key, int defaultValue )
 {
     if(mHashData.find(key)!=mHashData.end())
-    return mHashData.value(key).toInt();
+        return mHashData.value(key).toInt();
     else
     {
         setValue(key,defaultValue);
@@ -117,7 +122,7 @@ int CConfig::getInt(QString key, int defaultValue )
 QString CConfig::getString(QString key,QString defaultValue )
 {
     if(mHashData.find(key)!=mHashData.end())
-    return mHashData.value(key);
+        return mHashData.value(key);
     else
     {
         setValue(key,defaultValue);
@@ -150,8 +155,12 @@ void CConfig::setGPSLocation(double lat, double lon)
 
     //save if distance>100m
     if(locationHistory.size()>2)
-    if(abs(locationHistory.back().second-lat)<0.001&&
-            abs(locationHistory.back().first- lon)<0.001)return ;
+    {
+        if(abs(locationHistory.back().second-lat)<0.001&&
+                abs(locationHistory.back().first- lon)<0.001)return ;
+        if(abs(locationHistory.back().second-lat)>0.1&&
+                abs(locationHistory.back().first- lon)>0.1)locationHistory.clear();
+    }
     locationHistory.push_back(std::make_pair(lon,lat));
 
 }
@@ -244,13 +253,13 @@ QHash<QString, QString> CConfig::readFile(QString fileName)
         if(xml.name()==XML_ELEM_NAME)
         {
 
-           for (int i=0;i<xml.attributes().size();i++)
-           {
-               nElement++;
-               QXmlStreamAttribute attr = xml.attributes().at(i);
-               hashData.insert( attr.name().toString(),
-                                attr.value().toString());
-           }
+            for (int i=0;i<xml.attributes().size();i++)
+            {
+                nElement++;
+                QXmlStreamAttribute attr = xml.attributes().at(i);
+                hashData.insert( attr.name().toString(),
+                                 attr.value().toString());
+            }
         }
         if (xml.tokenType() == QXmlStreamReader::Invalid)
             xml.readNext();

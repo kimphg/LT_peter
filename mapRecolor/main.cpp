@@ -90,7 +90,7 @@ void processDir(QString path)
             for(int x= 0; x < tmp.width(); x++)
             {
                 QColor color = tmp.pixelColor(x,y);
-                int color_dist = abs(color.red()-163)+abs(color.green()-205)+abs(color.blue()-255);
+                int color_dist = abs(color.red()-170)+abs(color.green()-218)+abs(color.blue()-255);
                 if(color_dist<80)
                 {
                     double ss=color_dist/80.0;
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
     //    QList<QImage> images;
 //    processDir("D:/HR2D/mapData/GM/7/");
 //    processDir("D:/HR2D/mapData/GM/8/");
-    processDir("D:/HR2D/mapData/GM1/");
+    processDir("C:\\downloads\\myk_new_task\\");
 //    processDir("D:/HR2D/mapData/GM/12/");
     return 0;
 }

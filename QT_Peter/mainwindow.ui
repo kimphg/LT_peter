@@ -38843,7 +38843,7 @@ background-color: rgba(255, 255, 255, 0);</string>
         <x>10</x>
         <y>10</y>
         <width>281</width>
-        <height>71</height>
+        <height>81</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_15">
@@ -38865,33 +38865,6 @@ background-color: rgba(255, 255, 255, 0);</string>
          </property>
          <property name="text">
           <string>Dừng</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="autoExclusive">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QCustomButton" name="toolButton_start_simulation_start">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>Quay</string>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -38925,6 +38898,33 @@ background-color: rgba(255, 255, 255, 0);</string>
          </property>
          <property name="autoExclusive">
           <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QCustomButton" name="toolButton_start_simulation_start">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Quay</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="autoExclusive">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -39378,7 +39378,7 @@ background-color: rgba(255, 255, 255, 0);</string>
        <set>Qt::ImhNone</set>
       </property>
       <property name="text">
-       <string>20</string>
+       <string>0</string>
       </property>
       <property name="maxLength">
        <number>20</number>
@@ -39848,6 +39848,39 @@ background-color: rgba(255, 255, 255, 0);</string>
       </property>
       <property name="text">
        <string>Mục tiêu cơ động ngẫu nhiên</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="autoExclusive">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QCustomButton" name="toolButton_start_simulation_set_all">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>450</y>
+        <width>291</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Đặt ngẫu nhiên 50 mục tiêu</string>
       </property>
       <property name="checkable">
        <bool>true</bool>
@@ -46731,7 +46764,7 @@ color: rgb(255, 0, 0);</string>
          <bool>true</bool>
         </property>
         <property name="checked">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
        </widget>
       </item>

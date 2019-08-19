@@ -158,6 +158,7 @@ public:
     void setShipCourse(double value);
     double getshipHeadingRate_dps();
     void setShipSpeed2(double value);
+    void setCGyroUpdateTime(const clock_t &value);
 };
 class CConfig
 {

@@ -349,6 +349,10 @@ public:
     void init(double txkm,double tykm);
     void init(object_t* obj1,object_t* obj2,int id=-1)
     {
+        sko_aziDeg=0;
+        sko_cour=0;
+        sko_rgKm=0;
+        sko_spdKmh=0;
         isUserInitialised = obj2->isUserInitialized;
         mAisPossibleMmsi = 0;
         mAisConfirmedMmsi= 0;
@@ -427,7 +431,7 @@ public:
     double                  lat,lon;
     double                  sko_aziDeg;
     double                  sko_rgKm;
-    double                  sko_spd;
+    double                  sko_spdKmh;
     double                  sko_cour;
     qint64                  lastTimeMs;
     int                     mDopler;
