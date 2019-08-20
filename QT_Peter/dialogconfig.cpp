@@ -40,7 +40,7 @@ void DialogConfig::SaveConfig()
         CConfig::setValue(key,value);
 
     }
-    CConfig::SaveToFile();
+    CConfig::SaveAndSetConfigAsDefault();
 }
 void DialogConfig::on_pushButton_load_clicked()
 {

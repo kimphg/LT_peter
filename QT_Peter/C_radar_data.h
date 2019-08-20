@@ -25,6 +25,7 @@
 #define TRACK_MIN_DTIME     500
 #define TRACK_LOST_TIME     150000
 #define TRACK_DELETE_TIME   180000
+#define TRACK_LOW_SCORE_TIME 90000
 //#define AZI_ERROR_STD 0.06
 #define MAX_TRACKS_COUNT                  99
 #define RAD_DISPLAY_RES             650//768
@@ -383,7 +384,7 @@ public:
         lon = obj1->lon;
         rgKm            = ConvXYToRg(xkm,ykm);
         aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
-        lastTimeMs = obj1->timeMs;
+        lastUpdateTimeMs = obj1->timeMs;
         objectList.push_back(*obj2);
         objectList.push_back(*obj1);
         objectHistory.push_back(*obj1);
@@ -424,6 +425,7 @@ public:
     std::vector<object_t> objectHistory;
     object_t                possibleObj;
     double                   possibleMaxScore;
+    int                     waitingForBetterScore;
     double                  courseRadFit;
     double                  courseDeg;
     double                  rgSpeedkmh;
@@ -433,7 +435,7 @@ public:
     double                  sko_rgKm;
     double                  sko_spdKmh;
     double                  sko_cour;
-    qint64                  lastTimeMs;
+    qint64                  lastUpdateTimeMs;
     int                     mDopler;
     void LinearFit(int nEle);
     void addPossible(object_t *obj, double score);
@@ -443,6 +445,7 @@ public:
     static double estimateScore(object_t *obj1, object_t *obj2);
     double aziDeg,rgKm;
     int getPosDensity();
+    void checkNewObject();
 private:
     double courseRad;
     double mSpeedkmh;

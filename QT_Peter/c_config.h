@@ -110,7 +110,7 @@ private:
 
 public:
 
-    unsigned     long int       mFrameCount;
+    unsigned  long long int       mFrameCount;
 //    double mLat,mLon;
     double shipSpeedWater,shipSpeedGround;
     double shipCourseDeg;
@@ -181,7 +181,7 @@ public:
     static double  getDouble(QString key, double defaultValue=0);
     static QString getString(QString key, QString defaultValue="0");
     static int     getInt(QString key, int defaultValue=0);
-    static void    setDefault();
+    static void    SaveAndSetConfigAsDefault();
     static void    SaveToFile();
     static void     ReportError(const char *error);
     static void     AddMessage(QString warning);
@@ -189,6 +189,7 @@ public:
     static QHash<QString, QString> readFile();
     static std::queue<WarningMessage> *getWarningList();
     static bool    isChanged;
+    static void backup();
 private:
     static std::queue<WarningMessage> mWarningList;
     static QHash<QString, QString> readFile(QString fileName);

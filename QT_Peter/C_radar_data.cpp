@@ -46,7 +46,8 @@ static int indexCurrRecAzi = 0;
 static int                     zoom_ar_w,zoom_ar_h,zoom_ar_a0,zoom_ar_r0,zoom_ar_a1,zoom_ar_r1;
 static int                     zoom_ar_size_a,zoom_ar_size_r;
 //#define TARGET_DENSITY_MAP_SIZE 3000
-
+double targetAsociationMinimumScore;
+double targetAsociationLowScore;
 DensityMap targetDensityMap;
 //static unsigned short targetDensityMap[TARGET_DENSITY_MAP_SIZE][TARGET_DENSITY_MAP_SIZE];
 typedef struct  {
@@ -383,17 +384,23 @@ double C_primary_track::estimateScore(object_t *obj1,object_t *obj2)
     if(dDopler>7)dDopler=16-dDopler;
     if(dDopler>2)
     {
-//        printf("\n 2 objs rejected by dopler diff:%f",dDopler);
+        //        printf("\n 2 objs rejected by dopler diff:%f",dDopler);
         return -1;
     }
 #endif
+    double dazi = abs(obj1->azRad-obj2->azRad);
+    if(dazi>PI)dazi = PI_NHAN2-dazi;
+    if(dazi<-PI)dazi = dazi+PI_NHAN2;
+    dazi       /=(aziErrStdRad+(targetMaxSpeedKmh/2)*dtime/obj1->rgKm);
+    if(dazi>3)
+        return -1;
     //normalize params
     //speedkmh/=targetMaxSpeedKmh;
     rgSpeedkmh = abs(rgSpeedkmh)/(targetMaxSpeedKmh+obj1->rgStdEr);
     //dDopler/=2.0;
     double score =
             fastPow(CONST_E,-sq(distanceCoeff))
-            //*fastPow(CONST_E,-sq(dDopler))
+            *fastPow(CONST_E,-sq(dazi))
             *fastPow(CONST_E,-sq(rgSpeedkmh));
 #ifdef DEBUGMODE
     /*if(distancekm>0.1&&score>0.1){
@@ -517,9 +524,8 @@ double C_primary_track::estimateScore(object_t *obj1)
     if(dtime>TRACK_MAX_DTIME)
         return -1;
     dtime/=3600000.0;
-    double dx = obj1->xkm - obj2->xkm;
-    double dy = obj1->ykm - obj2->ykm;
-
+    double dy = dlat2ykm(obj1->lat,obj2->lat);
+    double dx = dlon2xkm(obj1->lon ,obj2->lon,(obj1->lat + obj2->lat)/2);
 
     double distancekm = sqrt(dx*dx+dy*dy);
     double distanceCoeff = distancekm/(targetMaxSpeedKmh*dtime   + obj1->rgKm*aziErrStdRad);
@@ -555,10 +561,11 @@ double C_primary_track::estimateScore(object_t *obj1)
     //speedkmh/=targetMaxSpeedKmh;
     //dRgSp/=targetMaxSpeedKmh+obj1->rgStdEr;
     //    linearFit/=0.8;
-//    dtime/=0.011;
+    //    dtime/=0.011;
     double dazi = abs(obj1->azRad-obj2->azRad);
     if(dazi>PI)dazi = PI_NHAN2-dazi;
-    dazi       /=(aziErrStdRad+mSpeedkmh*dtime/obj1->rgKm);
+    if(dazi<-PI)dazi = dazi+PI_NHAN2;
+    dazi       /=(aziErrStdRad+(targetMaxSpeedKmh/2)*dtime/obj1->rgKm);
     if(dazi>3)
         return -1;
     //    dDopler/=2.0;
@@ -642,13 +649,14 @@ void C_primary_track::init(double txkm, double tykm)
     mSpeedkmhFit    = 0;
     courseRadFit    = 0;
     possibleMaxScore= 0;
+    waitingForBetterScore = 0;
     xkm             = newobject.xkm;
     ykm             = newobject.ykm;
     lat             = newobject.lat;
     lon             = newobject.lon;
     rgKm            = ConvXYToRg(xkm,ykm);
     aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
-    lastTimeMs      = newobject.timeMs;
+    lastUpdateTimeMs      = newobject.timeMs;
     //
     objectHistory.push_back(newobject);
     while(objectList.size()<TRACK_STABLE_LEN) objectList.push_back(newobject);
@@ -666,10 +674,132 @@ int C_primary_track::getPosDensity()
         return 0;
 
 }
+void C_primary_track::checkNewObject()
+{
+    if((possibleMaxScore<targetAsociationMinimumScore))return;//no new plot
+
+    if(possibleMaxScore<targetAsociationLowScore)
+    {
+        waitingForBetterScore++;
+
+        if(waitingForBetterScore<70)return;//64 = 1 round
+        //printf("\npossibleMaxScore accepted:%f",possibleMaxScore);
+    }
+
+    possibleMaxScore = 0;
+    waitingForBetterScore = 0;
+    // add obj to track
+    objectList.push_back(possibleObj);
+    object_t* obj1  = &(objectList.back());
+    //update dopler
+    mDopler = possibleObj.dopler;
+    if(mDopler>7)mDopler-=16;
+    mDoplerFit += (mDopler-mDoplerFit)/(double(TRACK_STABLE_LEN));
+    //
+    lastUpdateTimeMs = possibleObj.timeMs;
+    //change track status
+    while(objectList.size()>TRACK_STABLE_LEN)
+    {
+
+        //add to history
+        object_t* obj2 = &(objectHistory.back());
+        double dy = dlat2ykm(obj1->lat,obj2->lat);
+        double dx = dlon2xkm(obj1->lon ,obj2->lon,(obj1->lat + obj2->lat)/2);
+
+        if(((dx*dx+dy*dy)>1.0)||(lastUpdateTimeMs-obj2->timeMs>60000))//distance>1km
+            objectHistory.push_back(objectList[0]);
+        //
+        objectList.erase(objectList.begin());
+        if(mState==TrackState::newDetection)
+        {
+#ifdef THEON
+            if(isHighDensityPos())
+#endif
+                if(mSpeedkmhFit<targetMaxSpeedKmh)
+                {
+
+                    LinearFit(TRACK_STABLE_LEN);
+                    if(fitProbability<0.6)
+                    {
+                        printf("\n fitProbability too small:%f",fitProbability);
+                    }
+                    else
+                    {
+                        uniqId = C_primary_track::IDCounter++;
+                        mState = TrackState::confirmed;
+                    }
+
+                }
+        }
+    }
+
+
+    if(mState==TrackState::confirmed)
+    {
+        LinearFit(TRACK_STABLE_LEN);
+        //printf("\n fitProbability :%f",fitProbability);
+    }
+
+    if(objectHistory.size())
+    {
+        object_t* obj2  ;
+        if(objectHistory.size()>2)
+        {
+            obj2 = &(objectHistory.back())-2;
+        }
+        else if(objectHistory.size()>1)
+        {
+            obj2 = &(objectHistory.back())-1;
+        }
+        else
+        {
+            obj2 = &(objectList.at(0));
+        }
+
+        if(obj1->timeMs!=obj2->timeMs)
+        {
+            double dy = dlat2ykm(obj1->lat,obj2->lat);
+            double dx = dlon2xkm(obj1->lon ,obj2->lon,(obj1->lat + obj2->lat)/2);
+            double dtime    = (obj1->timeMs-obj2->timeMs)/3600000.0;
+            rgSpeedkmh      = (obj1->rgKm-obj2->rgKm)/dtime;
+            //speed param
+            double mSpeedkmhFitNew    = sqrt(dx*dx+dy*dy)/dtime;
+            double sko_spdNew = abs(mSpeedkmhFitNew-mSpeedkmhFit);
+            sko_spdKmh         +=(sko_spdNew-sko_spdKmh)/5.0;
+            mSpeedkmhFit    +=(mSpeedkmhFitNew-mSpeedkmhFit)/5.0;
+            //course param
+            courseRadFit   = ConvXYToAziRd(dx,dy);
+            double courseDegNew = degrees(courseRadFit);
+            double sko_courNew = abs(courseDegNew-courseDeg);
+            if(sko_courNew>180)sko_courNew-=360;
+            if(sko_courNew<-180)sko_courNew+=360;
+            courseDeg       = courseDegNew;
+            sko_cour        +=(sko_courNew-sko_cour)/5.0;
+        }
+    }
+    //xy
+    xkm             = obj1->xkm;
+    ykm             = obj1->ykm;
+    //lat lon
+    this->lon = obj1->lon;
+    this->lat = obj1->lat;
+    //ConvKmToWGS(xkm,ykm,&(this->lon),&(this->lat));
+    posDensityFit += (getPosDensity()-posDensityFit)/(TRACK_STABLE_LEN);
+    //range
+    rgKm            = ConvXYToRg(xkm,ykm);
+    sko_rgKm=obj1->rgStdEr/2;
+    //azi
+    aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
+    sko_aziDeg =degrees(obj1->aziStdEr)/2;
+#ifdef THEON
+    generateTTM();
+#endif
+
+}
 void C_primary_track::update()
 {
     isUpdating = true;
-    ageMs=uint(CConfig::time_now_ms-lastTimeMs);
+    ageMs=uint(CConfig::time_now_ms-lastUpdateTimeMs);
     //check delete condition
     if(ageMs>TRACK_DELETE_TIME)
     {mState = TrackState::removed;return;}
@@ -700,118 +830,8 @@ void C_primary_track::update()
             mAisConfirmedMmsi = mAisPossibleMmsi;
         }
     }
-    if(possibleMaxScore>0)//new plot associated
-    {
+    checkNewObject();
 
-        //reset possibleMaxScore
-        possibleMaxScore = 0;
-        // add obj to track
-        objectList.push_back(possibleObj);
-        object_t* obj1  = &(objectList.back());
-        //update dopler
-        mDopler = possibleObj.dopler;
-        if(mDopler>7)mDopler-=16;
-        mDoplerFit += (mDopler-mDoplerFit)/(double(TRACK_STABLE_LEN));
-        //
-        lastTimeMs = possibleObj.timeMs;
-        //change track status
-        while(objectList.size()>TRACK_STABLE_LEN)
-        {
-
-            //add to history
-            object_t* obj2 = &(objectHistory.back());
-            double dy = dlat2ykm(obj1->lat,obj2->lat);
-            double dx = dlon2xkm(obj1->lon ,obj2->lon,(obj1->lat + obj2->lat)/2);
-
-            if(((dx*dx+dy*dy)>1.0)||(lastTimeMs-obj2->timeMs>60000))//distance>1km
-                objectHistory.push_back(objectList[0]);
-            //
-            objectList.erase(objectList.begin());
-            if(mState==TrackState::newDetection)
-            {
-#ifdef THEON
-                if(isHighDensityPos())
-#endif
-                    if(mSpeedkmhFit<targetMaxSpeedKmh)
-                    {
-
-                        LinearFit(TRACK_STABLE_LEN);
-                        if(fitProbability<0.6)
-                        {
-                            printf("\n fitProbability too small:%f",fitProbability);
-                        }
-                        else
-                        {
-                            uniqId = C_primary_track::IDCounter++;
-                            mState = TrackState::confirmed;
-                        }
-
-                    }
-            }
-        }
-
-
-        if(mState==TrackState::confirmed)
-        {
-            LinearFit(TRACK_STABLE_LEN);
-            //printf("\n fitProbability :%f",fitProbability);
-        }
-
-        if(objectHistory.size())
-        {
-            object_t* obj2  ;
-            if(objectHistory.size()>2)
-            {
-                obj2 = &(objectHistory.back())-2;
-            }
-            else if(objectHistory.size()>1)
-            {
-                obj2 = &(objectHistory.back())-1;
-            }
-            else
-            {
-                obj2 = &(objectList.at(0));
-            }
-
-            if(obj1->timeMs!=obj2->timeMs)
-            {
-                double dy = dlat2ykm(obj1->lat,obj2->lat);
-                double dx = dlon2xkm(obj1->lon ,obj2->lon,(obj1->lat + obj2->lat)/2);
-                double dtime    = (obj1->timeMs-obj2->timeMs)/3600000.0;
-                rgSpeedkmh      = (obj1->rgKm-obj2->rgKm)/dtime;
-                //speed param
-                double mSpeedkmhFitNew    = sqrt(dx*dx+dy*dy)/dtime;
-                double sko_spdNew = abs(mSpeedkmhFitNew-mSpeedkmhFit);
-                sko_spdKmh         +=(sko_spdNew-sko_spdKmh)/5.0;
-                mSpeedkmhFit    +=(mSpeedkmhFitNew-mSpeedkmhFit)/5.0;
-                //course param
-                courseRadFit   = ConvXYToAziRd(dx,dy);
-                double courseDegNew = degrees(courseRadFit);
-                double sko_courNew = abs(courseDegNew-courseDeg);
-                if(sko_courNew>180)sko_courNew-=360;
-                if(sko_courNew<-180)sko_courNew+=360;
-                courseDeg       = courseDegNew;
-                sko_cour        +=(sko_courNew-sko_cour)/5.0;
-            }
-        }
-        //xy
-        xkm             = obj1->xkm;
-        ykm             = obj1->ykm;
-        //lat lon
-        this->lon = obj1->lon;
-        this->lat = obj1->lat;
-        //ConvKmToWGS(xkm,ykm,&(this->lon),&(this->lat));
-        posDensityFit += (getPosDensity()-posDensityFit)/(TRACK_STABLE_LEN);
-        //range
-        rgKm            = ConvXYToRg(xkm,ykm);
-        sko_rgKm=obj1->rgStdEr/2;
-        //azi
-        aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
-        sko_aziDeg =degrees(obj1->aziStdEr)/2;
-#ifdef THEON
-        generateTTM();
-#endif
-    }
     isUpdating = false;
 }
 void C_primary_track::generateTTM()
@@ -941,6 +961,8 @@ C_radar_data::C_radar_data()
 #ifdef THEON
     loadDensityMap();
 #endif
+    targetAsociationMinimumScore=CConfig::getDouble("targetAsociationMinScore",0.05);
+    targetAsociationLowScore=CConfig::getDouble("targetAsociationLowScore",0.3);;
     isManualTracking = false;
     targetMaxSpeedKmh = CConfig::getDouble("targetMaxSpeedKmh",100.0);
     aziErrStdRad = radians(CConfig::getDouble("AziStdErrDeg",1.5));
@@ -963,9 +985,9 @@ C_radar_data::C_radar_data()
     mTrackList = std::vector<C_primary_track>(MAX_TRACKS_COUNT,track);
     giaQuayPhanCung = false;
     //    mShipHeading = 0;
-//    isTrueHeadingFromRadar = CConfig::getInt("isTrueHeadingFromRadar");
+    //    isTrueHeadingFromRadar = CConfig::getInt("isTrueHeadingFromRadar");
     rgStdErrKm = sn_scale*pow(2,clk_adc)*(CConfig::getDouble("RgStdErrxR",0.5));
-//    azi_er_rad = aziErrStdRad;
+    //    azi_er_rad = aziErrStdRad;
     CConfig::time_now_ms = QDateTime::currentMSecsSinceEpoch();
     mFalsePositiveCount = 0;
     mSledValue = CConfig::getInt("mSledValue",200);
@@ -1091,8 +1113,8 @@ bool C_radar_data::integrateAisPoint(double lat, double lon, int mmsi)
     for(int i=0;i<MAX_TRACKS_COUNT;i++)
     {
         C_primary_track* track=&(mTrackList[i]);
-//        double dlat = (track.lat-lat);
-//        double dlon = (track.lon-lon);
+        //        double dlat = (track.lat-lat);
+        //        double dlon = (track.lon-lon);
         if(track->mState!=TrackState::confirmed)continue;
         double aisx,aisy;
         ConvWGSToKm(&aisx,&aisy,lon,lat);
@@ -1718,21 +1740,22 @@ void C_radar_data::ProcessEach90Deg()
     }
 
     //
-//    if(nObj>1000)
-//    {
-//        if(kgain_auto<7.5)
-//        {
-//            kgain_auto*=1.05;
-//            printf("\ntoo many obj,kgain_auto:%f",kgain_auto);
-//        }
-//    }
-//    else if(nObj<20)
-//    {if(kgain_auto>4.2)kgain_auto/=1.05;}
+    //    if(nObj>1000)
+    //    {
+    //        if(kgain_auto<7.5)
+    //        {
+    //            kgain_auto*=1.05;
+    //            printf("\ntoo many obj,kgain_auto:%f",kgain_auto);
+    //        }
+    //    }
+    //    else if(nObj<20)
+    //    {if(kgain_auto>4.2)kgain_auto/=1.05;}
     if(mFalsePositiveCount>500)//ENVAR
     {
         if(kgain_auto<10)kgain_auto*=1.05;
         printf("\ntoo many false positive kgain_auto:%f",kgain_auto);
     }
+
     mFalsePositiveCount = 0;
 
     //calculate rotation speed
@@ -1876,6 +1899,7 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
         isClkAdcChanged = true;
         UpdateData();
         resetData();
+
     }
     uint newAziTrue =0;
 
@@ -3095,7 +3119,7 @@ void C_radar_data::ProcessTracks()
     for (ushort j=0;j<MAX_TRACKS_COUNT;j++)
     {
         C_primary_track* track = &(mTrackList[j]);
-        if(track->mState==TrackState::removed)return;
+        if(track->mState==TrackState::removed)continue;
         track->update();
 
     }
@@ -3269,7 +3293,7 @@ bool C_radar_data::checkBelongToTrack(object_t *obj1)
 {
     bool isBelongingToTrack = false;
     C_primary_track* chosenTrack =nullptr;
-    double maxScore=0.1;
+    double maxScore = targetAsociationMinimumScore;
     for (ushort j=0;j<MAX_TRACKS_COUNT;j++)
     {
         C_primary_track* track = &(mTrackList[j]);
@@ -3286,7 +3310,7 @@ bool C_radar_data::checkBelongToTrack(object_t *obj1)
         }
         //object_t *obj2 = &(track->objectList.back());
         double score = track->estimateScore(obj1);//todo: optimize this score
-//        printf("\nscore:%f",score);
+        //        printf("\nscore:%f",score);
         //object_t* obj2 = &(track->objectList.back());
         //unsigned int dtime = (obj1->timeMs - obj2->timeMs);
         /*if(dtime<500)

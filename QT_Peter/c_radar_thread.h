@@ -102,6 +102,8 @@ public:
     double          mAntennaAzi,mAntennaAziOld;
     //    void loadTargetDensityMap();
     void addAisObj(AIS_object_t obj);
+    bool getIsPlaying() const;
+
 signals:
     void HeadingDataReceived(double heading);
 private:

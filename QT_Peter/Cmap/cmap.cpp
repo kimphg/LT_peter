@@ -24,8 +24,10 @@ CMap::CMap(QObject *parent): mScale(10),QObject(parent)
     mMapWidth = 1024;
     mMapHeight = 1024;
     mapImage = 0;
+    mCenterLat = 0;
+    mCenterLon = 0;
     this->setPath("D:/HR2D/MapData/GM/" );
-    LoadText("D:/HR2D/mapText.txt");
+    //LoadText("D:/HR2D/mapText.txt");
 //    mifFile = (MIFFile*)IMapInfoFile::SmartOpen("");
     //SetType(0);
 }

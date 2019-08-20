@@ -285,7 +285,10 @@ bool dataProcessingThread::readNmea(unsigned char *mReceiveBuff,int len)
                         //mStat.cGpsUpdateTime = clock();
                         double mLat,mLon;
                         mGPS.get_position(&mLat,&mLon);
-                        CConfig::setGPSLocation(mLat,mLon);
+                        if(mLat>-90&&mLat<90&&mLon>-180&&mLon<180)
+                            CConfig::setGPSLocation(mLat,mLon);
+                        else printf("\nwrong GPS value");
+                        aisLogFile.write(QByteArray((char*)(databegin),len));
                         return true;
                     }
 
@@ -510,6 +513,7 @@ void dataProcessingThread::sendRATTM()
 }
 void dataProcessingThread::Timer200ms()
 {
+//    printf("\nmCudaAge200ms++:%d",mCudaAge200ms);
     mCudaAge200ms++;
     CalculateRFR();
     sendAziData();
@@ -722,6 +726,11 @@ void dataProcessingThread::CalculateRFR()
     mFramesPerSec = fDrame*5;
     lastFrameCount=CConfig::mStat.mFrameCount;
 }
+
+bool dataProcessingThread::getIsPlaying() const
+{
+    return isPlaying;
+}
 void dataProcessingThread::ProcessData(unsigned char* data,unsigned short len)
 {
 
@@ -737,7 +746,10 @@ void dataProcessingThread::ProcessData(unsigned char* data,unsigned short len)
         if(mReceiveBuff[0]==0xAA&&
                 mReceiveBuff[1]==0xAA&&
                 mReceiveBuff[2]==0xAA&&
-                mReceiveBuff[3]==0xAA)mCudaAge200ms = 0;
+                mReceiveBuff[3]==0xAA)
+        {
+            mCudaAge200ms = 0;
+        }
         return;
     }
     if(len<FRAME_LEN_NAV&&(data[0]!=4))// rs485 packets
@@ -767,18 +779,20 @@ void dataProcessingThread::ProcessData(unsigned char* data,unsigned short len)
 void dataProcessingThread::run()
 {
 //    loadTargetDensityMap();
+
     while(true)
     {
         while(radarSocket->hasPendingDatagrams())
         {
             unsigned short len = radarSocket->pendingDatagramSize();
-            radarSocket->readDatagram((char*)&mReceiveBuff[0],len);
+            QHostAddress sender;
+            radarSocket->readDatagram((char*)&mReceiveBuff[0],len,&sender);
             if(!len)
             {
                 continue;
             }
             else
-                ProcessData(mReceiveBuff,len);
+                if(!isPlaying)ProcessData(mReceiveBuff,len);
 
 
         }

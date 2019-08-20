@@ -23426,7 +23426,7 @@ background-color: rgba(255, 255, 255, 0);</string>
      <bool>false</bool>
     </property>
     <property name="currentIndex">
-     <number>5</number>
+     <number>3</number>
     </property>
     <property name="elideMode">
      <enum>Qt::ElideNone</enum>
@@ -46701,7 +46701,7 @@ color: rgb(255, 0, 0);</string>
       </property>
      </item>
     </widget>
-    <widget class="QWidget" name="layoutWidget">
+    <widget class="QFrame" name="frame">
      <property name="geometry">
       <rect>
        <x>5</x>
@@ -46714,10 +46714,16 @@ color: rgb(255, 0, 0);</string>
       <item>
        <widget class="QCustomButton" name="toolButton_del_tget_table">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
           <horstretch>0</horstretch>
           <verstretch>28</verstretch>
          </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>35</height>
+         </size>
         </property>
         <property name="font">
          <font>
@@ -46741,10 +46747,16 @@ color: rgb(255, 0, 0);</string>
       <item>
        <widget class="QCustomButton" name="toolButton_chi_thi_mt">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>35</height>
+         </size>
         </property>
         <property name="font">
          <font>

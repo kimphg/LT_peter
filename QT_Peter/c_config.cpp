@@ -10,6 +10,8 @@ using namespace std;
 //double CConfig::antennaAziDeg=0;
 std::queue<WarningMessage> CConfig::mWarningList;
 bool CConfig::isChanged = false;
+QHash<QString, QString> CConfig::mHashData = CConfig::readFile();
+volatile long long int CConfig::time_now_ms = 0;
 double  CConfig::mLat = DEFAULT_LAT,CConfig::mLon=DEFAULT_LONG;
 radarStatus_3C CConfig::mStat ;
 radarStatus_3C::radarStatus_3C()
@@ -80,8 +82,7 @@ double radarStatus_3C::getshipHeadingRate_dps()
 {
     return shipHeadingRate_dps;
 }
-QHash<QString, QString> CConfig::mHashData = CConfig::readFile();
-volatile long long int CConfig::time_now_ms = 0;
+
 void CConfig::setValue(QString key, double value)
 {
 
@@ -126,7 +127,7 @@ QString CConfig::getString(QString key,QString defaultValue )
     else
     {
         setValue(key,defaultValue);
-        SaveToFile();
+        isChanged = true;
         return defaultValue;
     }
 }
@@ -152,14 +153,14 @@ void CConfig::setGPSLocation(double lat, double lon)
     mStat.cGpsUpdateTime=clock();
     setValue("mLat",mLat);
     setValue("mLon",mLon);
-
     //save if distance>100m
-    if(locationHistory.size()>2)
+    if(locationHistory.size())
     {
-        if(abs(locationHistory.back().second-lat)<0.001&&
+        if(abs(locationHistory.back().second-lat)>0.01&&
+                abs(locationHistory.back().first- lon)>0.01)locationHistory.clear();
+        else if(abs(locationHistory.back().second-lat)<0.001&&
                 abs(locationHistory.back().first- lon)<0.001)return ;
-        if(abs(locationHistory.back().second-lat)>0.1&&
-                abs(locationHistory.back().first- lon)>0.1)locationHistory.clear();
+
     }
     locationHistory.push_back(std::make_pair(lon,lat));
 
@@ -169,7 +170,19 @@ std::vector<std::pair<double, double> > *CConfig::GetLocationHistory()
 {
     return &locationHistory;
 }
+void CConfig::backup()
+{
+    if(QFile::exists(HR_CONFIG_FILE_BACKUP_1))
+    {
+        if (QFile::exists(HR_CONFIG_FILE_BACKUP_2))
+        {
+            QFile::remove(HR_CONFIG_FILE_BACKUP_2);
 
+        }
+        QFile::rename(HR_CONFIG_FILE_BACKUP_1,HR_CONFIG_FILE_BACKUP_2);
+    }
+    QFile::copy(HR_CONFIG_FILE,HR_CONFIG_FILE_BACKUP_1);
+}
 void CConfig::SaveToFile()
 {
     if(isChanged)isChanged = false;else return;
@@ -187,17 +200,6 @@ void CConfig::SaveToFile()
     writer.writeAttributes(attr);
     writer.writeEndElement();
     xmlFile.close();
-
-    if(QFile::exists(HR_CONFIG_FILE_BACKUP_1))
-    {
-        if (QFile::exists(HR_CONFIG_FILE_BACKUP_2))
-        {
-            QFile::remove(HR_CONFIG_FILE_BACKUP_2);
-
-        }
-        QFile::rename(HR_CONFIG_FILE_BACKUP_1,HR_CONFIG_FILE_BACKUP_2);
-    }
-    QFile::copy(HR_CONFIG_FILE,HR_CONFIG_FILE_BACKUP_1);
 
     //QFile xmlFile(HR_CONFIG_FILE_BACKUP_1);
     //xmlFile.copy(HR_CONFIG_FILE);
@@ -228,20 +230,20 @@ void CConfig::AddMessage(QString message)
     mWarningList.push(warning);
 }
 
-void CConfig::setDefault()
+void CConfig::SaveAndSetConfigAsDefault()
 {
-    if (QFile::exists(HR_CONFIG_FILE))
+    SaveToFile();
+    if (QFile::exists(HR_CONFIG_FILE_DF))
     {
-        QFile::remove(HR_CONFIG_FILE);
+        QFile::remove(HR_CONFIG_FILE_DF);
     }
-
-    QFile::copy(HR_CONFIG_FILE_DF, HR_CONFIG_FILE);
+    QFile::copy( HR_CONFIG_FILE,HR_CONFIG_FILE_DF);
 
 }
 QHash<QString, QString> CConfig::readFile(QString fileName)
 {
     QFile xmlFile(fileName);
-    xmlFile.open(QIODevice::ReadOnly);
+    bool isError = !(xmlFile.open(QIODevice::ReadOnly));
 
     QXmlStreamReader xml;
     xml.setDevice(&xmlFile);
@@ -267,24 +269,21 @@ QHash<QString, QString> CConfig::readFile(QString fileName)
         // an invalid state at the end. A single readNext()
         // will advance us to EndDocument.
         if (xml.hasError()) {
-            if(fileName==HR_CONFIG_FILE) readFile(HR_CONFIG_FILE_BACKUP_1);
-            else if(fileName==HR_CONFIG_FILE_BACKUP_1)readFile(HR_CONFIG_FILE_BACKUP_2);
-            else
-            {
-                ReportError("Config load failed");
-            }
+            isError = true;
         }
     }
-    if((!hashData.contains("mLon"))||(!hashData.contains("mLat")))
+    if(isError||(hashData.size()<5))
     {
-        if(fileName==HR_CONFIG_FILE)                readFile(HR_CONFIG_FILE_BACKUP_1);
-        else if(fileName==HR_CONFIG_FILE_BACKUP_1)  readFile(HR_CONFIG_FILE_BACKUP_2);
-        else if(fileName==HR_CONFIG_FILE_BACKUP_2)  readFile(HR_CONFIG_FILE_BACKUP_C);
+        if(fileName==HR_CONFIG_FILE)                return readFile(HR_CONFIG_FILE_BACKUP_1);
+        else if(fileName==HR_CONFIG_FILE_BACKUP_1)  return readFile(HR_CONFIG_FILE_BACKUP_2);
         else
         {
-            ReportError("Config load failed");
+
+            ReportError("Empty config, load default");
+            return readFile(HR_CONFIG_FILE_DF);
         }
     }
+
     xmlFile.close();
     return hashData;
 }

@@ -615,19 +615,19 @@ private slots:
 
     void on_checkBox_8_stateChanged(int arg1);
 
-    void on_toolButton_start_simulation_set_2_clicked(bool checked);
+//    void on_toolButton_start_simulation_set_2_clicked(bool checked);
 
-    void on_toolButton_start_simulation_set_3_clicked(bool checked);
+//    void on_toolButton_start_simulation_set_3_clicked(bool checked);
 
-    void on_toolButton_start_simulation_set_4_clicked(bool checked);
+//    void on_toolButton_start_simulation_set_4_clicked(bool checked);
 
-    void on_toolButton_start_simulation_set_5_clicked(bool checked);
+//    void on_toolButton_start_simulation_set_5_clicked(bool checked);
 
-    void on_toolButton_start_simulation_set_6_clicked(bool checked);
+//    void on_toolButton_start_simulation_set_6_clicked(bool checked);
 
-    void on_toolButton_start_simulation_set_7_clicked(bool checked);
+//    void on_toolButton_start_simulation_set_7_clicked(bool checked);
 
-    void on_toolButton_start_simulation_set_8_clicked(bool checked);
+//    void on_toolButton_start_simulation_set_8_clicked(bool checked);
 
     void on_toolButton_start_simulation_stop_clicked();
 
@@ -720,6 +720,8 @@ private slots:
     void on_toolButton_manual_tracking_clicked(bool checked);
 
     void on_toolButton_start_simulation_set_all_clicked(bool checked);
+
+    void on_toolButton_replay_clicked(bool checked);
 
 private:
 

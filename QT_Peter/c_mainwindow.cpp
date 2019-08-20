@@ -768,7 +768,7 @@ Mainwindow::~Mainwindow()
 {
 
     delete ui;
-
+    CConfig::SaveToFile();
     if(pMap)delete pMap;
 }
 //bool isMapbusy=false;
@@ -1062,7 +1062,7 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
         //all targets
         else
         {
-            int size = 10000.0/(CConfig::time_now_ms - track->lastTimeMs+400);
+            int size = 10000.0/(CConfig::time_now_ms - track->lastUpdateTimeMs+400);
             if(size<TARG_SIZE)size=TARG_SIZE;//rect size depend to time
             if(track->mAisConfirmedMmsi==0&&track->mAisPossibleMmsi==0)
             {
@@ -1484,7 +1484,7 @@ void Mainwindow::showTrackContext()
     QAction action16(QString::fromUtf8("MMSI:    ")+QString::number(track->mAisConfirmedMmsi), this);
     contextMenu.addAction(&action16);
     //time
-    int secs = int(CConfig::time_now_ms-track->lastTimeMs)/1000;
+    int secs = int(CConfig::time_now_ms-track->lastUpdateTimeMs)/1000;
     int minutes = secs/60;
     secs = secs%60;
     QAction action11(QString::fromUtf8("T.gian cập nhật: ")+QString::number(minutes)+"p"+QString::number(secs)+QString::fromUtf8("giây"), this);
@@ -1597,14 +1597,14 @@ void Mainwindow::checkCuda()
     //system("taskkill /f /im cudaFFT.exe");
     //    int a=processing->mCudaAge200ms;
     if(processing->mCudaAge200ms<10)return;
-
+    if(processing->getIsPlaying())return;
     else {
         if(CConfig::getInt("runWithOutCuda",0))return;
+//        printf("\nreset cuda:%d ",processing->mCudaAge200ms);
         system("taskkill /f /im cudaFFT.exe");
         QFileInfo check_file("D:\\HR2D\\cudaFFT.exe");
         if (check_file.exists() && check_file.isFile())
         {
-            //            processCuda->start("D:\\HR2D\\cudaFFT.exe");
 
             system("start D:\\HR2D\\cudaFFT.exe");
             CConfig::AddMessage(QString::fromUtf8("Khởi động core FFT: OK"));
@@ -1629,6 +1629,8 @@ void Mainwindow::InitSetting()
     //    CalcAziContour(355,500);
     //hide iad
     //    system("taskkill /f /im cudaFFT.exe");
+    CConfig::setGPSLocation(CConfig::getDouble("mLat",DEFAULT_LAT),
+                            CConfig::getDouble("mLon",DEFAULT_LONG));
 #ifndef THEON
     checkCuda();
 #endif
@@ -1690,7 +1692,7 @@ void Mainwindow::InitSetting()
 
     //load map
     osmap = new CMap();
-    SetGPS(CConfig::mLat, CConfig::mLon);
+    //SetGPS(CConfig::mLat, CConfig::mLon);
     osmap->setImgSize(SCR_H-20,SCR_H-20);
     osmap->SetType(0);
     mMapOpacity = CConfig::getDouble("mMapOpacity");
@@ -2335,13 +2337,7 @@ void Mainwindow::sync1p()//period 1 min
         logFile.write(str.toUtf8());
         logFile.close();
     }*/
-    if(clock() - pRadar->mUpdateTime<10000)
-    {
-        CConfig::SaveToFile();
-        //pRadar->updateTerrain();
-        //saveScreenShot(dir+now.toString("hh.mm")+".png");
-
-    }
+    CConfig::backup();
 
 }
 void Mainwindow::saveScreenShot(QString fileName)
@@ -2351,56 +2347,7 @@ void Mainwindow::saveScreenShot(QString fileName)
     file.open(QIODevice::WriteOnly);
     pixmap.save(&file, "PNG");
 }
-//void Mainwindow::updateTargetInfo()
-//{
-//    if(selectedTargetType==RADAR)
-//    {
-//    }
-//    else if(selectedTargetType == AIS){
-//        }
-//    else if(selectedTargetType==NOTARGET)
-//    {
-//        //ui->label_data_id->setText("--");
-//        //ui->label_data_type->setText("--");
-//        ui->label_data_range->setText("--");
-//        ui->label_data_azi->setText( "--");
-//        ui->label_data_lat->setText( "--");
-//        ui->label_data_long->setText("--");
-//        ui->label_data_speed->setText("--");
-//        ui->label_data_heading->setText("--");
-//        //ui->label_data_dopler->setText("--");
-//    }
-//}
-/*void Mainwindow::autoSwitchFreq()
-{
-    int newFreq = rand()%6;
-    if(newFreq==0)
-    {
-        ui->toolButton_tx_2->setChecked(true);
-    }
-    else  if(newFreq==1)
-    {
-        ui->toolButton_tx_3->setChecked(true);
-    }
-    else if(newFreq==2)
-    {
-        ui->toolButton_tx_4->setChecked(true);
-    }
-    else if(newFreq==3)
-    {
-        ui->toolButton_tx_5->setChecked(true);
-    }
-    else if(newFreq==4)
-    {
-        ui->toolButton_tx_6->setChecked(true);
-    }
-    else if(newFreq==5)
-    {
-        ui->toolButton_tx_7->setChecked(true);
-    }
 
-
-}*///label_data_range_2
 void Mainwindow::CheckRadarStatus()
 {
 #ifndef THEON
@@ -3446,17 +3393,13 @@ void Mainwindow::on_toolButton_zoom_out_clicked()
 
 void Mainwindow::SetGPS(double lat,double lon)
 {
-    CConfig::setGPSLocation(lat,lon);
 //    PointDouble point;
 //    point.x = lon;
 //    point.y = lat;
 //    latlonHistory.push_back(point);
     //
-    if(lat>0)ui->label_gps_lat->setText(demicalDegToDegMin(lat)+"'N");
-    else ui->label_gps_lat->setText(demicalDegToDegMin(lat)+"'S");
-    if(lon>0)ui->label_gps_lon->setText(demicalDegToDegMin(lon)+"'E");
-    else ui->label_gps_lon->setText(demicalDegToDegMin(lon)+"'W");
-    osmap->setCenterPos(lat, lon);
+    CConfig::setGPSLocation(lat,lon);
+
     isMapOutdated = true;
     repaint();
 }
@@ -3655,7 +3598,7 @@ void Mainwindow::on_toolButton_tx_off_clicked()
                              0x00,
                              0x00};
     processing->sendCommand(command,12,false);
-    CConfig::SaveToFile();
+
 }
 
 //void Mainwindow::on_toolButton_filter2of3_clicked(bool checked)
@@ -3918,7 +3861,10 @@ void Mainwindow::UpdateGpsData()
 {
     if(CConfig::mStat.getAgeGps()<3000)
     {
-        SetGPS(CConfig::mLat, CConfig::mLon);
+        if(CConfig::mLat>0)ui->label_gps_lat->setText(demicalDegToDegMin(CConfig::mLat)+"'N");
+        else ui->label_gps_lat->setText(demicalDegToDegMin(CConfig::mLat)+"'S");
+        if(CConfig::mLon>0)ui->label_gps_lon->setText(demicalDegToDegMin(CConfig::mLon)+"'E");
+        else ui->label_gps_lon->setText(demicalDegToDegMin(CConfig::mLon)+"'W");
     }
     else
     {
@@ -3951,7 +3897,7 @@ void Mainwindow::on_toolButton_advanced_control_clicked()
 
 void Mainwindow::on_toolButton_set_default_clicked()
 {
-    CConfig::setDefault();
+    CConfig::SaveAndSetConfigAsDefault();
 }
 
 
@@ -4836,40 +4782,40 @@ void Mainwindow::on_checkBox_8_stateChanged(int arg1)
     updateSimTargetStatus();
 }
 
-void Mainwindow::on_toolButton_start_simulation_set_2_clicked(bool checked)
-{
-    simulator->target[1].setIsManeuver(checked);
-}
+//void Mainwindow::on_toolButton_start_simulation_set_2_clicked(bool checked)
+//{
+//    simulator->target[1].setIsManeuver(checked);
+//}
 
-void Mainwindow::on_toolButton_start_simulation_set_3_clicked(bool checked)
-{
-    simulator->target[2].setIsManeuver(checked);
-}
+//void Mainwindow::on_toolButton_start_simulation_set_3_clicked(bool checked)
+//{
+//    simulator->target[2].setIsManeuver(checked);
+//}
 
-void Mainwindow::on_toolButton_start_simulation_set_4_clicked(bool checked)
-{
-    simulator->target[3].setIsManeuver(checked);
-}
+//void Mainwindow::on_toolButton_start_simulation_set_4_clicked(bool checked)
+//{
+//    simulator->target[3].setIsManeuver(checked);
+//}
 
-void Mainwindow::on_toolButton_start_simulation_set_5_clicked(bool checked)
-{
-    simulator->target[4].setIsManeuver(checked);
-}
+//void Mainwindow::on_toolButton_start_simulation_set_5_clicked(bool checked)
+//{
+//    simulator->target[4].setIsManeuver(checked);
+//}
 
-void Mainwindow::on_toolButton_start_simulation_set_6_clicked(bool checked)
-{
-    simulator->target[5].setIsManeuver(checked);
-}
+//void Mainwindow::on_toolButton_start_simulation_set_6_clicked(bool checked)
+//{
+//    simulator->target[5].setIsManeuver(checked);
+//}
 
-void Mainwindow::on_toolButton_start_simulation_set_7_clicked(bool checked)
-{
-    simulator->target[6].setIsManeuver(checked);
-}
+//void Mainwindow::on_toolButton_start_simulation_set_7_clicked(bool checked)
+//{
+//    simulator->target[6].setIsManeuver(checked);
+//}
 
-void Mainwindow::on_toolButton_start_simulation_set_8_clicked(bool checked)
-{
-    simulator->target[7].setIsManeuver(checked);
-}
+//void Mainwindow::on_toolButton_start_simulation_set_8_clicked(bool checked)
+//{
+//    simulator->target[7].setIsManeuver(checked);
+//}
 
 void Mainwindow::on_toolButton_start_simulation_stop_clicked()
 {
@@ -5333,4 +5279,9 @@ void Mainwindow::on_toolButton_manual_tracking_clicked(bool checked)
 void Mainwindow::on_toolButton_start_simulation_set_all_clicked(bool checked)
 {
     simulator->setAllTarget();
+}
+
+void Mainwindow::on_toolButton_replay_clicked(bool checked)
+{
+
 }
