@@ -1108,9 +1108,9 @@ PointInt Mainwindow::ConvKmXYToScrPoint(double x, double y)
 PointDouble Mainwindow::ConvScrPointToWGS(int x,int y)
 {
     PointDouble output;
-    output.x  = CConfig::mLat -  ((y-scrCtY+dx)/mScale)/(111.132954);
+    output.x  = CConfig::mLat -  ((y-radCtY)/mScale)/(111.132954);
     double refLat = (CConfig::mLat +(output.x))*0.00872664625997;//3.14159265358979324/180.0/2;
-    output.y = (x-scrCtX+dy)/mScale/(111.31949079327357*cos(refLat))+ CConfig::mLon;
+    output.y = (x-radCtX)/mScale/(111.31949079327357*cos(refLat))+ CConfig::mLon;
     return output;
 }
 PointDouble Mainwindow::ConvScrPointToKMXY(int x, int y)
@@ -1895,17 +1895,7 @@ void Mainwindow::DrawViewFrame(QPainter* p)
             else p->drawPoint(mBorderPoint1);
         }
     }
-    double antennaAngle = (CConfig::mStat.antennaAziDeg)+trueShiftDeg;
-    if(CalcAziContour(antennaAngle,SCR_H-SCR_BORDER_SIZE-20))
-    {
-        p->setPen(QPen(Qt::red,4,Qt::SolidLine,Qt::RoundCap));
-        p->drawLine(mBorderPoint2,mBorderPoint1);
-        QPoint p1(radCtX+20*sin(radians(antennaAngle)),
-                  radCtY-20*cos(radians(antennaAngle)));
-        p->drawLine(p1.x(),p1.y(),radCtX,radCtY);
-        //draw text
 
-    }
 #ifndef THEON
     //ve vanh goc trong
     p->setPen(penCyan);
@@ -1950,7 +1940,18 @@ void Mainwindow::DrawViewFrame(QPainter* p)
         p->drawLine(p5,p1);
 
     }
+    //antenna angle
+    double antennaAngle = (CConfig::mStat.antennaAziDeg)+trueShiftDeg;
+    if(CalcAziContour(antennaAngle,SCR_H-SCR_BORDER_SIZE-20))
+    {
+        p->setPen(QPen(Qt::red,4,Qt::SolidLine,Qt::RoundCap));
+        p->drawLine(mBorderPoint2,mBorderPoint1);
+        QPoint p1(radCtX+20*sin(radians(antennaAngle)),
+                  radCtY-20*cos(radians(antennaAngle)));
+        p->drawLine(p1.x(),p1.y(),radCtX,radCtY);
+        //draw text
 
+    }
 
 
 
