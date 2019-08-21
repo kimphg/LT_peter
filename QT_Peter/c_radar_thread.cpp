@@ -733,7 +733,6 @@ bool dataProcessingThread::getIsPlaying() const
 }
 void dataProcessingThread::ProcessData(unsigned char* data,unsigned short len)
 {
-
     if(isRecording)
     {
 
