@@ -1570,7 +1570,6 @@ void Mainwindow::SetUpTheonGUILayout()
     ui->groupBox_statuses->setGeometry(1430,1165,480,30);
     ui->groupBox_25->setGeometry(10,1010,130,100);
     ui->groupBox_gps->setGeometry(10,1120,211,70);
-
     ui->groupBox_15->setGeometry(10,50,310,65);
     ui->groupBox_16->setGeometry(10,120,160,170);
     ui->groupBox_24->setGeometry(10,10,490,40);
