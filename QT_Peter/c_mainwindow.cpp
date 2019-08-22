@@ -3228,7 +3228,7 @@ void Mainwindow::SendScaleCommand()
     QString commandString;
     switch(mRangeIndex)
     {
-    case 0:
+    case 0://2nm
         commandString = (CConfig::getString("mR1Command"));
         break;
     case 1:
@@ -5183,6 +5183,11 @@ void Mainwindow::on_toolButton_start_simulation_set_all_clicked(bool checked)
 }
 
 void Mainwindow::on_toolButton_replay_clicked(bool checked)
+{
+
+}
+
+void Mainwindow::on_toolButton_dk_4_clicked(bool checked)
 {
 
 }

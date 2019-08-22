@@ -276,6 +276,10 @@ QHash<QString, QString> CConfig::readFile(QString fileName)
     {
         if(fileName==HR_CONFIG_FILE)                return readFile(HR_CONFIG_FILE_BACKUP_1);
         else if(fileName==HR_CONFIG_FILE_BACKUP_1)  return readFile(HR_CONFIG_FILE_BACKUP_2);
+        else if(fileName==HR_CONFIG_FILE_DF) {
+            ReportError("Empty default config, fatal error!!!");
+            return hashData;
+        }
         else
         {
 

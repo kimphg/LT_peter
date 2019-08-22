@@ -723,6 +723,8 @@ private slots:
 
     void on_toolButton_replay_clicked(bool checked);
 
+    void on_toolButton_dk_4_clicked(bool checked);
+
 private:
 
 //    bool mShowobjects,
