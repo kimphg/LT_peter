@@ -11757,6 +11757,9 @@ background-color: rgba(255, 255, 255, 0);</string>
          <pointsize>12</pointsize>
         </font>
        </property>
+       <property name="toolTip">
+        <string>Bắt đầu phát</string>
+       </property>
        <property name="text">
         <string>Phát</string>
        </property>
@@ -11781,6 +11784,9 @@ background-color: rgba(255, 255, 255, 0);</string>
          <pointsize>12</pointsize>
         </font>
        </property>
+       <property name="toolTip">
+        <string>Kiểm tra trạng thái toàn đài</string>
+       </property>
        <property name="text">
         <string>Kiểm tra trạng thái</string>
        </property>
@@ -11801,6 +11807,9 @@ background-color: rgba(255, 255, 255, 0);</string>
         <font>
          <pointsize>12</pointsize>
         </font>
+       </property>
+       <property name="toolTip">
+        <string>Tắt máy tính ra đa</string>
        </property>
        <property name="text">
         <string>Tắt máy</string>
@@ -11825,6 +11834,9 @@ background-color: rgba(255, 255, 255, 0);</string>
         <font>
          <pointsize>12</pointsize>
         </font>
+       </property>
+       <property name="toolTip">
+        <string>Dừng phát</string>
        </property>
        <property name="text">
         <string>Tắt phát</string>
@@ -23426,7 +23438,7 @@ background-color: rgba(255, 255, 255, 0);</string>
      <bool>false</bool>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>1</number>
     </property>
     <property name="elideMode">
      <enum>Qt::ElideNone</enum>
@@ -23446,6 +23458,9 @@ background-color: rgba(255, 255, 255, 0);</string>
         <width>308</width>
         <height>551</height>
        </rect>
+      </property>
+      <property name="toolTip">
+       <string>Nhấn chuột trái vào mục tiêu để xem chi tiết</string>
       </property>
       <property name="styleSheet">
        <string notr="true"/>
@@ -23587,6 +23602,9 @@ background-color: rgba(255, 255, 255, 0);</string>
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Xóa tất cả các mục tiêu đang bám</string>
+         </property>
          <property name="text">
           <string>Xóa bảng MT</string>
          </property>
@@ -23628,6 +23646,9 @@ background-color: rgba(255, 255, 255, 0);</string>
           <font>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nhấn đúp chuột trái để khởi tạo,&lt;/p&gt;&lt;p&gt;nhấn chuột giữa để bắt điểm dấu&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Chế độ bám tay</string>
@@ -46734,7 +46755,7 @@ color: rgb(255, 0, 0);</string>
          <enum>Qt::NoFocus</enum>
         </property>
         <property name="toolTip">
-         <string>Đo tọa độ mục tiêu so với điểm tham chiếu</string>
+         <string>Bỏ đặt chỉ thị tất cả</string>
         </property>
         <property name="text">
          <string>Xóa bảng MT</string>
@@ -46767,7 +46788,7 @@ color: rgb(255, 0, 0);</string>
          <enum>Qt::NoFocus</enum>
         </property>
         <property name="toolTip">
-         <string>Đo tọa độ mục tiêu so với điểm tham chiếu</string>
+         <string>Truyền dữ liệu chỉ thị cho KASU</string>
         </property>
         <property name="text">
          <string>Chỉ thị MT cho КАСУ</string>
