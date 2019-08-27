@@ -280,7 +280,7 @@ QPixmap CMap::getImage(double scale)
         else return m_emptyTile;
 
     }
-    else if(zoomRatio>=1.6)
+    else if(zoomRatio>=1.4)
     {
         if(this->setScaleRatio(getScaleRatio()+1))return getImage(scale);
         else return m_emptyTile;
