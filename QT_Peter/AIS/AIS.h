@@ -5,6 +5,8 @@
 #include <inttypes.h>
 #include <QDateTime>
 #include <vector>
+#include "c_radar_data.h"
+#include <time.h>
 /* Created by QtCreator
  * AIS references:
  * http://catb.org/gpsd/AIVDM.html#_types_1_2_and_3_position_report_class_a
@@ -24,6 +26,11 @@
 class AIS_object_t {
 public:
     AIS_object_t();
+    void merge(AIS_object_t oldObj);
+    clock_t getAge()
+    {
+        return clock()-mUpdateTime;
+    }
     QString             printData();
     bool                isMatchToRadarTrack;
     QString              mName,mDst;

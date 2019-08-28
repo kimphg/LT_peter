@@ -17,6 +17,50 @@ AIS_object_t::AIS_object_t()
     isMatchToRadarTrack =false;
 }
 
+void AIS_object_t::merge(AIS_object_t oldObj)
+{
+    isSelected = oldObj.isSelected;
+    if(mName.length()==0)
+        mName = oldObj.mName;
+    mUpdateTime = clock();
+    if(abs(mLat)<0.5)mLat = oldObj.mLat;
+    if(abs(mLong)<0.5)mLong = oldObj.mLong;
+    if(mDst.isEmpty())
+        mDst       = oldObj.mDst;
+    if(!mImo)
+        mImo       = oldObj.mImo;
+    if(!mType)
+        mType      = oldObj.mType;
+    if(!mBow)
+        mBow       = oldObj.mBow;
+    if(!mStern)
+        mStern     = oldObj.mStern;
+    if(!mStarboard)
+        mStarboard = oldObj.mStarboard;
+    if(!mPort)
+        mPort      = oldObj.mPort;
+    if(!mSog)
+        mSog       = oldObj.mSog;
+    if(!mCog)
+        mCog       = oldObj.mCog;
+    if(!mCog)
+    {
+
+        double dLat  = mLat - oldObj.mLat;
+        double dLon  = mLong- oldObj.mLong;
+        if(dLat*dLon!=0)
+        {
+            double heading, speed;
+            C_radar_data::ConvkmxyToPolarDeg(dLat,dLon,&heading,&speed);
+            mCog       =    heading;
+        }
+        else
+        {
+            mCog       =    oldObj.mCog;
+        }
+    }
+}
+
 QString AIS_object_t::printData()
 {
     QString output;

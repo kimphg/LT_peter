@@ -600,12 +600,13 @@ double C_primary_track::estimateScore(object_t *obj1)
 }
 bool C_primary_track::isHighDensityPos()
 {
-    if(posDensityFit>1)printf("\nposDensityFit:%f",posDensityFit);
+    //if(posDensityFit>1)printf("\nposDensityFit:%f",posDensityFit);
     return posDensityFit>5;
 }
 
 void C_primary_track::init(double txkm, double tykm)
 {
+    isEnemy = true;
     sko_aziDeg=0;
     sko_cour=0;
     sko_rgKm=0;

@@ -640,62 +640,16 @@ void dataProcessingThread::togglePlayPause(bool play)
 }
 void dataProcessingThread::addAisObj(AIS_object_t obj)
 {
-    QMutableListIterator<AIS_object_t> i(m_aisList);
-    int elecount = 0;
-    bool objExist = false;
-    while (i.hasNext())
-    {
-        AIS_object_t oldObj = i.next();
-        elecount++;
-        if(elecount>3000){i.remove();continue;}
-        if(obj.mMMSI!=oldObj.mMMSI)continue;
-        objExist = true;
-        oldObj.isNewest = false;
-        obj.isSelected = oldObj.isSelected;
-        if(obj.mName.length())
-            obj.mName = oldObj.mName;
-        obj.mUpdateTime = clock();
-        if(abs(obj.mLat)<0.5)obj.mLat = oldObj.mLat;
-        if(abs(obj.mLong)<0.5)obj.mLong = oldObj.mLong;
-        if(obj.mDst.isEmpty())
-            obj.mDst       = oldObj.mDst;
-        if(!obj.mImo)
-            obj.mImo       = oldObj.mImo;
-        if(!obj.mType)
-            obj.mType      = oldObj.mType;
-        if(!obj.mBow)
-            obj.mBow       = oldObj.mBow;
-        if(!obj.mStern)
-            obj.mStern     = oldObj.mStern;
-        if(!obj.mStarboard)
-            obj.mStarboard = oldObj.mStarboard;
-        if(!obj.mPort)
-            obj.mPort      = oldObj.mPort;
-        if(!obj.mSog)
-            obj.mSog       = oldObj.mSog;
-        if(!obj.mCog)
-            obj.mCog       = oldObj.mCog;
-        if(!obj.mCog)
-        {
-
-            double dLat  = obj.mLat - oldObj.mLat;
-            double dLon  = obj.mLong- oldObj.mLong;
-            if(dLat*dLon!=0)
-            {
-                double heading, speed;
-                C_radar_data::ConvkmxyToPolarDeg(dLat,dLon,&heading,&speed);
-                obj.mCog       =    heading;
-            }
-            else
-            {
-                obj.mCog       =    oldObj.mCog;
-            }
-        }
-        i.setValue(obj);
-        break;
-    }
-    if(!objExist)m_aisList.push_front(obj);
+    int mmsi = obj.mMMSI;
     if(mRadarData->integrateAisPoint(obj.mLat,obj.mLong,obj.mMMSI))obj.isMatchToRadarTrack = true;
+    if(mAisData.find(mmsi)!=mAisData.end())
+    {
+        obj.merge(mAisData[mmsi]);
+
+    }
+    mAisData[mmsi] = obj;
+
+
 }
 void dataProcessingThread::inputAISData(QByteArray inputdata)
 {
@@ -778,11 +732,13 @@ void dataProcessingThread::ProcessData(unsigned char* data,unsigned short len)
 void dataProcessingThread::run()
 {
 //    loadTargetDensityMap();
-
+    int frameCount=0;
     while(true)
     {
+        frameCount=0;
         while(radarSocket->hasPendingDatagrams())
         {
+            frameCount++;
             unsigned short len = radarSocket->pendingDatagramSize();
             QHostAddress sender;
             radarSocket->readDatagram((char*)&mReceiveBuff[0],len,&sender);
@@ -795,7 +751,8 @@ void dataProcessingThread::run()
 
 
         }
-//        sleep(1);
+        if(!frameCount)
+            usleep(1);
 
     }
 

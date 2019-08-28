@@ -243,17 +243,12 @@ void Mainwindow::drawAisTarget(QPainter *p)
 
     p->setBrush(Qt::NoBrush);
     //if(processing->m_aisList.empty())return;
-    QList<AIS_object_t>::iterator iter = processing->m_aisList.begin();
-    while(iter!=processing->m_aisList.end())
+
+    for(std::map<int,AIS_object_t>::iterator iter = processing->mAisData.begin();iter!=processing->mAisData.end();iter++)
     {
-        AIS_object_t aisObj = *iter;
-        iter++;
-        if(clock()-aisObj.mUpdateTime>300000)continue;
-        /*double fx,fy;
-        ConvWGSToKm(&fx,&fy,aisObj.mLong,aisObj.mLat);
-        short x = (fx*mScale);//+;
-        short y = (fy*mScale);//+radCtY;
-        rotateVector(trueShiftDeg,&x,&y);*/
+        AIS_object_t aisObj = iter->second;
+
+        if(aisObj.getAge()>300000)continue;
         PointInt s = ConvWGSToScrPoint(aisObj.mLong,aisObj.mLat);
         if(hideAisFishingBoat&&(aisObj.mType==30))continue;
         if(aisObj.isMatchToRadarTrack)continue;
@@ -630,15 +625,13 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
 }
 void Mainwindow::checkClickAIS(int xclick, int yclick)
 {
-    QList<AIS_object_t>::iterator iter = processing->m_aisList.begin();
-    while(iter!=processing->m_aisList.end())
+    for(std::map<int,AIS_object_t>::iterator iter = processing->mAisData.begin();iter!=processing->mAisData.end();iter++)
     {
-        AIS_object_t aisObj = *iter;
-        iter++;
-        if(aisObj.isSelected)continue;
-        if(!aisObj.isNewest)continue;
+        AIS_object_t *aisObj = &(iter->second);
+        if(aisObj->isSelected)continue;
+        if(!aisObj->isNewest)continue;
         double fx,fy;
-        C_radar_data::ConvWGSToKm(&fx,&fy,aisObj.mLong,aisObj.mLat);
+        C_radar_data::ConvWGSToKm(&fx,&fy,aisObj->mLong,aisObj->mLat);
         int x = (fx*mScale)+radCtX;
         int y = radCtY-(fy*mScale);
         if(abs(x-xclick)<5&&abs(y-yclick)<5)
@@ -647,7 +640,7 @@ void Mainwindow::checkClickAIS(int xclick, int yclick)
             dialog->setAttribute( Qt::WA_DeleteOnClose, true );
             dialog->setWindowFlags(dialog->windowFlags()&(~Qt::WindowContextHelpButtonHint));
             dialog->setFixedSize(dialog->width(),dialog->height());
-            dialog->setAisData(&processing->m_aisList,aisObj.mMMSI);
+            dialog->setAisData(&(processing->mAisData),aisObj->mMMSI);
             dialog->setGeometry(10,800,0,0);
             dialog->show();
             break;
@@ -665,7 +658,7 @@ void Mainwindow::checkClickAIS(int xclick, int yclick)
                 dialog->setAttribute( Qt::WA_DeleteOnClose, true );
                 dialog->setWindowFlags(dialog->windowFlags()&(~Qt::WindowContextHelpButtonHint));
                 dialog->setFixedSize(dialog->width(),dialog->height());
-                dialog->setAisData(&processing->m_aisList,aisObj.mMMSI);
+                dialog->setAisData(&processing->mAisData,aisObj->mMMSI);
                 dialog->setGeometry(10,800,0,0);
                 dialog->show();
                 break;
@@ -999,6 +992,7 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
 
 
     bool blink = (CConfig::time_now_ms/500)%2;
+#ifndef THEON
     //draw targeted tracks
     p->setPen(penTargetEnemy);
     for (uint i = 0;i<TARGET_TABLE_SIZE;i++)
@@ -1012,14 +1006,14 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
         p->drawLine(s.x,s.y-20,s.x,s.y-10);
         p->drawLine(s.x,s.y+20,s.x,s.y+10);
     }
+#endif
     //draw all tracks
-    for (uint i = 0;i<TRACK_TABLE_SIZE;i++)
+    for (uint i = 0;i<MAX_TRACKS_COUNT;i++)
     {
-        TrackPointer* trackPt = mTargetMan.getTrackAt(i);
-        if(!trackPt)continue;
-        C_primary_track* track = trackPt->track;
+        C_primary_track* track = &(pRadar->mTrackList[i]);
+        if(track->mState==TrackState::removed)continue;
         PointInt sTrack = ConvWGSToScrPoint(track->lon,track->lat);
-        if(trackPt->selected)//selected
+        if(track->isUserInitialised)//selected
         {
             // draw track history
             p->setPen(penTargetHistory);
@@ -1038,13 +1032,13 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
             PointInt s1     = ConvWGSToScrPoint(obj2->lon,obj2->lat);
             p->drawLine(s1.x,s1.y,s.x,s.y);
 
-            if(trackPt->flag>=0)p->setPen(penTargetEnemySelected);
+            if(track->isEnemy)p->setPen(penTargetEnemySelected);
             else  p->setPen(penTargetFriendSelected);
         }
         else
         {
 
-            if(trackPt->flag>=0)p->setPen(penTargetEnemy);
+            if(track->isEnemy)p->setPen(penTargetEnemy);
             else  p->setPen(penTargetFriend);
         }
         if(track->isLost())
@@ -2445,7 +2439,7 @@ void Mainwindow::ViewTrackInfo()
     for(uint i =0;i<pRadar->mTrackList.size();i++)
     {
         C_primary_track* track = &(pRadar->mTrackList[i]);
-        if(track->isConfirmed())
+        if(track->isConfirmed()&&track->isUserInitialised)
             if(!mTargetMan.checkIDExist(pRadar->mTrackList[i].uniqId))
                 mTargetMan.addTrack(&pRadar->mTrackList[i]);
     }
@@ -3562,7 +3556,7 @@ void Mainwindow::on_toolButton_export_data_clicked(bool checked)
 
 void Mainwindow::on_toolButton_ais_reset_clicked()
 {
-    processing->m_aisList.clear();
+    processing->mAisData.clear();
 }
 
 

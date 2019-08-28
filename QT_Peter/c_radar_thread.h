@@ -87,13 +87,10 @@ public:
     void run();
     bool getIsDrawn();
     AIS aisMessageHandler;
-    QList<AIS_object_t> m_aisList;
-
-
+    std::map<int,AIS_object_t> mAisData;
     void setRotationSpeed(int index);
     bool getIsXuLyThuCap() const;
     void setIsXuLyThuCap(bool value);
-
     double getSelsynAzi() const;
     double newAzi;
     unsigned int mazi;

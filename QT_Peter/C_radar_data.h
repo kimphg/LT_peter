@@ -91,6 +91,7 @@
 #include <QFile>
 #include <time.h>
 #include <queue>
+
 //#include <c_target_manager.h>
 //#include <QtConcurrent/QtConcurrent>
 
@@ -338,6 +339,7 @@ public:
         isUpdating = false;
         uniqId =-1;
     }
+    bool isEnemy;
 //    bool isDoplerShifted(){return (abs(mDoplerFit)>TRACK_START_DOPLER);}
     bool isHighDensityPos();
     bool isConfirmed(){return mState==TrackState::confirmed;}
@@ -350,6 +352,7 @@ public:
     void init(double txkm,double tykm);
     void init(object_t* obj1,object_t* obj2,int id=-1)
     {
+        isEnemy = true;
         sko_aziDeg=0;
         sko_cour=0;
         sko_rgKm=0;

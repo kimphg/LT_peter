@@ -16,8 +16,8 @@ public:
     explicit DialogAisInfo(QWidget *parent = 0);
     ~DialogAisInfo();
     int timerId;
-    void setAisData(QList<AIS_object_t> * data,int id);
-    QList<AIS_object_t> * aisData;
+    void setAisData(std::map<int, AIS_object_t> *data, int mmsi);
+    std::map<int, AIS_object_t> * aisData;
     int aisMmsi;
 
 private:
