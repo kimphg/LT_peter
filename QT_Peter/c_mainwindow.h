@@ -11,7 +11,7 @@
 //#include <qse>
 #include <c_config.h>
 #include "dialogdocumentation.h"
-
+#include "C_radar_data.h"
 #include "c_radar_simulation.h"
 #include <QtNetwork>
 #include <QMainWindow>
@@ -24,7 +24,6 @@
 #include "dialoginputvalue.h"
 #include <c_radar_thread.h>
 #include <QDesktopWidget>
-#include "C_radar_data.h"
 #include <QFileDialog>
 #include <QFile>
 #include <QImage>
@@ -77,6 +76,7 @@ public:
     explicit Mainwindow(QWidget *parent = nullptr);
     ~Mainwindow();
     PointInt ConvKmXYToScrPoint(double x, double y);
+    bool checkClickRadarTarget(int xclick, int yclick);
 protected:
     //void contextMenuEvent(QContextMenuEvent *event);
 //    void keyPressEvent(QKeyEvent *event);
@@ -229,7 +229,7 @@ private slots:
 
     void on_toolButton_replay_toggled(bool checked);
 
-    void on_toolButton_replay_fast_toggled(bool checked);
+//    void on_toolButton_replay_fast_toggled(bool checked);
 
     void on_toolButton_record_toggled(bool checked);
 
@@ -724,6 +724,10 @@ private slots:
     void on_toolButton_replay_clicked(bool checked);
 
     void on_toolButton_dk_4_clicked(bool checked);
+
+    void on_horizontalSlider_valueChanged(int value);
+
+//    void on_toolButton_replay_fast_clicked(bool checked);
 
 private:
 

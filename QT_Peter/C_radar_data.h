@@ -6,7 +6,7 @@
 //  |Last update: Jan 2019                                     |
 //  |Author: Phung Kim Phuong                                  |
 //  |----------------------------------------------------------|
-#define THEON
+#include <common.h>
 //#define DEBUGMODE
 #ifdef THEON
 #define TRACK_LOST_TIME 110000
@@ -41,18 +41,8 @@
 #define MIN_TERRAIN                 10
 //#define TRACK_CONFIRMED_SIZE        3
 //#define TRACK_INIT_STATE            3
-#define DEG_RAD 57.295779513
-#define sq(x) (x*x)
-#define degrees(x) ((x)*57.295779513)
-#define radians(x) ((x)/57.295779513)
-#ifndef CONST_NM
-#define CONST_NM 1.852// he so chuyen doi tu km sang hai ly
-#endif
-#define PI_NHAN2                    6.2831853072
-#define PI_CHIA2                    1.5707963268
-#ifndef PI
-#define PI                       3.14159265358979323846
-#endif
+
+
 #define FRAME_HEADER_SIZE 34
 #define RADAR_RESOLUTION 2048
 #define MAX_FRAME_SIZE RADAR_RESOLUTION*2+FRAME_HEADER_SIZE
@@ -83,7 +73,7 @@
 #define ZOOM_SIZE                   550
 #define DISPLAY_RES_ZOOM            8192
 #define DISPLAY_SCALE_ZOOM          4
-#define nm(x) (x/1.852)
+
 #include "c_config.h"
 #include <vector>
 #include <QImage>
@@ -91,11 +81,9 @@
 #include <QFile>
 #include <time.h>
 #include <queue>
-
-//#include <c_target_manager.h>
-//#include <QtConcurrent/QtConcurrent>
-
 #include <AIS/AIS.h>
+
+
 inline double dlon2xkm(double lon1,double lon2,double refLatDeg)
 {
     return  (((lon1 - lon2) * 111.31949079327357*cos(radians(refLatDeg))));
@@ -104,13 +92,7 @@ inline double dlat2ykm(double lat1,double lat2)
 {
     return (((lat1 - lat2) * 111.132954));
 }
-inline void ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat)
-{
-    *m_Lat  = CConfig::mLat +  (y)/(111.132954);
-    double refLat = (CConfig::mLat +(*m_Lat))*0.00872664625997;//3.14159265358979324/180.0/2;
-    *m_Long = (x)/(111.31949079327357*cos(refLat))+ CConfig::mLon;
-    //tinh toa do lat-lon khi biet xy km (truong hop coi trai dat hinh cau)
-}
+
 inline double sinFast(double a)
 {
     while (a>PI) {
@@ -119,7 +101,6 @@ inline double sinFast(double a)
     double a2 = a*a;
     return a-a2*a/6.0+a2*a2*a/120.0-a2*a2*a2*a/5040.0;
 }
-typedef std::map<std::pair<int,int>, int> DensityMap;
 inline void bin2hex(unsigned char byte, char* str)
 {
     switch (byte>>4) {
@@ -236,6 +217,7 @@ inline double cosFast(double a)
     double a2 = a*a;
     return 1.0-a2/2.0+a2*a2/24.0-a2*a2*a2/720.0;
 }
+
 inline double ConvXYToRg(double x, double y)
 {
     return sqrt(x*x + y*y);
@@ -261,6 +243,9 @@ inline double ConvXYToAziRd(double x, double y)
         return azi;
     }
 }
+
+typedef std::map<std::pair<int,int>, int> DensityMap;
+
 typedef struct
 {
     bool isRemoved;
@@ -339,64 +324,31 @@ public:
         isUpdating = false;
         uniqId =-1;
     }
+    QString printData()
+    {
+        QString output;
+        output.append(QString::fromUtf8("Số hiệu:")+QString::number(uniqId)+"\n");
+        output.append(QString::fromUtf8("Cự ly(hải lý):")+QString::number(nm(rgKm))+"\n");
+        output.append(QString::fromUtf8("Ph. vị(độ):")+QString::number(aziDeg)+"\n");
+        output.append(QString::fromUtf8("Tốc độ(hải lý/giờ):")+QString::number(nm(mSpeedkmhFit))+"\n");
+        output.append(QString::fromUtf8("Hướng di chuyển(độ):")+QString::number(courseDeg)+"\n");
+        output.append(QString::fromUtf8("Kinh độ:")+demicalDegToDegMin(lon)+"\n");
+        output.append(QString::fromUtf8("Vỹ độ:")+demicalDegToDegMin(lat)+"\n");
+        return output;
+    }
     bool isEnemy;
 //    bool isDoplerShifted(){return (abs(mDoplerFit)>TRACK_START_DOPLER);}
     bool isHighDensityPos();
     bool isConfirmed(){return mState==TrackState::confirmed;}
     qint64 startTime;
-    int     mAisPossibleMmsi,mAisConfirmedMmsi;
+    bool isSelected;
+    AIS_object_t     *mAisPossibleMmsi,*mAisConfirmedMmsi;
     double  mAisMaxPosibility;
     qint64  mAisMaxPosibilityTimeMs;
     double  fitProbability;
     bool isUserInitialised;
     void init(double txkm,double tykm);
-    void init(object_t* obj1,object_t* obj2,int id=-1)
-    {
-        isEnemy = true;
-        sko_aziDeg=0;
-        sko_cour=0;
-        sko_rgKm=0;
-        sko_spdKmh=0;
-        isUserInitialised = obj2->isUserInitialized;
-        mAisPossibleMmsi = 0;
-        mAisConfirmedMmsi= 0;
-        mAisMaxPosibility= 0;
-        mAisMaxPosibilityTimeMs = 0;
-        fitProbability=1;
-        mDoplerFit = 0;
-        posDensityFit = 0;
-        startTime = CConfig::time_now_ms;
-        objectList.clear();
-        objectHistory.clear();
-        double dtime = (obj1->timeMs-obj2->timeMs)/3600000.0;
-        double dx = obj1->xkm - obj2->xkm;
-        double dy = obj1->ykm - obj2->ykm;
-        mDopler = obj1->dopler;
-        if(mDopler>7)mDopler-=16;
-        rgSpeedkmh = (obj1->rgKm-obj2->rgKm)/dtime;
-        //        isRemoved  = false;
-        mSpeedkmh  = sqrt(dx*dx+dy*dy)/dtime;
-        //        isLost     = false;
-        courseRad = ConvXYToAziRd(dx,dy);
-        mSpeedkmhFit    = sqrt(dx*dx+dy*dy)/dtime;
-        courseRadFit    = ConvXYToAziRd(dx,dy);
-        possibleMaxScore= 0;
-        xkm             = obj1->xkm;
-        ykm             = obj1->ykm;
-        lat = obj1->lat;
-        lon = obj1->lon;
-        rgKm            = ConvXYToRg(xkm,ykm);
-        aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
-        lastUpdateTimeMs = obj1->timeMs;
-        objectList.push_back(*obj2);
-        objectList.push_back(*obj1);
-        objectHistory.push_back(*obj1);
-//        time=obj2->timeMs;
-        uniqId =id;
-        isUpdating = false;
-        mState = TrackState::newDetection;
-        //        operatorID = 0;
-    }
+    void init(object_t* obj1,object_t* obj2,int id=-1);
 
     ~C_primary_track()
     {
@@ -501,7 +453,7 @@ public:
     //    int                     mEncoderAzi;
     unsigned char           mHeader[FRAME_HEADER_SIZE];
     unsigned char           overload, init_time, clk_adc;
-    bool                    integrateAisPoint(double lat, double lon, int mmsi);
+
     short                   curAzirTrue2048,arcMinAzi,arcMaxAzi,arcWidth;
     double                  mRealAziRate,mRealAzi;
     void                    setZoomRectAR(float ctx, float cty, double sizeKM, double sizeDeg);
@@ -521,6 +473,7 @@ public:
     void setBrightness(double value);
     void setImgMode(imgDrawMode mode);
     void SetSled(bool sled);
+    bool                    integrateAisPoint(AIS_object_t *obj);
     unsigned char           moduleVal;
     int                  aziViewOffset;
     double                  aziRotCorrection;
@@ -548,7 +501,7 @@ public:
     //    void        blackLine(short x0, short y0, short x1, short y1);
     //    void        addTrackManual(double x, double y);
     //    void        addTrack(object_t *mObject);
-    static    void        ConvkmxyToPolarDeg(double x, double y, double *azi, double *range);
+//    static    void        ConvkmxyToPolarDeg(double x, double y, double *azi, double *range);
 //    void        setAziOffset(double trueN_deg){
 
 //        while(trueN_deg<0)trueN_deg+=360;
@@ -609,7 +562,7 @@ private:
 //    void        drawSgn(short azi_draw, short r_pos);
 //    void        drawSgnZoom(short azi_draw, short r_pos);
     unsigned char command_feedback[8];
-    void        ConvPolarToXY(double *x, double *y, double azi, double range);
+//    void        ConvPolarToXY(double *x, double *y, double azi, double range);
     bool        isProcessing;
 //    bool        isSharpEye;
     float       noiseAverage,rainLevel,noiseVar;
@@ -685,8 +638,12 @@ public:
     void addDensityPoint(double lat, double lon);
     void loadDensityMap();
     int getDensityLatLon(double lat, double lon);
+//    static void ConvWGSToKm(double *x, double *y, double m_Long, double m_Lat);
+    //    bool CheckInsideManualZone(double xkm, double ykm);
+    static void ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat);
+    static void ConvPolarToXY(double *x, double *y, double azi, double range);
+    static void ConvkmxyToPolarDeg(double x, double y, double *azi, double *range);
     static void ConvWGSToKm(double *x, double *y, double m_Long, double m_Lat);
-//    bool CheckInsideManualZone(double xkm, double ykm);
 };
 
 //extern C_radar_data radarData;

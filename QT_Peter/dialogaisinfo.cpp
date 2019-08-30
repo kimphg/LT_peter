@@ -7,6 +7,8 @@ DialogAisInfo::DialogAisInfo(QWidget *parent) :
 {
     ui->setupUi(this);
     timerId = this->startTimer(1000);
+    mAisData = 0;
+    mRadarData = 0;
 }
 
 DialogAisInfo::~DialogAisInfo()
@@ -16,28 +18,35 @@ DialogAisInfo::~DialogAisInfo()
 
 }
 
-void DialogAisInfo::setAisData(std::map<int,AIS_object_t> *data, int mmsi)
+void DialogAisInfo::setDataSource(AIS_object_t *aisData ,C_primary_track* radarData)
 {
-    aisData = data;
-    aisMmsi = mmsi;
+    mAisData = aisData;
+    mRadarData = radarData;
+    //dialogTargetInfo->setAttribute( Qt::WA_DeleteOnClose, true );
+    this->setWindowFlags(this->windowFlags()&(~Qt::WindowContextHelpButtonHint));
+    this->setFixedSize(width(),height());
+    this->setGeometry(10,800,0,0);
+    this->show();
     UpdateData();
 }
 
 void DialogAisInfo::timerEvent(QTimerEvent *event)
 {
+    if(isVisible())
     UpdateData();
 }
 void DialogAisInfo::UpdateData()
 {
-    if(aisData->find(aisMmsi)!=aisData->end())
+    if(mAisData)ui->textBrowser->setText(mAisData->printData());
+    else ui->textBrowser->clear();
+    if(mRadarData)
     {
-        AIS_object_t *obj = &(aisData->at(aisMmsi));
-
-            ui->textBrowser->setText(obj->printData());
-            obj->isSelected = true;
-
-
+        ui->textBrowser_2->setText(mRadarData->printData());
+        if(mRadarData->mAisConfirmedMmsi)
+        {
+            ui->textBrowser->setText(mRadarData->mAisConfirmedMmsi->printData());
+        }
     }
-
+    else ui->textBrowser_2->clear();
 
 }

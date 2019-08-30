@@ -5,8 +5,8 @@
 #include <inttypes.h>
 #include <QDateTime>
 #include <vector>
-#include "c_radar_data.h"
 #include <time.h>
+#include "common.h"
 /* Created by QtCreator
  * AIS references:
  * http://catb.org/gpsd/AIVDM.html#_types_1_2_and_3_position_report_class_a

@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include "AIS/AIS.h"
+#include "c_radar_data.h"
 namespace Ui {
 class DialogAisInfo;
 }
@@ -16,8 +17,10 @@ public:
     explicit DialogAisInfo(QWidget *parent = 0);
     ~DialogAisInfo();
     int timerId;
-    void setAisData(std::map<int, AIS_object_t> *data, int mmsi);
-    std::map<int, AIS_object_t> * aisData;
+    void setDataSource(AIS_object_t *aisData, C_primary_track *radarData);
+    AIS_object_t * mAisData;
+    C_primary_track *mRadarData;
+    int radarID;
     int aisMmsi;
 
 private:

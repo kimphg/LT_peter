@@ -23438,7 +23438,7 @@ background-color: rgba(255, 255, 255, 0);</string>
      <bool>false</bool>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>3</number>
     </property>
     <property name="elideMode">
      <enum>Qt::ElideNone</enum>
@@ -28139,7 +28139,7 @@ background-color: rgba(255, 255, 255, 0);</string>
         <x>10</x>
         <y>10</y>
         <width>281</width>
-        <height>201</height>
+        <height>231</height>
        </rect>
       </property>
       <property name="palette">
@@ -28210,7 +28210,7 @@ background-color: rgba(255, 255, 255, 0);</string>
        <string>Ghi lưu - phát lại</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_4">
-       <item row="3" column="0" colspan="2">
+       <item row="4" column="0" colspan="2">
         <widget class="QLabel" name="label_record_file_name">
          <property name="palette">
           <palette>
@@ -28643,7 +28643,7 @@ background-color: rgba(255, 255, 255, 0);</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="2" column="1">
         <widget class="QCustomButton" name="toolButton_record">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -28662,23 +28662,7 @@ background-color: rgba(255, 255, 255, 0);</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QCustomButton" name="toolButton_replay_fast">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Phát nhanh</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
+       <item row="1" column="0">
         <widget class="QCustomButton" name="toolButton_replay">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -28702,7 +28686,7 @@ background-color: rgba(255, 255, 255, 0);</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
+       <item row="2" column="0">
         <widget class="QCustomButton" name="toolButton_open_record">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -28723,7 +28707,7 @@ background-color: rgba(255, 255, 255, 0);</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="3" column="1">
         <widget class="QCustomButton" name="toolButton_menu_2">
          <property name="enabled">
           <bool>true</bool>
@@ -28750,7 +28734,7 @@ background-color: rgba(255, 255, 255, 0);</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="3" column="0">
         <widget class="QCustomButton" name="toolButton_menu">
          <property name="enabled">
           <bool>true</bool>
@@ -28774,6 +28758,28 @@ background-color: rgba(255, 255, 255, 0);</string>
          </property>
          <property name="checkable">
           <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSlider" name="horizontalSlider">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimum">
+          <number>40</number>
+         </property>
+         <property name="maximum">
+          <number>400</number>
+         </property>
+         <property name="singleStep">
+          <number>10</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>

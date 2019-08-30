@@ -299,7 +299,7 @@ bool dataProcessingThread::readNmea(unsigned char *mReceiveBuff,int len)
         {
             QByteArray ba=QByteArray((char*)databegin,len);
             inputAISData(ba);
-            aisLogFile.write(ba);
+            if (!isPlaying)aisLogFile.write(ba);
             return true;
         }
 
@@ -641,13 +641,15 @@ void dataProcessingThread::togglePlayPause(bool play)
 void dataProcessingThread::addAisObj(AIS_object_t obj)
 {
     int mmsi = obj.mMMSI;
-    if(mRadarData->integrateAisPoint(obj.mLat,obj.mLong,obj.mMMSI))obj.isMatchToRadarTrack = true;
+
     if(mAisData.find(mmsi)!=mAisData.end())
     {
         obj.merge(mAisData[mmsi]);
 
     }
+
     mAisData[mmsi] = obj;
+    if(mRadarData->integrateAisPoint(&(mAisData[mmsi])))obj.isMatchToRadarTrack = true;
 
 
 }

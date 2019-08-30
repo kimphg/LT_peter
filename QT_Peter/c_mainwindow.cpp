@@ -14,6 +14,7 @@ static enum ZoomMode {ZoomHiden =0,ZoomIAD=1,ZoomHistogram=2,ZoomSpectre=3,ZoomR
 static PointAziRgkm AutoSelP1,AutoSelP2;
 static bool hideAisFishingBoat = true;
 static double trueShiftDeg,headShift;
+DialogAisInfo *dialogTargetInfo ;
 QPixmap                     *pMap;// painter cho ban do
 DensityMap* pDensMap;
 //#ifdef THEON
@@ -127,12 +128,7 @@ double x2lon(short x)
     double refLat = CConfig::mLat*0.01745329251994;
     return (x  )/mScale/111.31949079327357/cos(refLat) + CConfig::mLon;
 }
-inline QString demicalDegToDegMin(double demicalDeg)
-{
-    return QString::number( (short)demicalDeg) +
-            QString::fromLocal8Bit("\260")+
-            QString::number((demicalDeg-(short)demicalDeg)*60.0,'f',2);
-}
+
 void Mainwindow::ConvXYradar2XYscr()
 {
 
@@ -540,7 +536,8 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
         if(isInsideViewZone(mMousex,mMousey))
         {
 
-            if(!isHeadUp)setMouseMode(MouseDrag,true);
+            if(!isHeadUp)
+                setMouseMode(MouseDrag,true);
             if(mouse_mode&MouseAutoSelect1)
             {
                 AutoSelP1 =  ConvScrPointToAziRgkm(mMousex,mMousey);
@@ -573,34 +570,7 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
                 pRadar->addDetectionZoneAZ(cazi,cRg,dazi,dRg,false);
             }
             else
-            {//select radar target
-                int minDistanceToCursor = 10;
-                //unsigned long long trackMin = 0;
-                int trackSel=0;
-                for (uint i = 0;i<TRACK_TABLE_SIZE;i++)
-                {
-                    TrackPointer* ptrack = mTargetMan.getTrackAt(i);
-                    if(ptrack==nullptr)continue;
-                    PointInt s = ConvKmXYToScrPoint(ptrack->track->xkm,ptrack->track->ykm);
-
-                    int dsx   = abs(s.x - mMousex);
-                    int dsy   = abs(s.y - mMousey);
-                    if(dsx+dsy<minDistanceToCursor)
-                    {
-                        minDistanceToCursor = dsx+dsy;
-                        //trackMin = track->uniqId;
-                        trackSel = ptrack->track->uniqId;
-
-                        //                tracktime = track->time;
-                    }
-
-                }
-                if(trackSel!=0)
-                {
-                    mTargetMan.setSelectedTrack(trackSel);
-                    //mTargetMan.currTrackPt = mTargetMan.getTrackById(trackSel);
-                    showTrackContext();
-                }
+            {
             }
         }
 
@@ -608,7 +578,7 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
     else if(event->buttons() & Qt::RightButton)
     {
 
-
+        checkClickRadarTarget(posx,posy);
         if(ui->toolButton_ais_show->isChecked())
         {
             if(isInsideViewZone(posx,posy))
@@ -623,6 +593,39 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
     }
 
 }
+bool Mainwindow::checkClickRadarTarget(int xclick, int yclick)
+{
+    //select radar target
+    int minDistanceToCursor = 10;
+    //unsigned long long trackMin = 0;
+    int trackSel=0;
+    for (uint i = 0;i<MAX_TRACKS_COUNT;i++)
+    {
+        C_primary_track* track = &(pRadar->mTrackList[i]);
+        if(track->mState!=TrackState::confirmed)continue;
+        track->isSelected = false;
+        PointInt s = ConvKmXYToScrPoint(track->xkm,track->ykm);
+        int dsx   = abs(s.x - mMousex);
+        int dsy   = abs(s.y - mMousey);
+        if(dsx+dsy<minDistanceToCursor)
+        {
+            minDistanceToCursor = dsx+dsy;
+            //trackMin = track->uniqId;
+            trackSel = i;
+            //                tracktime = track->time;
+        }
+
+    }
+    if(trackSel!=0)
+    {
+        pRadar->mTrackList[trackSel].isSelected = true;
+        dialogTargetInfo->setDataSource(0,&(pRadar->mTrackList[trackSel]));
+        //mTargetMan.currTrackPt = mTargetMan.getTrackById(trackSel);
+//        showTrackContext();
+        return true;
+    }
+    return false;
+}
 void Mainwindow::checkClickAIS(int xclick, int yclick)
 {
     for(std::map<int,AIS_object_t>::iterator iter = processing->mAisData.begin();iter!=processing->mAisData.end();iter++)
@@ -636,13 +639,9 @@ void Mainwindow::checkClickAIS(int xclick, int yclick)
         int y = radCtY-(fy*mScale);
         if(abs(x-xclick)<5&&abs(y-yclick)<5)
         {
-            DialogAisInfo *dialog = new DialogAisInfo(this);
-            dialog->setAttribute( Qt::WA_DeleteOnClose, true );
-            dialog->setWindowFlags(dialog->windowFlags()&(~Qt::WindowContextHelpButtonHint));
-            dialog->setFixedSize(dialog->width(),dialog->height());
-            dialog->setAisData(&(processing->mAisData),aisObj->mMMSI);
-            dialog->setGeometry(10,800,0,0);
-            dialog->show();
+
+            dialogTargetInfo->setDataSource(aisObj,0);
+
             break;
         }
         if(checkInsideZoom(x,y))
@@ -658,7 +657,7 @@ void Mainwindow::checkClickAIS(int xclick, int yclick)
                 dialog->setAttribute( Qt::WA_DeleteOnClose, true );
                 dialog->setWindowFlags(dialog->windowFlags()&(~Qt::WindowContextHelpButtonHint));
                 dialog->setFixedSize(dialog->width(),dialog->height());
-                dialog->setAisData(&processing->mAisData,aisObj->mMMSI);
+                dialog->setDataSource(aisObj,0);
                 dialog->setGeometry(10,800,0,0);
                 dialog->show();
                 break;
@@ -689,7 +688,7 @@ Mainwindow::Mainwindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    dialogTargetInfo = new DialogAisInfo(this);
     initCursor();
     controlPressed = false;
     pMap = new QPixmap(SCR_H,SCR_H);
@@ -775,7 +774,7 @@ void DrawMap()
     }
     //calculate center coordinate
     double newLat, newLong;
-    ConvKmToWGS((double(dx))/mScale,
+    C_radar_data::ConvKmToWGS((double(dx))/mScale,
                 (double(-dy))/mScale,&newLong,&newLat);
     osmap->setCenterPos(newLat,newLong);
     trueShiftDegOldMap = trueShiftDeg;
@@ -797,11 +796,11 @@ void DrawMap()
 
         double minLat ,minLon, maxLat, maxLon;
         double rangeKm = pMap->width()/1.5/mScale;
-        ConvKmToWGS(-rangeKm,
+        C_radar_data::ConvKmToWGS(-rangeKm,
                     -rangeKm,
                     &minLon,
                     &minLat);
-        ConvKmToWGS(rangeKm,
+        C_radar_data::ConvKmToWGS(rangeKm,
                     rangeKm,
                     &maxLon,
                     &maxLat);
@@ -1011,7 +1010,7 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
     for (uint i = 0;i<MAX_TRACKS_COUNT;i++)
     {
         C_primary_track* track = &(pRadar->mTrackList[i]);
-        if(track->mState==TrackState::removed)continue;
+        if(track->mState!=TrackState::confirmed)continue;
         PointInt sTrack = ConvWGSToScrPoint(track->lon,track->lat);
         if(track->isUserInitialised)//selected
         {
@@ -1058,7 +1057,7 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
         {
             int size = 10000.0/(CConfig::time_now_ms - track->lastUpdateTimeMs+400);
             if(size<TARG_SIZE)size=TARG_SIZE;//rect size depend to time
-            if(track->mAisConfirmedMmsi==0&&track->mAisPossibleMmsi==0)
+            if(track->mAisConfirmedMmsi==0)
             {
                 p->drawEllipse(sTrack.x-size/2,sTrack.y-size/2,size,size);
             }
@@ -1475,8 +1474,8 @@ void Mainwindow::showTrackContext()
     QAction action15(QString::fromUtf8("Vĩ độ:          ")+demicalDegToDegMin(track->lat), this);
     contextMenu.addAction(&action15);
     //density
-    QAction action16(QString::fromUtf8("MMSI:    ")+QString::number(track->mAisConfirmedMmsi), this);
-    contextMenu.addAction(&action16);
+    //QAction action16(QString::fromUtf8("MMSI:    ")+QString::number(track->mAisConfirmedMmsi), this);
+    //contextMenu.addAction(&action16);
     //time
     int secs = int(CConfig::time_now_ms-track->lastUpdateTimeMs)/1000;
     int minutes = secs/60;
@@ -3118,16 +3117,6 @@ void Mainwindow::on_toolButton_replay_toggled(bool checked)
 }
 
 
-void Mainwindow::on_toolButton_replay_fast_toggled(bool checked)
-{
-    if(checked)
-    {
-        processing->playRate = 200;
-    }else
-    {
-        processing->playRate = 50;
-    }
-}
 
 void Mainwindow::on_toolButton_record_toggled(bool checked)
 {
@@ -5184,3 +5173,9 @@ void Mainwindow::on_toolButton_dk_4_clicked(bool checked)
 {
 
 }
+
+void Mainwindow::on_horizontalSlider_valueChanged(int value)
+{
+    processing->playRate = value;
+}
+

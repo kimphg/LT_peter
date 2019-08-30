@@ -23,6 +23,12 @@
 
 
 #include <queue>
+inline QString demicalDegToDegMin(double demicalDeg)
+{
+    return QString::number( (short)demicalDeg) +
+            QString::fromLocal8Bit("\260")+
+            QString::number((demicalDeg-(short)demicalDeg)*60.0,'f',2);
+}
 struct WarningMessage
 {
     QString message;

@@ -1,4 +1,4 @@
-#define PI 3.1415926536
+
 #include "c_config.h"
 #include "c_radar_data.h"
 //#include <QElapsedTimer>
@@ -358,7 +358,7 @@ void C_primary_track::addManualPossible(double xkm, double ykm)
     newobject.rgKm =  ConvXYToRg(xkm,ykm);
     newobject.xkm = xkm;
     newobject.ykm = ykm;
-    ConvKmToWGS(newobject.xkm,newobject.ykm,&(newobject.lon),&(newobject.lat));
+    C_radar_data::ConvKmToWGS(newobject.xkm,newobject.ykm,&(newobject.lon),&(newobject.lat));
     addPossible(&newobject,0.9);
     update();
 }
@@ -606,6 +606,7 @@ bool C_primary_track::isHighDensityPos()
 
 void C_primary_track::init(double txkm, double tykm)
 {
+    isSelected = false;
     isEnemy = true;
     sko_aziDeg=0;
     sko_cour=0;
@@ -639,7 +640,7 @@ void C_primary_track::init(double txkm, double tykm)
     newobject.rgKm =  ConvXYToRg(txkm,tykm);
     newobject.xkm = txkm;
     newobject.ykm = tykm;
-    ConvKmToWGS(newobject.xkm,newobject.ykm,&(newobject.lon),&(newobject.lat));
+    C_radar_data::ConvKmToWGS(newobject.xkm,newobject.ykm,&(newobject.lon),&(newobject.lat));
     //
     mDopler = newobject.dopler;
     rgSpeedkmh = 0;
@@ -662,6 +663,55 @@ void C_primary_track::init(double txkm, double tykm)
     objectHistory.push_back(newobject);
     while(objectList.size()<TRACK_STABLE_LEN) objectList.push_back(newobject);
 
+}
+
+void C_primary_track::init(object_t *obj1, object_t *obj2, int id)
+{
+    isSelected = false;
+    isEnemy = true;
+    sko_aziDeg=0;
+    sko_cour=0;
+    sko_rgKm=0;
+    sko_spdKmh=0;
+    isUserInitialised = obj2->isUserInitialized;
+    mAisPossibleMmsi = 0;
+    mAisConfirmedMmsi= 0;
+    mAisMaxPosibility= 0;
+    mAisMaxPosibilityTimeMs = 0;
+    fitProbability=1;
+    mDoplerFit = 0;
+    posDensityFit = 0;
+    startTime = CConfig::time_now_ms;
+    objectList.clear();
+    objectHistory.clear();
+    double dtime = (obj1->timeMs-obj2->timeMs)/3600000.0;
+    double dx = obj1->xkm - obj2->xkm;
+    double dy = obj1->ykm - obj2->ykm;
+    mDopler = obj1->dopler;
+    if(mDopler>7)mDopler-=16;
+    rgSpeedkmh = (obj1->rgKm-obj2->rgKm)/dtime;
+    //        isRemoved  = false;
+    mSpeedkmh  = sqrt(dx*dx+dy*dy)/dtime;
+    //        isLost     = false;
+    courseRad = ConvXYToAziRd(dx,dy);
+    mSpeedkmhFit    = sqrt(dx*dx+dy*dy)/dtime;
+    courseRadFit    = ConvXYToAziRd(dx,dy);
+    possibleMaxScore= 0;
+    xkm             = obj1->xkm;
+    ykm             = obj1->ykm;
+    lat = obj1->lat;
+    lon = obj1->lon;
+    rgKm            = ConvXYToRg(xkm,ykm);
+    aziDeg          = degrees(ConvXYToAziRd(xkm,ykm));
+    lastUpdateTimeMs = obj1->timeMs;
+    objectList.push_back(*obj2);
+    objectList.push_back(*obj1);
+    objectHistory.push_back(*obj1);
+    //        time=obj2->timeMs;
+    uniqId =id;
+    isUpdating = false;
+    mState = TrackState::newDetection;
+    //        operatorID = 0;
 }
 int C_primary_track::getPosDensity()
 {
@@ -1109,7 +1159,7 @@ C_primary_track* C_radar_data::getManualTrackzone(double xkm, double ykm, double
 //        if((dx*dx+dy*dy)<(manualTrackR*manualTrackR)) return true;
 //        else return false;
 //}
-bool C_radar_data::integrateAisPoint(double lat, double lon, int mmsi)
+bool C_radar_data::integrateAisPoint(AIS_object_t *obj)
 {
     for(int i=0;i<MAX_TRACKS_COUNT;i++)
     {
@@ -1118,7 +1168,7 @@ bool C_radar_data::integrateAisPoint(double lat, double lon, int mmsi)
         //        double dlon = (track.lon-lon);
         if(track->mState!=TrackState::confirmed)continue;
         double aisx,aisy;
-        ConvWGSToKm(&aisx,&aisy,lon,lat);
+        ConvWGSToKm(&aisx,&aisy,obj->mLong,obj->mLat);
         double dx = aisx-track->xkm;
         double dy = aisy-track->ykm;
         if(dx*dx+dy*dy>1.0)continue; //distance more than 0.5km
@@ -1132,10 +1182,8 @@ bool C_radar_data::integrateAisPoint(double lat, double lon, int mmsi)
         if(AISprobability>0.1&&AISprobability>track->mAisMaxPosibility)
         {
             track->mAisMaxPosibility = AISprobability;
-            //printf("\nAISprobability:%f az:%f rg:%f",AISprobability,
-            //az-track->aziDeg,rg-track->rgKm);
             track->mAisMaxPosibilityTimeMs   = CConfig::time_now_ms;
-            track->mAisPossibleMmsi  = mmsi;
+            track->mAisPossibleMmsi  = obj;
             return true;
         }
 
@@ -2607,33 +2655,6 @@ void C_radar_data::procPLot(plot_t* mPlot)
     mPlot->isUsed = false;
 }
 
-void C_radar_data::ConvkmxyToPolarDeg(double x, double y, double *azi, double *range)
-{
-    if(!y)
-    {
-        *azi = x>0? PI_CHIA2:(PI_NHAN2-PI_CHIA2);
-        *azi = *azi*DEG_RAD;
-        *range = abs(x);
-    }
-    else
-    {
-        *azi = atanf(x/y);
-        if(y<0)*azi+=PI;
-        if(*azi<0)*azi += PI_NHAN2;
-        *range = sqrt(x*x+y*y);
-        *azi = *azi*DEG_RAD;
-    }
-
-}
-
-void C_radar_data::ConvWGSToKm(double* x, double *y, double m_Long,double m_Lat)
-{
-    double refLat = (CConfig::mLat + (m_Lat))*0.00872664625997;//pi/360
-    *x	= (((m_Long) - CConfig::mLon) * 111.31949079327357)*cos(refLat);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
-    *y	= ((m_Lat- CConfig::mLat ) * 111.132954);
-    //tinh toa do xy KM so voi diem center khi biet lat-lon
-}
-
 void C_radar_data::drawRamp()
 {
     img_RAmp->fill(Qt::black);
@@ -2884,12 +2905,7 @@ void C_radar_data::procPix(short proc_azi,short lastAzi,short range)//_______sig
 //static short ctX=0,ctY=0;
 //static float dr = 0;
 */
-void C_radar_data::ConvPolarToXY(double *x, double *y, double azi, double range)
-{
 
-    *x = ((sin(azi)))*range;
-    *y = ((cos(azi)))*range;
-}
 
 float C_radar_data::getNoiseAverage() const
 {
@@ -3466,3 +3482,42 @@ bool C_radar_data::checkBelongToObj(object_t* obj1)
 
 }
 
+void C_radar_data::ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat)
+{
+    *m_Lat  = CConfig::mLat +  (y)/(111.132954);
+    double refLat = (CConfig::mLat +(*m_Lat))*0.00872664625997;//3.14159265358979324/180.0/2;
+    *m_Long = (x)/(111.31949079327357*cos(refLat))+ CConfig::mLon;
+    //tinh toa do lat-lon khi biet xy km (truong hop coi trai dat hinh cau)
+}
+void C_radar_data::ConvPolarToXY(double *x, double *y, double azi, double range)
+{
+
+    *x = ((sin(azi)))*range;
+    *y = ((cos(azi)))*range;
+}
+void C_radar_data::ConvkmxyToPolarDeg(double x, double y, double *azi, double *range)
+{
+    if(!y)
+    {
+        *azi = x>0? PI_CHIA2:(PI_NHAN2-PI_CHIA2);
+        *azi = *azi*DEG_RAD;
+        *range = abs(x);
+    }
+    else
+    {
+        *azi = atanf(x/y);
+        if(y<0)*azi+=PI;
+        if(*azi<0)*azi += PI_NHAN2;
+        *range = sqrt(x*x+y*y);
+        *azi = *azi*DEG_RAD;
+    }
+
+}
+
+void C_radar_data::ConvWGSToKm(double* x, double *y, double m_Long,double m_Lat)
+{
+    double refLat = (CConfig::mLat + (m_Lat))*0.00872664625997;//pi/360
+    *x	= (((m_Long) - CConfig::mLon) * 111.31949079327357)*cos(refLat);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
+    *y	= ((m_Lat- CConfig::mLat ) * 111.132954);
+    //tinh toa do xy KM so voi diem center khi biet lat-lon
+}

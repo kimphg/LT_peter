@@ -1,7 +1,7 @@
 
 
 #include "AIS.h"
-
+#include "c_radar_data.h"
 #include <QStringList>
 
 /* Copied from util.h */
