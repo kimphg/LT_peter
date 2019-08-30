@@ -649,9 +649,7 @@ void dataProcessingThread::addAisObj(AIS_object_t obj)
     }
 
     mAisData[mmsi] = obj;
-    if(mRadarData->integrateAisPoint(&(mAisData[mmsi])))obj.isMatchToRadarTrack = true;
-
-
+    mRadarData->integrateAisPoint(&(mAisData[mmsi]));
 }
 void dataProcessingThread::inputAISData(QByteArray inputdata)
 {

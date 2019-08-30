@@ -26,6 +26,8 @@ void DialogAisInfo::setDataSource(AIS_object_t *aisData ,C_primary_track* radarD
     this->setWindowFlags(this->windowFlags()&(~Qt::WindowContextHelpButtonHint));
     this->setFixedSize(width(),height());
     this->setGeometry(10,800,0,0);
+//    setAttribute(Qt::WA_TranslucentBackground);
+//    this->setStyleSheet();
     this->show();
     UpdateData();
 }
@@ -42,9 +44,9 @@ void DialogAisInfo::UpdateData()
     if(mRadarData)
     {
         ui->textBrowser_2->setText(mRadarData->printData());
-        if(mRadarData->mAisConfirmedMmsi)
+        if(mRadarData->mAisConfirmedObj)
         {
-            ui->textBrowser->setText(mRadarData->mAisConfirmedMmsi->printData());
+            ui->textBrowser->setText(mRadarData->mAisConfirmedObj->printData());
         }
     }
     else ui->textBrowser_2->clear();

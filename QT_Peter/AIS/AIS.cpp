@@ -481,7 +481,7 @@ AIS_object_t AIS::GetAisObject()
     obj.mLat = get_latitude()/600000.0;
     obj.mLong = get_longitude()/600000.0;
     obj.mLut = QDateTime::currentMSecsSinceEpoch();
-    obj.isNewest = true;
+//    obj.isNewest = true;
     obj.isSelected = false;
     obj.mName.replace('@',"");
 

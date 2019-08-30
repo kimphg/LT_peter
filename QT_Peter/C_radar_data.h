@@ -232,6 +232,7 @@ inline double fastPow(double a, double b) {
     u.x[0] = 0;
     return u.d;
 }
+
 inline double ConvXYToAziRd(double x, double y)
 {
     if (!y)        return (x>0 ? PI_CHIA2 : (PI_NHAN2 - PI_CHIA2));
@@ -328,12 +329,14 @@ public:
     {
         QString output;
         output.append(QString::fromUtf8("Số hiệu:")+QString::number(uniqId)+"\n");
-        output.append(QString::fromUtf8("Cự ly(hải lý):")+QString::number(nm(rgKm))+"\n");
-        output.append(QString::fromUtf8("Ph. vị(độ):")+QString::number(aziDeg)+"\n");
-        output.append(QString::fromUtf8("Tốc độ(hải lý/giờ):")+QString::number(nm(mSpeedkmhFit))+"\n");
-        output.append(QString::fromUtf8("Hướng di chuyển(độ):")+QString::number(courseDeg)+"\n");
+        output.append(QString::fromUtf8("Cự ly(hải lý):")+QString::number(nm(rgKm),'f',2)+"\n");
+        output.append(QString::fromUtf8("Ph. vị(độ):")+QString::number(aziDeg,'f',2)+"\n");
+        output.append(QString::fromUtf8("Tốc độ(hải lý/giờ):")+QString::number(nm(mSpeedkmhFit),'f',1)+"\n");
+        output.append(QString::fromUtf8("Hướng di chuyển(độ):")+QString::number(courseDeg,'f',1)+"\n");
         output.append(QString::fromUtf8("Kinh độ:")+demicalDegToDegMin(lon)+"\n");
         output.append(QString::fromUtf8("Vỹ độ:")+demicalDegToDegMin(lat)+"\n");
+        output.append(QString::fromUtf8("Độ hợp lý:")+QString::number(fitProbability,'f',2)+"\n");
+        output.append(QString::fromUtf8("Mật độ:")+QString::number(posDensityFit,'f',2)+"\n");
         return output;
     }
     bool isEnemy;
@@ -342,7 +345,7 @@ public:
     bool isConfirmed(){return mState==TrackState::confirmed;}
     qint64 startTime;
     bool isSelected;
-    AIS_object_t     *mAisPossibleMmsi,*mAisConfirmedMmsi;
+    AIS_object_t     *mAisPossibleObj,*mAisConfirmedObj;
     double  mAisMaxPosibility;
     qint64  mAisMaxPosibilityTimeMs;
     double  fitProbability;

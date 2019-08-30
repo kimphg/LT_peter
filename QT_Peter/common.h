@@ -10,5 +10,5 @@
 #define PI                       3.14159265358979323846
 #define DEG_RAD 57.295779513
 #define THEON
-
+#define MIN_TARGET_DENSITY 2
 #endif // COMMON_H

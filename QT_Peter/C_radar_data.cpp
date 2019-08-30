@@ -601,7 +601,7 @@ double C_primary_track::estimateScore(object_t *obj1)
 bool C_primary_track::isHighDensityPos()
 {
     //if(posDensityFit>1)printf("\nposDensityFit:%f",posDensityFit);
-    return posDensityFit>5;
+    return posDensityFit>MIN_TARGET_DENSITY;
 }
 
 void C_primary_track::init(double txkm, double tykm)
@@ -615,8 +615,8 @@ void C_primary_track::init(double txkm, double tykm)
     uniqId = C_primary_track::IDCounter++;
     mState = TrackState::confirmed;
     isUserInitialised = true;
-    mAisPossibleMmsi = 0;
-    mAisConfirmedMmsi= 0;
+    mAisPossibleObj = 0;
+    mAisConfirmedObj= 0;
     mAisMaxPosibility= 0;
     mAisMaxPosibilityTimeMs = 0;
     fitProbability=1;
@@ -674,8 +674,8 @@ void C_primary_track::init(object_t *obj1, object_t *obj2, int id)
     sko_rgKm=0;
     sko_spdKmh=0;
     isUserInitialised = obj2->isUserInitialized;
-    mAisPossibleMmsi = 0;
-    mAisConfirmedMmsi= 0;
+    mAisPossibleObj = 0;
+    mAisConfirmedObj= 0;
     mAisMaxPosibility= 0;
     mAisMaxPosibilityTimeMs = 0;
     fitProbability=1;
@@ -770,7 +770,7 @@ void C_primary_track::checkNewObject()
                 {
 
                     LinearFit(TRACK_STABLE_LEN);
-                    if(fitProbability<0.6)
+                    if(fitProbability<0.5)
                     {
                         printf("\n fitProbability too small:%f",fitProbability);
                     }
@@ -877,8 +877,10 @@ void C_primary_track::update()
         mAisMaxPosibilityTimeMs = CConfig::time_now_ms;
         if(mAisMaxPosibility>0)
         {
+
+            mAisConfirmedObj = mAisPossibleObj;
+            mAisConfirmedObj->isMatchToRadarTrack = true;
             mAisMaxPosibility = 0;
-            mAisConfirmedMmsi = mAisPossibleMmsi;
         }
     }
     checkNewObject();
@@ -1161,6 +1163,7 @@ C_primary_track* C_radar_data::getManualTrackzone(double xkm, double ykm, double
 //}
 bool C_radar_data::integrateAisPoint(AIS_object_t *obj)
 {
+
     for(int i=0;i<MAX_TRACKS_COUNT;i++)
     {
         C_primary_track* track=&(mTrackList[i]);
@@ -1175,16 +1178,34 @@ bool C_radar_data::integrateAisPoint(AIS_object_t *obj)
 
         double az,rg;
         ConvkmxyToPolarDeg(aisx,aisy,&az,&rg);
-
+        az = az-track->aziDeg;
+        rg = rg-track->rgKm;
         double AISprobability =
-                fastPow(CONST_E,-sq(    (az-track->aziDeg)   /degrees(aziErrStdRad)  )   )*
-                fastPow(CONST_E,-sq(    (rg-track->rgKm)     /(rgStdErrKm)       )   );
-        if(AISprobability>0.1&&AISprobability>track->mAisMaxPosibility)
+                fastPow(CONST_E,-sq((az)/degrees(aziErrStdRad)  )   )*
+                fastPow(CONST_E,-sq((rg)/(rgStdErrKm+0.1)       )   );
+        if(AISprobability>0.05)
         {
-            track->mAisMaxPosibility = AISprobability;
-            track->mAisMaxPosibilityTimeMs   = CConfig::time_now_ms;
-            track->mAisPossibleMmsi  = obj;
-            return true;
+            if(obj->mMMSI==477958800)
+            {
+                obj=obj;
+            }
+            if(AISprobability>track->mAisMaxPosibility)
+            {
+                track->mAisMaxPosibility = AISprobability;
+                track->mAisMaxPosibilityTimeMs   = CConfig::time_now_ms;
+                if(track->mAisPossibleObj)
+                {
+                    track->mAisPossibleObj->isMatchToRadarTrack=false;
+                    obj->isMatchToRadarTrack=true;
+                    track->mAisPossibleObj  = obj;
+                }
+                else
+                {
+                    obj->isMatchToRadarTrack=true;
+                    track->mAisPossibleObj  = obj;
+                }
+                return true;
+            }
         }
 
     }

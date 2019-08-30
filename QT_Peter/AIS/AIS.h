@@ -44,7 +44,7 @@ public:
     double               mCog;//course
     double               mSog;//speed
     qint64               mLut;//last update time
-    bool                isNewest;
+//    bool                isNewest;
     bool                isSelected;
     unsigned long       mUpdateTime;
 };

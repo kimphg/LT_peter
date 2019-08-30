@@ -250,26 +250,19 @@ void Mainwindow::drawAisTarget(QPainter *p)
         if(aisObj.isMatchToRadarTrack)continue;
         if(!isInsideViewZone(s.x,s.y))continue;
 
-        if(aisObj.isNewest)
+        DrawAISMark(s,radians(aisObj.mCog),p,aisObj.isSelected,aisObj.mName,8);
+        if(zoom_mode==ZoomZoom)
         {
-            DrawAISMark(s,radians(aisObj.mCog),p,aisObj.isSelected,aisObj.mName,8);
-            if(zoom_mode==ZoomZoom)
+            if(checkInsideZoom(s.x,s.y))
             {
-                if(checkInsideZoom(s.x,s.y))
-                {
-                    int dx= s.x-mZoomCenterx;
-                    int dy= s.y-mZoomCentery;
-                    PointInt iadPoint;
-                    iadPoint.x = mIADCenter.x+dx*mZoomScale;
-                    iadPoint.y = mIADCenter.y+dy*mZoomScale;
-                    DrawAISMark(iadPoint,radians(aisObj.mCog),p,aisObj.isSelected,aisObj.mName,12);
-                }
-                
+                int dx= s.x-mZoomCenterx;
+                int dy= s.y-mZoomCentery;
+                PointInt iadPoint;
+                iadPoint.x = mIADCenter.x+dx*mZoomScale;
+                iadPoint.y = mIADCenter.y+dy*mZoomScale;
+                DrawAISMark(iadPoint,radians(aisObj.mCog),p,aisObj.isSelected,aisObj.mName,12);
             }
-        }
-        else
-        {
-            p->drawPoint(s.x,s.y);
+
         }
     }
 
@@ -578,7 +571,7 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
     else if(event->buttons() & Qt::RightButton)
     {
 
-        checkClickRadarTarget(posx,posy);
+        if(!checkClickRadarTarget(posx,posy))
         if(ui->toolButton_ais_show->isChecked())
         {
             if(isInsideViewZone(posx,posy))
@@ -632,7 +625,7 @@ void Mainwindow::checkClickAIS(int xclick, int yclick)
     {
         AIS_object_t *aisObj = &(iter->second);
         if(aisObj->isSelected)continue;
-        if(!aisObj->isNewest)continue;
+        if(aisObj->isMatchToRadarTrack)continue;
         double fx,fy;
         C_radar_data::ConvWGSToKm(&fx,&fy,aisObj->mLong,aisObj->mLat);
         int x = (fx*mScale)+radCtX;
@@ -1057,7 +1050,7 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
         {
             int size = 10000.0/(CConfig::time_now_ms - track->lastUpdateTimeMs+400);
             if(size<TARG_SIZE)size=TARG_SIZE;//rect size depend to time
-            if(track->mAisConfirmedMmsi==0)
+            if(track->mAisConfirmedObj==0)
             {
                 p->drawEllipse(sTrack.x-size/2,sTrack.y-size/2,size,size);
             }
@@ -1560,7 +1553,7 @@ void Mainwindow::SetUpTheonGUILayout()
     ui->toolButton_exit_3->hide();
     ui->toolButton_passive_mode->hide();
     ui->groupBox_gps_3->hide();
-    ui->groupBox_statuses->setGeometry(1430,1165,480,30);
+    ui->groupBox_statuses->setGeometry(1400,1165,500,60);
     ui->groupBox_25->setGeometry(10,1010,130,100);
     ui->groupBox_gps->setGeometry(10,1120,211,70);
     ui->groupBox_15->setGeometry(10,50,310,65);
