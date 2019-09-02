@@ -11872,7 +11872,7 @@ background-color: rgba(255, 255, 255, 0);</string>
      <bool>false</bool>
     </property>
     <property name="currentIndex">
-     <number>5</number>
+     <number>3</number>
     </property>
     <property name="elideMode">
      <enum>Qt::ElideNone</enum>
@@ -23438,7 +23438,7 @@ background-color: rgba(255, 255, 255, 0);</string>
      <bool>false</bool>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>0</number>
     </property>
     <property name="elideMode">
      <enum>Qt::ElideNone</enum>
@@ -23571,8 +23571,32 @@ background-color: rgba(255, 255, 255, 0);</string>
        <property name="spacing">
         <number>3</number>
        </property>
-       <item row="2" column="0">
-        <widget class="QCustomButton" name="toolButton_dz_clear">
+       <item row="1" column="0">
+        <widget class="QCustomButton" name="toolButton_manual_tracking">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nhấn đúp chuột trái để khởi tạo,&lt;/p&gt;&lt;p&gt;nhấn chuột giữa để bắt điểm dấu&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Chế độ bám tay</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCustomButton" name="toolButton_dzs_1">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -23585,11 +23609,14 @@ background-color: rgba(255, 255, 255, 0);</string>
           </font>
          </property>
          <property name="text">
-          <string>Xóa các vùng  bám</string>
+          <string>Đặt vùng cấm bám</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
-       <item row="4" column="0">
+       <item row="2" column="1">
         <widget class="QCustomButton" name="toolButton_dzs_2">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -23613,8 +23640,8 @@ background-color: rgba(255, 255, 255, 0);</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QCustomButton" name="toolButton_dzs_1">
+       <item row="2" column="0">
+        <widget class="QCustomButton" name="toolButton_dz_clear">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -23627,15 +23654,12 @@ background-color: rgba(255, 255, 255, 0);</string>
           </font>
          </property>
          <property name="text">
-          <string>Đặt vùng cấm bám</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
+          <string>Xóa các vùng  bám</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QCustomButton" name="toolButton_manual_tracking">
+       <item row="3" column="0" colspan="2">
+        <widget class="QCustomButton" name="toolButton_autotracking">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -23651,9 +23675,12 @@ background-color: rgba(255, 255, 255, 0);</string>
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nhấn đúp chuột trái để khởi tạo,&lt;/p&gt;&lt;p&gt;nhấn chuột giữa để bắt điểm dấu&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>Chế độ bám tay</string>
+          <string>Tự động bám</string>
          </property>
          <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
           <bool>true</bool>
          </property>
         </widget>

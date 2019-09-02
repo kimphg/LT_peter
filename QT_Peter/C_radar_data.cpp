@@ -21,9 +21,12 @@
 #define TARGET_OBSERV_PERIOD 6500//ENVAR max periods to save object in the memory
 double aziErrStdRad;
 double targetMaxSpeedKmh;
+double mLinearFitStrength;
 static unsigned short           range_max;
 static    imgDrawMode           imgMode;
-static double                   scale_ppi,scale_zoom_ppi;
+static double                   scale_ppi;
+//scale_ppi:pix of the screen per pix of ppi
+static double  scale_zoom_ppi;
 static QImage     *img_ppi,*img_RAmp,*img_zoom_ppi,*img_histogram,*img_spectre,*img_zoom_ar;
 static  FILE *logfile;
 static bool isShowSled ;
@@ -754,10 +757,10 @@ void C_primary_track::checkNewObject()
 
         //add to history
         object_t* obj2 = &(objectHistory.back());
-        double dy = dlat2ykm(obj1->lat,obj2->lat);
-        double dx = dlon2xkm(obj1->lon ,obj2->lon,(obj1->lat + obj2->lat)/2);
+        double dy = dlat2ykm(objectList[0].lat,obj2->lat);
+        double dx = dlon2xkm(objectList[0].lon,obj2->lon,(objectList[0].lat + obj2->lat)/2);
 
-        if(((dx*dx+dy*dy)>1.0)||(lastUpdateTimeMs-obj2->timeMs>60000))//distance>1km
+        if(((dx*dx+dy*dy)>1.0))//distance>1km
             objectHistory.push_back(objectList[0]);
         //
         objectList.erase(objectList.begin());
@@ -857,11 +860,8 @@ void C_primary_track::update()
     //check lost condition
     else if((mState!= TrackState::lost)&&ageMs>TRACK_LOST_TIME)
     {
-        if(mState==TrackState::newDetection)
-        {
-            mState = TrackState::removed;
-        }
-        else {
+        mState = TrackState::removed;
+        if(isUserInitialised) {
             mState = TrackState::lost;
             CConfig::AddMessage(QString::fromUtf8("Mất MT SH:")+
                                 QString::number(uniqId)+" PV:"+
@@ -869,6 +869,7 @@ void C_primary_track::update()
                                 QString::number(nm(rgKm),'f',1)
                                 );
         }
+
         return;
     }
 
@@ -973,14 +974,14 @@ double xsum=0,x2sum=0,ysum=0,xysum=0;
     }
     double y2a=(nEle*y2tsum-tsum*y2sum)/(nEle*t2sum-tsum*tsum);
     double y2b=(t2sum*y2sum-tsum*y2tsum)/(t2sum*nEle-tsum*tsum);
-    for(int i=0;i<nEle;i++)// !!index start from 1
+    for(int i=0;i<nEle;i++)// !!index start from 0
     {
         y2[i]=y2a*t[i]+y2b;
     }
-    for(int i=1;i<nEle;i++)// !!index start from 1
+    for(int i=0;i<nEle;i++)// !!index start from 1
     {
-        obj[i].xkm+=(y1[i]-obj[i].xkm)*i/double(nEle);
-        obj[i].ykm+=(y2[i]-obj[i].ykm)*i/double(nEle);
+        obj[i].xkm+=(y1[i]-obj[i].xkm)*mLinearFitStrength;
+        obj[i].ykm+=(y2[i]-obj[i].ykm)*mLinearFitStrength;
     }
     //
     double azRadfit[3];
@@ -1011,7 +1012,14 @@ double xsum=0,x2sum=0,ysum=0,xysum=0;
 
 C_radar_data::C_radar_data()
 {
+    mLinearFitStrength =  CConfig::getDouble("mLinearFitStrength",0.5);
+    if(mLinearFitStrength>1||mLinearFitStrength<0.1)
+    {
+        mLinearFitStrength = 0.5;
+        CConfig::setValue("mLinearFitStrength",0.5);
+    }
 #ifdef THEON
+    isAutoTracking = true;
     loadDensityMap();
 #endif
     targetAsociationMinimumScore=CConfig::getDouble("targetAsociationMinScore",0.05);
@@ -1265,6 +1273,11 @@ void C_radar_data::addDetectionZone(double x, double y, double dazi, double drg,
     dw.maxDrg = drg;
     addDetectionZone(dw);
 
+}
+
+void C_radar_data::setIsAutoTracking(bool value)
+{
+    isAutoTracking = value;
 }
 /*
 void C_radar_data::setShipHeading(int shipHeading)
@@ -2264,9 +2277,13 @@ double C_radar_data::getScale_zoom_ppi() const
     return scale_zoom_ppi;
 }
 
-double C_radar_data::getScale_ppi() const
+double C_radar_data::getScale_ScreenPerPpi() const
 {
     return scale_ppi;
+}
+double C_radar_data::getScale_PpiPerKm() const
+{
+    return 1.0/sn_scale;
 }
 
 QImage *C_radar_data::getMimg_zoom_ar() const
@@ -2886,8 +2903,8 @@ void C_radar_data::procPix(short proc_azi,short lastAzi,short range)//_______sig
     {
 
         plot_t                  new_plot;
-        new_plot.isUsed = true;
-        new_plot.lastA =        new_plot.riseA  = new_plot.fallA= proc_azi;
+        new_plot.isUsed =       true;
+        new_plot.lastA  =       new_plot.riseA  = new_plot.fallA= proc_azi;
         new_plot.maxLevel =     data_mem.level[proc_azi][range];
         new_plot.sumEnergy =    data_mem.level[proc_azi][range];
         new_plot.dopler =       data_mem.dopler[proc_azi][range];
@@ -2895,7 +2912,7 @@ void C_radar_data::procPix(short proc_azi,short lastAzi,short range)//_______sig
         new_plot.sumR =         range;
         new_plot.maxR =         range;
         new_plot.minR =         range;
-        bool listFull = true;
+        bool listFull =         true;
 
         for(unsigned short i = 0;i<plot_list.size();++i)
         {
@@ -3112,16 +3129,14 @@ void C_radar_data::resetSled()
 }
 void C_radar_data::setScalePPI(float scale)
 {
+    //scale:pix of the screen per km
+
     scale_ppi = sn_scale*scale;
-    //setScaleZoom(scale/4.0);
-    //scale_zoom_ppi = scale_ppi*4;
-    //updateZoomRect();
+
 }
 void C_radar_data::setScaleZoom(float scale)
 {
-
-    scale_zoom_ppi = scale;//SIGNAL_SCALE_0*scale/scale_ppi;
-    //updateZoomRect();
+    scale_zoom_ppi = scale;
 }
 
 //void C_radar_data::drawZoomAR()
@@ -3283,9 +3298,8 @@ void C_radar_data::loadTerrain()
 void C_radar_data::ProcessObject(object_t *obj1)
 {
     //check  if object_t belonging to tracks
-    if(MAX_TRACKS_COUNT)
-        if(checkBelongToTrack(obj1))
-            return;
+    if(checkBelongToTrack(obj1))
+        return;
     // check if object_t belonging to another obj
     if(checkBelongToObj(obj1))return ;
     // add to mFreeObjList if inside DW
@@ -3295,10 +3309,14 @@ void C_radar_data::ProcessObject(object_t *obj1)
         addFreeObj(obj1);
     }
 #ifdef THEON
+    if(isAutoTracking)
     if(!checkInsideDWAvoid(degrees(obj1->azRad),obj1->rgKm))
     {
-        obj1->isUserInitialized=false;
-        addFreeObj(obj1);
+        if(getDensityLatLon(obj1->lat,obj1->lon))
+        {
+            obj1->isUserInitialized=false;
+            addFreeObj(obj1);
+        }
     }
 #endif
     //

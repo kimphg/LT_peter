@@ -19,7 +19,7 @@ AIS_object_t::AIS_object_t()
 
 void AIS_object_t::merge(AIS_object_t oldObj)
 {
-    isSelected = oldObj.isSelected;
+//    isSelected = oldObj.isSelected;
     if(mName.length()==0)
         mName = oldObj.mName;
     mUpdateTime = clock();
@@ -482,7 +482,7 @@ AIS_object_t AIS::GetAisObject()
     obj.mLong = get_longitude()/600000.0;
     obj.mLut = QDateTime::currentMSecsSinceEpoch();
 //    obj.isNewest = true;
-    obj.isSelected = false;
+//    obj.isSelected = false;
     obj.mName.replace('@',"");
 
     return  obj;

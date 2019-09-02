@@ -43,7 +43,8 @@ SOURCES += main.cpp\
 #    c_radar_simulation.cpp
     c_radar_simulation.cpp \
     dialoginputvalue.cpp \
-    dialogconfig.cpp
+    dialogconfig.cpp \
+    dialogdetaildisplay.cpp
 HEADERS  += \
     qcustombutton.h \
     qcustomframe.h \
@@ -70,7 +71,8 @@ HEADERS  += \
     c_sim_target.h \
     dialoginputvalue.h \
     dialogconfig.h \
-    common.h
+    common.h \
+    dialogdetaildisplay.h
 #    pch_file.h
 #PRECOMPILED_HEADER = "pch_file.h"
 #CONFIG += precompile_header
@@ -81,7 +83,8 @@ FORMS    += mainwindow.ui \
     statuswindow.ui \
     dialogmenudisplay.ui \
     dialoginputvalue.ui \
-    dialogconfig.ui
+    dialogconfig.ui \
+    dialogdetaildisplay.ui
 #win32:CONFIG(release, debug|release): LIBS += -L$$PWD/shapelib/ -lshapelib
 #else:unix: LIBS += -L$$PWD\shapelib\ -lshapelib
 #INCLUDEPATH += $$PWD/shapelib

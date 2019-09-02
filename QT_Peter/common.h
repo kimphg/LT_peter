@@ -2,6 +2,7 @@
 #define COMMON_H
 #define sq(x) (x*x)
 #define nm(x) (x/1.852)
+#define nm2km(x) (x*1.852)
 #define degrees(x) ((x)*57.295779513)
 #define radians(x) ((x)/57.295779513)
 #define CONST_NM 1.852// he so chuyen doi tu km sang hai ly

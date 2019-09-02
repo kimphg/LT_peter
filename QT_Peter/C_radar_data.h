@@ -83,7 +83,18 @@
 #include <queue>
 #include <AIS/AIS.h>
 
-
+struct PointInt
+{
+    int x,y;
+};
+struct PointDouble
+{
+    double x,y;
+};
+struct PointAziRgkm
+{
+    double aziRad,rg;
+};
 inline double dlon2xkm(double lon1,double lon2,double refLatDeg)
 {
     return  (((lon1 - lon2) * 111.31949079327357*cos(radians(refLatDeg))));
@@ -436,7 +447,7 @@ public:
     std::vector<plot_t>         plot_list;
     std::vector<object_t>       mFreeObjList;
     bool isManualTracking;
-    void setManualTracking(bool isManual)
+    void setManualTracking(bool isManual)// manual tracking
     {
         isManualTracking = isManual;
     }
@@ -548,6 +559,8 @@ public:
     void addDetectionZone(double x, double y,double dazi,double drg, bool isOneTime);
     std::vector<RangeAziWindow> mDetectZonesList;
 private:
+
+    bool isAutoTracking;
     int max_drange_plot;
     QTransform mPPITrans;
 //    bool isShipHeadingChanged;
@@ -635,7 +648,7 @@ public:
     QImage *getMimg_histogram() const;
     QImage *getMimg_spectre() const;
     QImage *getMimg_zoom_ar() const;
-    double getScale_ppi() const;
+    double getScale_ScreenPerPpi() const;
     double getScale_zoom_ppi() const;
     DensityMap *getDensityMap();
     void addDensityPoint(double lat, double lon);
@@ -647,6 +660,8 @@ public:
     static void ConvPolarToXY(double *x, double *y, double azi, double range);
     static void ConvkmxyToPolarDeg(double x, double y, double *azi, double *range);
     static void ConvWGSToKm(double *x, double *y, double m_Long, double m_Lat);
+    void setIsAutoTracking(bool value);
+    double getScale_PpiPerKm() const;
 };
 
 //extern C_radar_data radarData;

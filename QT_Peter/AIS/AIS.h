@@ -45,7 +45,7 @@ public:
     double               mSog;//speed
     qint64               mLut;//last update time
 //    bool                isNewest;
-    bool                isSelected;
+//    bool                isSelected;
     unsigned long       mUpdateTime;
 };
 class AIS

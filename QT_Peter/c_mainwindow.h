@@ -10,6 +10,7 @@
 #define HR_FILE_EXTENSION ".r2d"
 //#include <qse>
 #include <c_config.h>
+#include "dialogdetaildisplay.h"
 #include "dialogdocumentation.h"
 #include "C_radar_data.h"
 #include "c_radar_simulation.h"
@@ -56,18 +57,7 @@ class DialogDocumentation;
 //class QPushButton;
 //class QUdpSocket;
 }
-struct PointInt
-{
-    int x,y;
-};
-struct PointDouble
-{
-    double x,y;
-};
-struct PointAziRgkm
-{
-    double aziRad,rg;
-};
+
 class Mainwindow : public QMainWindow
 {
     Q_OBJECT
@@ -76,7 +66,7 @@ public:
     explicit Mainwindow(QWidget *parent = nullptr);
     ~Mainwindow();
     PointInt ConvKmXYToScrPoint(double x, double y);
-    bool checkClickRadarTarget(int xclick, int yclick);
+    C_primary_track* checkClickRadarTarget(int xclick, int yclick);
 protected:
     //void contextMenuEvent(QContextMenuEvent *event);
 //    void keyPressEvent(QKeyEvent *event);
@@ -90,6 +80,7 @@ protected:
     void mouseDoubleClickEvent( QMouseEvent * e );
     enum radarSate   { DISCONNECTED,CONNECTED,CONNECTED_ROTATE9_TXOFF,CONNECTED_ROTATE12_TXOFF, CONNECTED_ROTATE9_TXON,CONNECTED_ROTATE12_TXON } radar_state;
 private:
+    bool showAisName;
     QCursor cursor_default;
     QRect mIADrect;
     PointInt mIADCenter;
@@ -98,7 +89,7 @@ private:
 //    QProcess *processCuda ;
     dataProcessingThread        *processing;// thread xu ly du lieu radar
     c_radar_simulation          *simulator;// thread tao gia tin hieu
-    C_radar_data                *pRadar;
+    C_radar_data                *mRadarData;
     QThread                     *tprocessing;
 
     QString degreeSymbol ;
@@ -709,7 +700,7 @@ private slots:
 
     void on_toolButton_chong_nhieu_ppy_2_clicked(bool checked);
 
-    void on_toolButton_ais_hide_fishing_clicked(bool checked);
+//    void on_toolButton_ais_hide_fishing_clicked(bool checked);
 
     void on_customButton_load_density_clicked();
 
@@ -721,16 +712,18 @@ private slots:
 
     void on_toolButton_start_simulation_set_all_clicked(bool checked);
 
-    void on_toolButton_replay_clicked(bool checked);
+//    void on_toolButton_replay_clicked(bool checked);
 
-    void on_toolButton_dk_4_clicked(bool checked);
+//    void on_toolButton_dk_4_clicked(bool checked);
 
     void on_horizontalSlider_valueChanged(int value);
 
 //    void on_toolButton_replay_fast_clicked(bool checked);
 
-private:
+    void on_toolButton_autotracking_clicked(bool checked);
 
+private:
+    int target_size;
 //    bool mShowobjects,
 //    bool mShowTracks;
 
@@ -772,7 +765,7 @@ private:
     void DrawViewFrameSquared(QPainter *p);
     void checkCuda();
     void initCursor();
-    void DrawAISMark(PointInt s, double head, QPainter *p, bool isSelected, QString name, int size);
+    void DrawAISMark(PointInt s, double head, QPainter *p, QString name, int size, int vectorLen);
     bool isInsideIADZone(int x, int y);
     bool checkInsideZoom(int x, int y);
     void saveScreenShot(QString fileName);
