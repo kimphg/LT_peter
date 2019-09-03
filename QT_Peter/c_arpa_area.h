@@ -22,6 +22,7 @@ public:
     int mMouseLastX,mMouseLastY;
     int mMousex,mMousey;
     bool showAisName;
+    bool isDrawTargetNumber;
     int target_size;
     double trueShiftDeg,headShift;
     int radCtX,radCtY;
@@ -33,7 +34,7 @@ public:
     void DrawAISMark(PointInt s, double head, QPainter *p, QString name, int size,int vectorLen);
     bool isInsideViewRect(int x, int y);
     void setCenterLonLat(double lon,double lat);
-    void DrawRadarTargetByPainter(QPainter *p);
+    void DrawRadarTargets(QPainter *p);
 //    bool isInsideViewZone(int x, int y, int scrCtX, int scrCtY, int range);
     inline static void rotateVector(double angle,int* x,int* y)
     {
@@ -60,6 +61,7 @@ public:
     }
 
     void setTarget_size(int value);
+    void setScale(double scale);
 };
 
 #endif // C_ARPA_AREA_H

@@ -85,7 +85,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(QTDIR)\lib\qtmain.lib;shell32.lib;.\WpdPack\Lib\Packet.lib;.\WpdPack\Lib\wpcap.lib;$(QTDIR)\lib\Qt5Widgets.lib;$(QTDIR)\lib\Qt5Gui.lib;$(QTDIR)\lib\Qt5Network.lib;$(QTDIR)\lib\Qt5SerialPort.lib;$(QTDIR)\lib\Qt5Core.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(QTDIR)\lib\qtmain.lib;shell32.lib;.\WpdPack\Lib\Packet.lib;.\WpdPack\Lib\wpcap.lib;$(QTDIR)\lib\Qt5Concurrent.lib;$(QTDIR)\lib\Qt5Widgets.lib;$(QTDIR)\lib\Qt5Gui.lib;$(QTDIR)\lib\Qt5Network.lib;$(QTDIR)\lib\Qt5SerialPort.lib;$(QTDIR)\lib\Qt5Core.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;C:\utils\my_sql\my_sql\lib;C:\utils\postgresql\pgsql\lib;$(QTDIR)\lib;.\WpdPack\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>
@@ -141,7 +141,7 @@
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(QTDIR)\lib\qtmaind.lib;shell32.lib;.\WpdPack\Lib\Packet.lib;.\WpdPack\Lib\wpcap.lib;$(QTDIR)\lib\Qt5Widgetsd.lib;$(QTDIR)\lib\Qt5Guid.lib;$(QTDIR)\lib\Qt5Networkd.lib;$(QTDIR)\lib\Qt5SerialPortd.lib;$(QTDIR)\lib\Qt5Cored.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(QTDIR)\lib\qtmaind.lib;shell32.lib;.\WpdPack\Lib\Packet.lib;.\WpdPack\Lib\wpcap.lib;$(QTDIR)\lib\Qt5Concurrent.lib;$(QTDIR)\lib\Qt5Widgetsd.lib;$(QTDIR)\lib\Qt5Guid.lib;$(QTDIR)\lib\Qt5Networkd.lib;$(QTDIR)\lib\Qt5SerialPortd.lib;$(QTDIR)\lib\Qt5Cored.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;C:\utils\my_sql\my_sql\lib;C:\utils\postgresql\pgsql\lib;$(QTDIR)\lib;.\WpdPack\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>
@@ -176,6 +176,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AIS\AIS.cpp" />
+    <ClCompile Include="c_arpa_area.cpp" />
     <ClCompile Include="c_config.cpp" />
     <ClCompile Include="c_gps.cpp" />
     <ClCompile Include="c_mainwindow.cpp" />
@@ -187,6 +188,7 @@
     <ClCompile Include="dialogaisinfo.cpp" />
     <ClCompile Include="dialogcommandlog.cpp" />
     <ClCompile Include="dialogconfig.cpp" />
+    <ClCompile Include="dialogdetaildisplay.cpp" />
     <ClCompile Include="dialogdocumentation.cpp" />
     <ClCompile Include="dialoginputvalue.cpp" />
     <ClCompile Include="dialogmenudisplay.cpp" />
@@ -200,6 +202,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AIS\AIS.h" />
+    <ClInclude Include="c_arpa_area.h" />
     <ClInclude Include="c_config.h" />
     <ClInclude Include="c_gps.h" />
     <QtMoc Include="c_mainwindow.h">
@@ -221,6 +224,7 @@
       <Define Condition="'$(Configuration)|$(Platform)'=='Release|x64'">UNICODE;WIN32;WIN64;QT_NO_DEBUG;QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_SERIALPORT_LIB;QT_CORE_LIB;_MSC_VER=1800;_WIN32;_WIN64</Define>
       <Define Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">UNICODE;WIN32;WIN64;QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_SERIALPORT_LIB;QT_CORE_LIB;_MSC_VER=1800;_WIN32;_WIN64</Define>
     </QtMoc>
+    <ClInclude Include="common.h" />
     <QtMoc Include="dialogaisinfo.h">
       <Define Condition="'$(Configuration)|$(Platform)'=='Release|x64'">UNICODE;WIN32;WIN64;QT_NO_DEBUG;QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_SERIALPORT_LIB;QT_CORE_LIB;_MSC_VER=1800;_WIN32;_WIN64</Define>
       <Define Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">UNICODE;WIN32;WIN64;QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_SERIALPORT_LIB;QT_CORE_LIB;_MSC_VER=1800;_WIN32;_WIN64</Define>
@@ -230,6 +234,10 @@
       <Define Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">UNICODE;WIN32;WIN64;QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_SERIALPORT_LIB;QT_CORE_LIB;_MSC_VER=1800;_WIN32;_WIN64</Define>
     </QtMoc>
     <QtMoc Include="dialogconfig.h">
+      <Define Condition="'$(Configuration)|$(Platform)'=='Release|x64'">UNICODE;WIN32;WIN64;QT_NO_DEBUG;QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_SERIALPORT_LIB;QT_CORE_LIB;_MSC_VER=1800;_WIN32;_WIN64</Define>
+      <Define Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">UNICODE;WIN32;WIN64;QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_SERIALPORT_LIB;QT_CORE_LIB;_MSC_VER=1800;_WIN32;_WIN64</Define>
+    </QtMoc>
+    <QtMoc Include="dialogdetaildisplay.h">
       <Define Condition="'$(Configuration)|$(Platform)'=='Release|x64'">UNICODE;WIN32;WIN64;QT_NO_DEBUG;QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_SERIALPORT_LIB;QT_CORE_LIB;_MSC_VER=1800;_WIN32;_WIN64</Define>
       <Define Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">UNICODE;WIN32;WIN64;QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_SERIALPORT_LIB;QT_CORE_LIB;_MSC_VER=1800;_WIN32;_WIN64</Define>
     </QtMoc>
@@ -275,6 +283,7 @@
     <ClInclude Include="ui_dialogaisinfo.h" />
     <ClInclude Include="ui_dialogcommandlog.h" />
     <ClInclude Include="ui_dialogconfig.h" />
+    <ClInclude Include="ui_dialogdetaildisplay.h" />
     <ClInclude Include="ui_dialogdocumentation.h" />
     <ClInclude Include="ui_dialoginputvalue.h" />
     <ClInclude Include="ui_dialogmenudisplay.h" />
@@ -293,6 +302,10 @@
     <QtUic Include="dialogconfig.ui">
       <OutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ui_dialogconfig.h</OutputFile>
       <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ui_dialogconfig.h</OutputFile>
+    </QtUic>
+    <QtUic Include="dialogdetaildisplay.ui">
+      <OutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ui_dialogdetaildisplay.h</OutputFile>
+      <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ui_dialogdetaildisplay.h</OutputFile>
     </QtUic>
     <QtUic Include="dialogdocumentation.ui">
       <OutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ui_dialogdocumentation.h</OutputFile>

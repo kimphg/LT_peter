@@ -2,8 +2,8 @@
 #define C_RAW_DATA_H
 //  |----------------------------------------------------------|
 //  |HR2D signal processing class and tracking algorithm       |
-//  |First release: November 2015                              |
-//  |Last update: Jan 2019                                     |
+//  |First release: Nov 2015                                   |
+//  |Last update: Sep 2019                                     |
 //  |Author: Phung Kim Phuong                                  |
 //  |----------------------------------------------------------|
 #include <common.h>
@@ -243,7 +243,10 @@ inline double fastPow(double a, double b) {
     u.x[0] = 0;
     return u.d;
 }
-
+inline double likelihood(double e, double sigma)
+{
+    return fastPow(CONST_E,-sq(e/sigma));
+}
 inline double ConvXYToAziRd(double x, double y)
 {
     if (!y)        return (x>0 ? PI_CHIA2 : (PI_NHAN2 - PI_CHIA2));
@@ -418,7 +421,7 @@ public:
     void checkNewObject();
 private:
     double courseRad;
-    double mSpeedkmh;
+//    double mSpeedkmh;
     void generateTTM();
     uchar getCheckSum(QString message);
 };

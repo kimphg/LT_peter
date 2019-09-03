@@ -52,7 +52,7 @@ void DialogDetailDisplay::paintEvent(QPaintEvent *event)
     QPainter p(this);
     DrawSignal(&p);
     rda.drawAisTarget(&p);
-    rda.DrawRadarTargetByPainter(&p);
+    rda.DrawRadarTargets(&p);
 }
 
 void DialogDetailDisplay::timerEvent(QTimerEvent *event)

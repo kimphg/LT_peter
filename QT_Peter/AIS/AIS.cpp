@@ -15,6 +15,7 @@ QString firstHalfMsg[10];
 AIS_object_t::AIS_object_t()
 {
     isMatchToRadarTrack =false;
+    mUpdateTime = clock();
 }
 
 void AIS_object_t::merge(AIS_object_t oldObj)
@@ -122,6 +123,10 @@ QString AIS_object_t::printData()
                   +"m\n");
     output.append(QString::fromUtf8("Điểm đến:")
                   + mDst
+                  +"\n");
+    output.append(QString::fromUtf8("Cập nhật gần nhất:")
+                  + QString::number((clock()-mUpdateTime)/1000)
+                  +"s"
                   +"\n");
     return output;
 }

@@ -55,7 +55,7 @@ void C_arpa_area::DrawAISMark(PointInt s ,double head,QPainter *p,QString name,i
     if(showAisName)
     {
         p->setFont(QFont("Times", 12));
-        p->drawText(s.x+size,s.y+size,150,20,0,name);
+        p->drawText(s.x+size,s.y+size,250,30,0,name);
     }
 
 
@@ -85,9 +85,15 @@ C_arpa_area::C_arpa_area()
 
 }
 
+void C_arpa_area::setScale(double scale)
+{
+    mScale = scale;
+    setTarget_size( 0.5*mScale);
+}
+
 void C_arpa_area::setTarget_size(int value)
 {
-    printf("\nScale:%f",mScale);
+    isDrawTargetNumber = mScale>10;
     target_size = value;
     if(target_size<8)target_size=8;
     else if(target_size>20)target_size=20;
@@ -143,10 +149,10 @@ C_primary_track* C_arpa_area::checkClickRadarTarget(int xclick, int yclick)
     return 0;
 }
 
-void C_arpa_area::DrawRadarTargetByPainter(QPainter* p)//draw radar target from pRadar->mTrackList
+void C_arpa_area::DrawRadarTargets(QPainter* p)//draw radar target from pRadar->mTrackList
 {
     p->setFont(QFont("Times", 8));
-    //draw location history
+    //draw location history of own ship
     p->setPen(penCyan);
     std::vector<std::pair<double, double> > *locationHistory = CConfig::GetLocationHistory();
     if(locationHistory->size())
@@ -194,7 +200,8 @@ void C_arpa_area::DrawRadarTargetByPainter(QPainter* p)//draw radar target from 
     for (uint i = 0;i<MAX_TRACKS_COUNT;i++)
     {
         C_primary_track* track = &(mRadarData->mTrackList[i]);
-        if(track->mState!=TrackState::confirmed)continue;
+        if(track->mState==TrackState::removed)continue;
+        if(track->mState==TrackState::newDetection)continue;
         PointInt sTrack = ConvWGSToScrPoint(track->lon,track->lat);
         if(track->isSelected)//selected
         {
@@ -249,14 +256,14 @@ void C_arpa_area::DrawRadarTargetByPainter(QPainter* p)//draw radar target from 
                 //p->setPen(penSelTarget);
                 p->drawRect(sTrack.x-size/2,sTrack.y-size/2,size,size);
             }
-
+            // draw speed vector
             int vectorLen = track->mSpeedkmhFit*mScale/6.0;
             int sx = sTrack.x+short(vectorLen*sinFast(track->courseRadFit+radians(trueShiftDeg)));
             int sy = sTrack.y-short(vectorLen*cosFast(track->courseRadFit+radians(trueShiftDeg)));
             p->drawLine(sx,sy,sTrack.x,sTrack.y);
 
             //draw target number
-            p->drawText(sTrack.x+target_size/2+1,sTrack.y+target_size/2+1,100,50,0,QString::number(track->uniqId));
+            if(isDrawTargetNumber)p->drawText(sTrack.x+target_size/2+1,sTrack.y+target_size/2+1,100,50,0,QString::number(track->uniqId));
         }
 
     }

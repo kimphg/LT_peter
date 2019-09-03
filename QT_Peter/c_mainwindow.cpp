@@ -121,7 +121,7 @@ void Mainwindow::mouseDoubleClickEvent( QMouseEvent * e )
         if(posy)mMousey= posy;
         if(isInsideViewZone(mMousex,mMousey))
         {
-            C_primary_track* track = checkClickRadarTarget(mMousex,mMousey);
+            C_primary_track* track = rda_main.checkClickRadarTarget(mMousex,mMousey);
             if(track)
             {
                 track->isUserInitialised=true;
@@ -977,7 +977,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
 
     //printf("paint:%ld\n",clkBegin);
     QPainter p(this);
-    p.setRenderHint(QPainter::Antialiasing, true);
+    //p.setRenderHint(QPainter::Antialiasing, true);
     if(pMap)
     {
         p.drawPixmap(SCR_LEFT_MARGIN,SCR_TOP_MARGIN,SCR_H,SCR_H,
@@ -1002,7 +1002,12 @@ void Mainwindow::paintEvent(QPaintEvent *event)
         QRectF signRect(RAD_DISPLAY_RES-(rda_main.radCtX),RAD_DISPLAY_RES-(rda_main.radCtY),SCR_W,SCR_H);
         p.drawImage(screen,*rda_main.mRadarData->getMimg_ppi(),signRect,Qt::AutoColor);
     }
-    if(isRadarShow)rda_main.DrawRadarTargetByPainter(&p);
+    //draw zoom rect
+    p.setPen(QPen(QColor(255,255,255,200),0,Qt::DashLine));
+    p.setBrush(Qt::NoBrush);
+    p.drawRect(mZoomCenterx-zoom_size/2.0,mZoomCentery-zoom_size/2.0,zoom_size,zoom_size);
+    //draw radar targets
+    if(isRadarShow)rda_main.DrawRadarTargets(&p);
     UpdateMouseStat(&p);
     //ve luoi cu ly phuong vi
     DrawDetectZones(&p);
@@ -1332,7 +1337,7 @@ void Mainwindow::SetUpTheonGUILayout()
     ui->toolButton_exit_3->hide();
     ui->toolButton_passive_mode->hide();
     ui->groupBox_gps_3->hide();
-    ui->groupBox_statuses->setGeometry(1400,1165,500,60);
+    ui->groupBox_statuses->setGeometry(1400,1145,500,60);
     ui->groupBox_25->setGeometry(10,1010,130,100);
     ui->groupBox_gps->setGeometry(10,1120,211,70);
     ui->groupBox_15->setGeometry(10,50,310,65);
@@ -2345,7 +2350,7 @@ void Mainwindow::ViewTrackInfo()
 void Mainwindow::sync1S()//period 1 second
 {
     checkCuda();
-    rda_main.setTarget_size( 0.5*rda_main.mScale);
+
     if(CConfig::getWarningList()->size())
     {
         std::queue<WarningMessage> * listMsg = (CConfig::getWarningList());
@@ -2599,13 +2604,13 @@ void Mainwindow::setScaleRange(double srange)
 {
     if(mDistanceUnit==0)
     {
-        rda_main.mScale = (SCR_H-SCR_BORDER_SIZE)/(rangeRatio*srange )/2;
+        rda_main.setScale( (SCR_H-SCR_BORDER_SIZE)/(rangeRatio*srange )/2);
         ringStep = srange/4;
         ui->label_range->setText(QString::number(srange)+strDistanceUnit);
     }
     else if(mDistanceUnit==1)
     {
-        rda_main.mScale = (SCR_H-SCR_BORDER_SIZE)/(rangeRatio*srange )/2;
+        rda_main.setScale( (SCR_H-SCR_BORDER_SIZE)/(rangeRatio*srange )/2);
         ringStep = srange/5;
         ui->label_range->setText(QString::number(srange)+strDistanceUnit);
     }

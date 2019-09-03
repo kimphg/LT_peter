@@ -377,10 +377,7 @@ double C_primary_track::estimateScore(object_t *obj1,object_t *obj2)
 
     double distancekm = sqrt(dx*dx+dy*dy);
 
-    //double speedkmh = distancekm/(dtime);
-    //if(speedkmh>500)return -1;
-    double distanceCoeff = distancekm/(targetMaxSpeedKmh*dtime+ obj1->rgKm*aziErrStdRad);
-    if(distanceCoeff>3.0)return -1;
+
     double rgSpeedkmh = abs(obj1->rgKm - obj2->rgKm)/(dtime);
 #ifdef THEON
     double dDopler = abs(obj1->dopler-obj2->dopler);
@@ -394,17 +391,10 @@ double C_primary_track::estimateScore(object_t *obj1,object_t *obj2)
     double dazi = abs(obj1->azRad-obj2->azRad);
     if(dazi>PI)dazi = PI_NHAN2-dazi;
     if(dazi<-PI)dazi = dazi+PI_NHAN2;
-    dazi       /=(aziErrStdRad+(targetMaxSpeedKmh/2)*dtime/obj1->rgKm);
-    if(dazi>3)
-        return -1;
-    //normalize params
-    //speedkmh/=targetMaxSpeedKmh;
-    rgSpeedkmh = abs(rgSpeedkmh)/(targetMaxSpeedKmh+obj1->rgStdEr);
-    //dDopler/=2.0;
     double score =
-            fastPow(CONST_E,-sq(distanceCoeff))
-            *fastPow(CONST_E,-sq(dazi))
-            *fastPow(CONST_E,-sq(rgSpeedkmh));
+            likelihood(distancekm,(targetMaxSpeedKmh*dtime+ obj1->rgKm*aziErrStdRad))
+            *likelihood(dazi,(aziErrStdRad+(targetMaxSpeedKmh/2)*dtime/obj1->rgKm))
+            *likelihood(rgSpeedkmh,targetMaxSpeedKmh/3+obj1->rgStdEr);
 #ifdef DEBUGMODE
     /*if(distancekm>0.1&&score>0.1){
     fprintf(logfile,"\n%f,",score);//1.0
@@ -531,7 +521,7 @@ double C_primary_track::estimateScore(object_t *obj1)
     double dx = dlon2xkm(obj1->lon ,obj2->lon,(obj1->lat + obj2->lat)/2);
 
     double distancekm = sqrt(dx*dx+dy*dy);
-    double distanceCoeff = distancekm/(targetMaxSpeedKmh*dtime   + obj1->rgKm*aziErrStdRad);
+    double distanceCoeff = distancekm/(targetMaxSpeedKmh*dtime/3   + obj1->rgKm*aziErrStdRad);
     if(distanceCoeff>3.0)
     {
         //printf("\n obj rejected by distanceCoeff");
@@ -568,7 +558,7 @@ double C_primary_track::estimateScore(object_t *obj1)
     double dazi = abs(obj1->azRad-obj2->azRad);
     if(dazi>PI)dazi = PI_NHAN2-dazi;
     if(dazi<-PI)dazi = dazi+PI_NHAN2;
-    dazi       /=(aziErrStdRad+(targetMaxSpeedKmh/2)*dtime/obj1->rgKm);
+    dazi       /=(aziErrStdRad+(targetMaxSpeedKmh/3)*dtime/obj1->rgKm);
     if(dazi>3)
         return -1;
     //    dDopler/=2.0;
@@ -585,7 +575,7 @@ double C_primary_track::estimateScore(object_t *obj1)
             //            *fastPow(CONST_E,-sq(speedkmh))
             //            *fastPow(CONST_E,-sq(dDopler))
             *fastPow(CONST_E,-sq(dazi))
-            //*fastPow(CONST_E,-sq(dRgSp))
+            *fastPow(CONST_E,-sq(dRgSp*3/(targetMaxSpeedKmh)))
             *linearFitProb;
 #ifdef DEBUGMODE
     {
@@ -648,7 +638,7 @@ void C_primary_track::init(double txkm, double tykm)
     mDopler = newobject.dopler;
     rgSpeedkmh = 0;
     //        isRemoved  = false;
-    mSpeedkmh  = 0;
+//    mSpeedkmh  = 0;
     //        isLost     = false;
     courseRad = 0;
     mSpeedkmhFit    = 0;
@@ -694,7 +684,7 @@ void C_primary_track::init(object_t *obj1, object_t *obj2, int id)
     if(mDopler>7)mDopler-=16;
     rgSpeedkmh = (obj1->rgKm-obj2->rgKm)/dtime;
     //        isRemoved  = false;
-    mSpeedkmh  = sqrt(dx*dx+dy*dy)/dtime;
+//    mSpeedkmh  = sqrt(dx*dx+dy*dy)/dtime;
     //        isLost     = false;
     courseRad = ConvXYToAziRd(dx,dy);
     mSpeedkmhFit    = sqrt(dx*dx+dy*dy)/dtime;
@@ -731,17 +721,16 @@ int C_primary_track::getPosDensity()
 void C_primary_track::checkNewObject()
 {
     if((possibleMaxScore<targetAsociationMinimumScore))return;//no new plot
-
+    printf("possibleMaxScore:%f \n",possibleMaxScore);
     if(possibleMaxScore<targetAsociationLowScore)
     {
         waitingForBetterScore++;
-
-        if(waitingForBetterScore<70)return;//64 = 1 round
-        //printf("\npossibleMaxScore accepted:%f",possibleMaxScore);
+        if(waitingForBetterScore<70)return;
+        waitingForBetterScore = 0;
     }
 
     possibleMaxScore = 0;
-    waitingForBetterScore = 0;
+
     // add obj to track
     objectList.push_back(possibleObj);
     object_t* obj1  = &(objectList.back());
@@ -757,10 +746,10 @@ void C_primary_track::checkNewObject()
 
         //add to history
         object_t* obj2 = &(objectHistory.back());
-        double dy = dlat2ykm(objectList[0].lat,obj2->lat);
-        double dx = dlon2xkm(objectList[0].lon,obj2->lon,(objectList[0].lat + obj2->lat)/2);
+//        double dy = dlat2ykm(objectList[0].lat,obj2->lat);
+//        double dx = dlon2xkm(objectList[0].lon,obj2->lon,(objectList[0].lat + obj2->lat)/2);
 
-        if(((dx*dx+dy*dy)>1.0))//distance>1km
+        if(abs(obj2->timeMs-objectList[0].timeMs)>60000)//distance>1km
             objectHistory.push_back(objectList[0]);
         //
         objectList.erase(objectList.begin());
@@ -1188,10 +1177,12 @@ bool C_radar_data::integrateAisPoint(AIS_object_t *obj)
         ConvkmxyToPolarDeg(aisx,aisy,&az,&rg);
         az = az-track->aziDeg;
         rg = rg-track->rgKm;
+        double dspeed = nm2km(obj->mSog)-track->mSpeedkmhFit;
         double AISprobability =
-                fastPow(CONST_E,-sq((az)/degrees(aziErrStdRad)  )   )*
-                fastPow(CONST_E,-sq((rg)/(rgStdErrKm+0.1)       )   );
-        if(AISprobability>0.05)
+                likelihood(az,degrees(aziErrStdRad))*
+                likelihood(rg,(rgStdErrKm+0.1))*
+                likelihood(dspeed,targetMaxSpeedKmh/3.0  );
+        if(AISprobability>0.02)
         {
             if(obj->mMMSI==477958800)
             {
@@ -2317,7 +2308,7 @@ QImage *C_radar_data::getMimg_ppi() const
 }
 int C_radar_data::getDensityLatLon(double lat, double lon)
 {
-    std::pair<int,int> key(lat*1000,lon*1000);
+    std::pair<int,int> key(int(lat*1000),int(lon*1000));
     DensityMap::iterator it =targetDensityMap.find(key);
     if ( it != targetDensityMap.end() )
     {

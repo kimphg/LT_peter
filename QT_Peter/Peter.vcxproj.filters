@@ -50,6 +50,9 @@
     <ClCompile Include="AIS\AIS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="c_arpa_area.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="c_config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -81,6 +84,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dialogconfig.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogdetaildisplay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dialogdocumentation.cpp">
@@ -118,6 +124,9 @@
     <ClInclude Include="AIS\AIS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="c_arpa_area.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="c_config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -145,6 +154,9 @@
     <QtMoc Include="Cmap\cmap.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <ClInclude Include="common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <QtMoc Include="dialogaisinfo.h">
       <Filter>Header Files</Filter>
     </QtMoc>
@@ -152,6 +164,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="dialogconfig.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="dialogdetaildisplay.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="dialogdocumentation.h">
@@ -218,6 +233,8 @@
     
     
     
+    
+    
     <ClInclude Include="ui_dialogaisinfo.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
@@ -225,6 +242,9 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="ui_dialogconfig.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_dialogdetaildisplay.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="ui_dialogdocumentation.h">
@@ -251,6 +271,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="dialogconfig.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="dialogdetaildisplay.ui">
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="dialogdocumentation.ui">
