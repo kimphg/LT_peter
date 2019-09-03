@@ -66,7 +66,7 @@ public:
     explicit Mainwindow(QWidget *parent = nullptr);
     ~Mainwindow();
     PointInt ConvKmXYToScrPoint(double x, double y);
-    C_primary_track* checkClickRadarTarget(int xclick, int yclick);
+    C_primary_track* checkClickRadarTarget(int xclick, int yclick, bool isDoubleClick = false);
 protected:
     //void contextMenuEvent(QContextMenuEvent *event);
 //    void keyPressEvent(QKeyEvent *event);
@@ -78,18 +78,15 @@ protected:
     void wheelEvent(QWheelEvent *event);
     void keyPressEvent(QKeyEvent *event);
     void mouseDoubleClickEvent( QMouseEvent * e );
-    enum radarSate   { DISCONNECTED,CONNECTED,CONNECTED_ROTATE9_TXOFF,CONNECTED_ROTATE12_TXOFF, CONNECTED_ROTATE9_TXON,CONNECTED_ROTATE12_TXON } radar_state;
+//    enum radarSate   { DISCONNECTED,CONNECTED,CONNECTED_ROTATE9_TXOFF,CONNECTED_ROTATE12_TXOFF, CONNECTED_ROTATE9_TXON,CONNECTED_ROTATE12_TXON } radar_state;
 private:
-    bool showAisName;
+
     QCursor cursor_default;
     QRect mIADrect;
     PointInt mIADCenter;
     double mZoomScale;
     QRect ppiRect;
-//    QProcess *processCuda ;
-    dataProcessingThread        *processing;// thread xu ly du lieu radar
     c_radar_simulation          *simulator;// thread tao gia tin hieu
-    C_radar_data                *mRadarData;
     QThread                     *tprocessing;
 
     QString degreeSymbol ;
@@ -135,12 +132,12 @@ private:
     void showTime();
     void DrawViewFrame(QPainter *p);
 //    void DrawSignal(QPainter *p);
-    void drawAisTarget(QPainter *p);
-    void DrawRadarTargetByPainter(QPainter* p);
+//    void drawAisTarget(QPainter *p);
+//    void DrawRadarTargetByPainter(QPainter* p);
 
     void ReloadSetting();
     void SendCommandControl();
-    void SetGPS(double lat, double lon);
+//    void SetGPS(double lat, double lon);
 public slots:
 //    void UpdateSetting();
 //    void UpdateSignScale();
@@ -158,8 +155,8 @@ protected slots:
     void closeEvent(QCloseEvent *event);
 private:
 
-    void setRadarState(radarSate radarState);
-    bool ProcDataAIS(BYTE *szBuff, int nLeng );
+//    void setRadarState(radarSate radarState);
+//    bool ProcDataAIS(BYTE *szBuff, int nLeng );
 //public:
 //    void setScaleNM(unsigned short rangeNM);
 //    void drawAisTarget2(QPainter *p);
@@ -722,8 +719,11 @@ private slots:
 
     void on_toolButton_autotracking_clicked(bool checked);
 
+    void on_toolButton_radar_clicked(bool checked);
+
 private:
-    int target_size;
+    bool isRadarShow;
+//    int target_size;
 //    bool mShowobjects,
 //    bool mShowTracks;
 
@@ -736,7 +736,7 @@ private:
 //    void ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat);
     void setScaleRange(double srange);
     void DrawIADArea(QPainter *p);
-    bool isInsideViewZone(int x, int y);
+//    bool isInsideViewZone(int x, int y);
     void UpdateMouseStat(QPainter *p);
     void setMouseMode(mouseMode mode, bool isOn);
     bool CalcAziContour(double theta, double d);
@@ -772,6 +772,7 @@ private:
     void SetTx(bool onoff);
     bool CheckTxCondition(bool isPopupMsg);
     PointDouble ConvScrPointToWGS(int x, int y);
+    bool isInsideViewZone(int x, int y);
 };
 
 #endif // MAINWINDOW_H

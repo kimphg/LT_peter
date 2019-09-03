@@ -31,11 +31,11 @@ void DialogAisInfo::setDataSource(AIS_object_t *aisData ,C_primary_track* radarD
     //this->setWindowFlags(Qt::Widget);
     //this->setWindowFlags(this->windowFlags()&(~Qt::WindowContextHelpButtonHint));
     this->setFixedSize(width(),height());
-    this->setGeometry(10,350,0,0);
+    this->setGeometry(5,350,0,0);
     setAttribute(Qt::WA_NoSystemBackground);
     setAttribute(Qt::WA_PaintOnScreen);
     setAttribute(Qt::WA_TranslucentBackground);
-
+    setAttribute(Qt::WA_TransparentForMouseEvents);
     this->show();
     UpdateData();
 }
@@ -58,6 +58,7 @@ void DialogAisInfo::UpdateData()
     }
     if(mRadarData)
     {
+        if(mRadarData->mState==TrackState::removed)return;
         ui->textBrowser_2->show();
         ui->textBrowser_2->setText(QString::fromUtf8("Dữ liệu ra đa:\n")+mRadarData->printData());
 
@@ -67,7 +68,7 @@ void DialogAisInfo::UpdateData()
         }
         else if(mRadarData->mAisPossibleObj)
         {
-            ui->textBrowser->setText(QString::fromUtf8("Dữ liệu AIS:\n")+mRadarData->mAisConfirmedObj->printData());
+            ui->textBrowser->setText(QString::fromUtf8("Dữ liệu AIS:\n")+mRadarData->mAisPossibleObj->printData());
         }
 
     }

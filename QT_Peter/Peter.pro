@@ -44,7 +44,8 @@ SOURCES += main.cpp\
     c_radar_simulation.cpp \
     dialoginputvalue.cpp \
     dialogconfig.cpp \
-    dialogdetaildisplay.cpp
+    dialogdetaildisplay.cpp \
+    c_arpa_area.cpp
 HEADERS  += \
     qcustombutton.h \
     qcustomframe.h \
@@ -72,7 +73,8 @@ HEADERS  += \
     dialoginputvalue.h \
     dialogconfig.h \
     common.h \
-    dialogdetaildisplay.h
+    dialogdetaildisplay.h \
+    c_arpa_area.h
 #    pch_file.h
 #PRECOMPILED_HEADER = "pch_file.h"
 #CONFIG += precompile_header

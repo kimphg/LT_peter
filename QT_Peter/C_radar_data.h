@@ -346,6 +346,7 @@ public:
         output.append(QString::fromUtf8("Hướng di chuyển(độ):")+QString::number(courseDeg,'f',1)+"\n");
         output.append(QString::fromUtf8("Kinh độ:")+demicalDegToDegMin(lon)+"\n");
         output.append(QString::fromUtf8("Vỹ độ:")+demicalDegToDegMin(lat)+"\n");
+        output.append(QString::fromUtf8("Cập nhật cách đây:")+QString::number(int(CConfig::time_now_ms-lastUpdateTimeMs)/1000)+"s"+"\n");
         output.append(QString::fromUtf8("Độ hợp lý:")+QString::number(fitProbability,'f',2)+"\n");
         output.append(QString::fromUtf8("Mật độ:")+QString::number(posDensityFit,'f',2)+"\n");
         return output;
