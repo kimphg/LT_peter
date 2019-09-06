@@ -672,6 +672,7 @@ public:
     static void ConvWGSToKm(double *x, double *y, double m_Long, double m_Lat);
     void setIsAutoTracking(bool value);
     double getScale_PpiPerKm() const;
+    void addManualTrackLonLat(double lon, double lat);
 };
 
 //extern C_radar_data radarData;

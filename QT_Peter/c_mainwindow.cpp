@@ -3444,10 +3444,11 @@ void Mainwindow::UpdateGpsData()
 {
     if(CConfig::mStat.getAgeGps()<3000)
     {
-        if(CConfig::mLat>0)ui->label_gps_lat->setText(demicalDegToDegMin(CConfig::mLat)+"'N");
+        if(CConfig::mLat)ui->label_gps_lat->setText(demicalDegToDegMin(CConfig::mLat)+"'N");
         else ui->label_gps_lat->setText(demicalDegToDegMin(CConfig::mLat)+"'S");
-        if(CConfig::mLon>0)ui->label_gps_lon->setText(demicalDegToDegMin(CConfig::mLon)+"'E");
+        if(CConfig::mLon)ui->label_gps_lon->setText(demicalDegToDegMin(CConfig::mLon)+"'E");
         else ui->label_gps_lon->setText(demicalDegToDegMin(CConfig::mLon)+"'W");
+        rda_main.setCenterLonLat(CConfig::mLon,CConfig::mLat);
     }
     else
     {

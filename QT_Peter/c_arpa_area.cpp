@@ -154,9 +154,9 @@ C_primary_track* C_arpa_area::MouseOverRadarTarget(int xclick, int yclick)
 PointDouble C_arpa_area::ConvScrPointToWGS(int x,int y)
 {
     PointDouble output;
-    output.y  = CConfig::mLat -  ((y-radCtY)/mScale)/(111.132954);
-    double refLat = (CConfig::mLat +(output.y))*0.00872664625997;//3.14159265358979324/180.0/2;
-    output.x = (x-radCtX)/mScale/(111.31949079327357*cos(refLat))+ CConfig::mLon;
+    output.y  = mLat -  ((y-radCtY)/mScale)/(111.132954);
+    double refLat = (mLat +(output.y))*0.00872664625997;//3.14159265358979324/180.0/2;
+    output.x = (x-radCtX)/mScale/(111.31949079327357*cos(refLat))+ mLon;
     return output;
 }
 PointDouble C_arpa_area::ConvScrPointToKMXY(int x, int y)

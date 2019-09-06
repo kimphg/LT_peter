@@ -200,8 +200,8 @@ void DialogDetailDisplay::mouseDoubleClickEvent( QMouseEvent * e )
             }
             else
             {
-                PointDouble point = rda.ConvScrPointToKMXY(mMousex,mMousey);
-                rda.mRadarData->addManualTrack(point.x,point.y);
+                PointDouble point = rda.ConvScrPointToWGS(mMousex,mMousey);
+                rda.mRadarData->addManualTrackLonLat(point.x,point.y);
             }
 
 

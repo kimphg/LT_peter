@@ -1122,9 +1122,16 @@ C_radar_data::~C_radar_data()
     //        delete[] pScr_map;
     //    }
 }
+void C_radar_data::addManualTrackLonLat(double lon, double lat)
+{
+    double xkm,ykm;
 
+    ConvWGSToKm(&xkm,&ykm,lon,lat);
+    addManualTrack(xkm,ykm);
+}
 void C_radar_data::addManualTrack(double xkm, double ykm)
 {
+
     for (ushort j=0;j<MAX_TRACKS_COUNT;j++)
     {
         if(mTrackList[j].mState==TrackState::removed)
