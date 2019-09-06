@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define DEG_RAD 57.295779513
 #define radians(x) ((x)/57.295779513)
 #define degrees(x) ((x)*57.295779513)
-#define  sq(x) (x*x)
+#include "common.h"
 #include<time.h>
 #define millis() clock()
 //#if defined(ARDUINO) && ARDUINO >= 100

@@ -58,7 +58,7 @@ void DialogAisInfo::UpdateData()
     }
     if(mRadarData)
     {
-        if(mRadarData->mState==TrackState::removed)return;
+        if(mRadarData->isRemoved()){mRadarData = 0;return;}
         ui->textBrowser_2->show();
         ui->textBrowser_2->setText(QString::fromUtf8("Dữ liệu ra đa:\n")+mRadarData->printData());
 

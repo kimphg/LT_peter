@@ -41,12 +41,12 @@ void c_target_manager::setCurToFriend()
     }
 }
 
-QString c_target_manager::addCurrTrackToTargets()
+QString c_target_manager::addCurrTrackToTargets(C_primary_track* track)
 {
-    if(currTrackPt)
+    if(track)
     {
-        if(currTrackPt->flag<0)return QString::fromUtf8("Không thể đặt chỉ thị mục tiêu gắn cờ ta");
-        if(!addTarget(currTrackPt->track))
+        if(track->flag<0)return QString::fromUtf8("Không thể đặt chỉ thị mục tiêu gắn cờ ta");
+        if(!addTarget(track))
         {
             return QString::fromUtf8("Được phép đặt chỉ thị tối đa 6 mục tiêu");
         }

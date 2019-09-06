@@ -97,7 +97,7 @@ void C_arpa_area::setTarget_size(int value)
     target_size = value;
     if(target_size<8)target_size=8;
     else if(target_size>20)target_size=20;
-    int penSize = target_size/4;
+    int penSize = target_size/8;
     if(penSize<1)penSize=1;
     penTargetHistory          .setWidth(penSize);
     penTargetEnemy            .setWidth(penSize);
@@ -118,10 +118,70 @@ PointInt C_arpa_area::ConvWGSToScrPoint(double m_Long, double m_Lat)
     s.y   += radCtY;
     return s;
 }
-
-C_primary_track* C_arpa_area::checkClickRadarTarget(int xclick, int yclick)
+C_primary_track* C_arpa_area::MouseOverRadarTarget(int xclick, int yclick)
 {
-    int minDistanceToCursor = target_size/2;
+    double minDistanceToCursorSq = sq(target_size)/4.0;
+    C_primary_track* trackSel=0;
+    for (uint i = 0;i<MAX_TRACKS_COUNT;i++)
+    {
+        C_primary_track* track = &(mRadarData->mTrackList[i]);
+        if(track->mState!=TrackState::confirmed)continue;
+//        track->isMouseOver = false;
+        PointInt s = ConvWGSToScrPoint(track->lon,track->lat);
+        double distanceSQ = sq(s.x - xclick)+sq(s.y - yclick);
+
+        if(distanceSQ<minDistanceToCursorSq)
+        {
+            minDistanceToCursorSq = distanceSQ;
+            if(trackSel)
+            {
+                trackSel->isMouseOver=false;
+            }
+            track->isMouseOver=true;
+            trackSel = track;
+            //                tracktime = track->time;
+        }
+        else
+        {
+            track->isMouseOver=false;
+//            s = ConvWGSToScrPoint(track->lon,track->lat);
+//            printf("\nint xclick:%d, int yclick:%d, target_size:%d, targetx:%d",xclick,yclick,target_size,s.x);
+        }
+    }
+
+    return trackSel;
+}
+PointDouble C_arpa_area::ConvScrPointToWGS(int x,int y)
+{
+    PointDouble output;
+    output.y  = CConfig::mLat -  ((y-radCtY)/mScale)/(111.132954);
+    double refLat = (CConfig::mLat +(output.y))*0.00872664625997;//3.14159265358979324/180.0/2;
+    output.x = (x-radCtX)/mScale/(111.31949079327357*cos(refLat))+ CConfig::mLon;
+    return output;
+}
+PointDouble C_arpa_area::ConvScrPointToKMXY(int x, int y)
+{
+    PointDouble output;
+    output.x = (x-radCtX)/mScale;
+    output.y = -(y-radCtY)/mScale;
+    C_arpa_area::rotateVector(trueShiftDeg,&output.x,&output.y);
+    return output;
+}
+PointAziRgkm C_arpa_area::ConvScrPointToAziRgkm (int x, int y)
+{
+    PointDouble p;
+    PointAziRgkm ouput;
+    p.x = (x-radCtX)/mScale;
+    p.y = -(y-radCtY)/mScale;
+    C_arpa_area::rotateVector(trueShiftDeg,&p.x,&p.y);
+    ouput.aziRad = ConvXYToAziRd(p.x,p.y);
+    ouput.rg = sqrt(p.x*p.x+p.y*p.y);;
+    return ouput;
+}
+
+C_primary_track* C_arpa_area::SelectRadarTarget(int xclick, int yclick)
+{
+    double minDistanceToCursorSq = sq(target_size)/4.0;
     int trackSel=-1;
     for (uint i = 0;i<MAX_TRACKS_COUNT;i++)
     {
@@ -129,11 +189,10 @@ C_primary_track* C_arpa_area::checkClickRadarTarget(int xclick, int yclick)
         if(track->mState!=TrackState::confirmed)continue;
         track->isSelected = false;
         PointInt s = ConvWGSToScrPoint(track->lon,track->lat);
-        int dsx   = abs(s.x - xclick);
-        int dsy   = abs(s.y - yclick);
-        if(dsx<minDistanceToCursor&&dsy<minDistanceToCursor)
+        double distanceSQ = sq((s.x - xclick))+sq((s.y - yclick));
+        if(distanceSQ<minDistanceToCursorSq)
         {
-            minDistanceToCursor = dsx+dsy;
+            minDistanceToCursorSq = distanceSQ;
             //trackMin = track->uniqId;
             trackSel = i;
             //                tracktime = track->time;
@@ -222,13 +281,13 @@ void C_arpa_area::DrawRadarTargets(QPainter* p)//draw radar target from pRadar->
             PointInt s1     = ConvWGSToScrPoint(obj2->lon,obj2->lat);
             p->drawLine(s1.x,s1.y,s.x,s.y);
 
-            if(track->isEnemy)p->setPen(penTargetEnemySelected);
+            if(track->flag>=0)p->setPen(penTargetEnemySelected);
             else  p->setPen(penTargetFriendSelected);
         }
         else
         {
 
-            if(track->isEnemy)p->setPen(penTargetEnemy);
+            if(track->flag>=0)p->setPen(penTargetEnemy);
             else  p->setPen(penTargetFriend);
         }
         if(track->isLost())
@@ -246,22 +305,41 @@ void C_arpa_area::DrawRadarTargets(QPainter* p)//draw radar target from pRadar->
         //all targets
         else
         {
-            int size = 10000.0/(CConfig::time_now_ms - track->lastUpdateTimeMs+400);
-            if(size<target_size)size=target_size;//rect size depend to time
+            int size = 20000.0/((CConfig::time_now_ms - track->lastUpdateTimeMs)+800);
+            if(size<target_size)size=target_size;//rect size depends on target age
+            int lX = sTrack.x-size/2;
+            int tY = sTrack.y-size/2;
             if(track->mAisConfirmedObj==0)
             {
-                p->drawEllipse(sTrack.x-size/2,sTrack.y-size/2,size,size);
+                p->drawEllipse(lX,tY,size,size);
             }
             else {
                 //p->setPen(penSelTarget);
-                p->drawRect(sTrack.x-size/2,sTrack.y-size/2,size,size);
+                p->drawRect(lX,tY,size,size);
             }
             // draw speed vector
             int vectorLen = track->mSpeedkmhFit*mScale/6.0;
             int sx = sTrack.x+short(vectorLen*sinFast(track->courseRadFit+radians(trueShiftDeg)));
             int sy = sTrack.y-short(vectorLen*cosFast(track->courseRadFit+radians(trueShiftDeg)));
             p->drawLine(sx,sy,sTrack.x,sTrack.y);
-
+            //draw mouse over
+            if(track->isMouseOver)
+            {
+                lX = sTrack.x-size;
+                tY = sTrack.y-size;
+                int rX = sTrack.x+size;
+                int bY = sTrack.y+size;
+                p->drawLine(lX,tY,lX+size/3,tY);
+                p->drawLine(lX,bY,lX+size/3,bY);
+                p->drawLine(rX,tY,rX-size/3,tY);
+                p->drawLine(rX,bY,rX-size/3,bY);
+                p->drawLine(lX,tY,lX,tY+size/3);
+                p->drawLine(rX,tY,rX,tY+size/3);
+                p->drawLine(lX,bY,lX,bY-size/3);
+                p->drawLine(rX,bY,rX,bY-size/3);
+            }
+            else
+                track=track;
             //draw target number
             if(isDrawTargetNumber)p->drawText(sTrack.x+target_size/2+1,sTrack.y+target_size/2+1,100,50,0,QString::number(track->uniqId));
         }

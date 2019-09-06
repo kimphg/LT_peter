@@ -14,5 +14,3 @@ int main(int argc, char *argv[])
     a.exec();
     return EXIT_FAILURE;
 }
-
-

@@ -49,8 +49,7 @@ static int indexCurrRecAzi = 0;
 static int                     zoom_ar_w,zoom_ar_h,zoom_ar_a0,zoom_ar_r0,zoom_ar_a1,zoom_ar_r1;
 static int                     zoom_ar_size_a,zoom_ar_size_r;
 //#define TARGET_DENSITY_MAP_SIZE 3000
-double targetAsociationMinimumScore;
-double targetAsociationLowScore;
+
 DensityMap targetDensityMap;
 //static unsigned short targetDensityMap[TARGET_DENSITY_MAP_SIZE][TARGET_DENSITY_MAP_SIZE];
 typedef struct  {
@@ -342,6 +341,7 @@ void C_primary_track::addPossible(object_t *obj,double score)
 {
     possibleObj=(*obj);
     possibleMaxScore=score;
+    waitingForBetterScore = 0;
 }
 
 void C_primary_track::addManualPossible(double xkm, double ykm)
@@ -575,7 +575,7 @@ double C_primary_track::estimateScore(object_t *obj1)
             //            *fastPow(CONST_E,-sq(speedkmh))
             //            *fastPow(CONST_E,-sq(dDopler))
             *fastPow(CONST_E,-sq(dazi))
-            *fastPow(CONST_E,-sq(dRgSp*3/(targetMaxSpeedKmh)))
+            *fastPow(CONST_E,-sq(dRgSp*2/(targetMaxSpeedKmh)))
             *linearFitProb;
 #ifdef DEBUGMODE
     {
@@ -599,8 +599,10 @@ bool C_primary_track::isHighDensityPos()
 
 void C_primary_track::init(double txkm, double tykm)
 {
+    flag = 1;
+    isMouseOver = false;
     isSelected = false;
-    isEnemy = true;
+//    isEnemy = true;
     sko_aziDeg=0;
     sko_cour=0;
     sko_rgKm=0;
@@ -660,8 +662,10 @@ void C_primary_track::init(double txkm, double tykm)
 
 void C_primary_track::init(object_t *obj1, object_t *obj2, int id)
 {
+    flag = 1;
+    isMouseOver = false;
     isSelected = false;
-    isEnemy = true;
+//    isEnemy = true;
     sko_aziDeg=0;
     sko_cour=0;
     sko_rgKm=0;
@@ -720,15 +724,15 @@ int C_primary_track::getPosDensity()
 }
 void C_primary_track::checkNewObject()
 {
-    if((possibleMaxScore<targetAsociationMinimumScore))return;//no new plot
-    printf("possibleMaxScore:%f \n",possibleMaxScore);
-    if(possibleMaxScore<targetAsociationLowScore)
+    if((possibleMaxScore<TARGET_MINMUM_SCORE))return;//no new plot
+    //printf("possibleMaxScore:%f \n",possibleMaxScore);
+    if(possibleMaxScore<TARGET_LOW_SCORE)
     {
         waitingForBetterScore++;
         if(waitingForBetterScore<70)return;
         waitingForBetterScore = 0;
     }
-
+    //printf("possibleMaxScore:%f \n",possibleMaxScore);
     possibleMaxScore = 0;
 
     // add obj to track
@@ -1011,8 +1015,8 @@ C_radar_data::C_radar_data()
     isAutoTracking = true;
     loadDensityMap();
 #endif
-    targetAsociationMinimumScore=CConfig::getDouble("targetAsociationMinScore",0.05);
-    targetAsociationLowScore=CConfig::getDouble("targetAsociationLowScore",0.3);;
+    //TARGET_MINMUM_SCORE=CConfig::getDouble("targetAsociationMinScore",0.05);
+    //TARGET_LOW_SCORE=CConfig::getDouble("TARGET_LOW_SCORE",0.3);;
     isManualTracking = false;
     targetMaxSpeedKmh = CConfig::getDouble("targetMaxSpeedKmh",100.0);
     aziErrStdRad = radians(CConfig::getDouble("AziStdErrDeg",1.5));
@@ -1126,6 +1130,7 @@ void C_radar_data::addManualTrack(double xkm, double ykm)
         if(mTrackList[j].mState==TrackState::removed)
         {
             mTrackList[j].init(xkm, ykm);
+//            printf("track added:%d\n",j);
             return;
         }
     }
@@ -3340,7 +3345,7 @@ bool C_radar_data::checkBelongToTrack(object_t *obj1)
 {
     bool isBelongingToTrack = false;
     C_primary_track* chosenTrack =nullptr;
-    double maxScore = targetAsociationMinimumScore;
+    double maxScore = TARGET_MINMUM_SCORE;
     for (ushort j=0;j<MAX_TRACKS_COUNT;j++)
     {
         C_primary_track* track = &(mTrackList[j]);
@@ -3409,13 +3414,9 @@ bool C_radar_data::checkBelongToTrack(object_t *obj1)
         {
             //reprocess
             object_t tempObj = chosenTrack->possibleObj;
-            chosenTrack->addPossible(obj1,maxScore);
-            ProcessObject(&tempObj);
+            if(!chosenTrack->waitingForBetterScore)ProcessObject(&tempObj);
         }
-        else
-        {
-            chosenTrack->addPossible(obj1,maxScore);
-        }
+        chosenTrack->addPossible(obj1,maxScore);
         obj1->isRemoved = true;//free the object
         return true;
     }

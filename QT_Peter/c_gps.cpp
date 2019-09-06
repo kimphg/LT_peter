@@ -132,7 +132,7 @@ unsigned long c_gps::parse_decimal()
   char *p = _term;
   bool isneg = *p == '-';
   if (isneg) ++p;
-  unsigned long ret = 100UL * gpsatol(p);
+  long long ret = 100UL * gpsatol(p);
   while (gpsisdigit(*p)) ++p;
   if (*p == '.')
   {

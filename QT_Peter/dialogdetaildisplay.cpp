@@ -17,7 +17,7 @@ void DialogDetailDisplay::init(dataProcessingThread *processingThread,DialogAisI
 {
     on_toolButton_view_zoom_clicked(true);
     rda.dialogTargetInfo =tinfoPointer;
-    timerId = this->startTimer(1000);
+    timerId = this->startTimer(500);
     rda.mZoomSizeRg=CConfig::getDouble("mZoomSizeRg",2);
     rda.mZoomSizeAz=CConfig::getDouble("mZoomSizeAz",2);
 
@@ -46,7 +46,7 @@ void C_arpa_area::setCenterLonLat(double lon, double lat)
 
 void DialogDetailDisplay::paintEvent(QPaintEvent *event)
 {
-    rda.mScale  = rda.mRadarData->getScale_PpiPerKm()*rda.mRadarData->getScale_zoom_ppi();
+    rda.setScale(rda.mRadarData->getScale_PpiPerKm()*rda.mRadarData->getScale_zoom_ppi());
     rda.mZoomSizeKm = this->width()/rda.mScale;
     rda.target_size = rda.mScale*0.3;
     QPainter p(this);
@@ -57,6 +57,7 @@ void DialogDetailDisplay::paintEvent(QPaintEvent *event)
 
 void DialogDetailDisplay::timerEvent(QTimerEvent *event)
 {
+
     repaint();
 }
 
@@ -90,7 +91,7 @@ void DialogDetailDisplay::mousePressEvent(QMouseEvent *event)
         if(posx)rda.mMousex= posx;
         if(posy)rda.mMousey= posy;
 
-        if(!rda.checkClickRadarTarget(posx,posy))
+        if(!rda.SelectRadarTarget(posx,posy))
             rda.checkClickAIS(posx,posy);
 
     }
@@ -165,6 +166,7 @@ void DialogDetailDisplay::DrawSignal(QPainter*p)
 }
 DialogDetailDisplay::~DialogDetailDisplay()
 {
+    killTimer(timerId);
     delete ui;
 }
 
@@ -181,4 +183,39 @@ void DialogDetailDisplay::on_toolButton_view_histogram_clicked(bool checked)
 void DialogDetailDisplay::on_toolButton_view_zoom_clicked(bool checked)
 {
     if(checked)view_mode = ViewMode::ZoomZoom;
+}
+void DialogDetailDisplay::mouseDoubleClickEvent( QMouseEvent * e )
+{
+
+    if ( e->button() == Qt::LeftButton )
+    {
+        int mMousex = e->x();
+        int mMousey = e->y();
+        if(rda.isInsideViewRect(mMousex,mMousey))
+        {
+            C_primary_track* track = rda.SelectRadarTarget(mMousex,mMousey);
+            if(track)
+            {
+                track->isUserInitialised=true;
+            }
+            else
+            {
+                PointDouble point = rda.ConvScrPointToKMXY(mMousex,mMousey);
+                rda.mRadarData->addManualTrack(point.x,point.y);
+            }
+
+
+//            {
+//                int dx = mMousex-rda_main.radCtX;
+//                int dy = mMousey-rda_main.radCtY;
+//                double rgKM = sqrt((dx*dx)+(dy*dy));
+//                pRadar->addDetectionZone(point.x,point.y,200/(rgKM)+1,7.0/rda_main.mScale,true);
+//            }
+        }
+        //ui->toolButton_manual_track->setChecked(false);
+
+    }
+
+    //Test doc AIS
+
 }

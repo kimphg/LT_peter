@@ -32,6 +32,7 @@ private:
 protected:
     void paintEvent(QPaintEvent *event);
     void mousePressEvent(QMouseEvent *event);
+    void mouseDoubleClickEvent(QMouseEvent *event);
 private slots:
     void timerEvent(QTimerEvent *event);
     void on_toolButton_view_IAD_clicked(bool checked);

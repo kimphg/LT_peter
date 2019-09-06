@@ -30,6 +30,8 @@
 #define MAX_TRACKS_COUNT                  99
 #define RAD_DISPLAY_RES             650//768
 #endif
+#define TARGET_MINMUM_SCORE 0.1
+#define TARGET_LOW_SCORE 0.5
 #define AIS_UPDATE_TIME 20000
 #define MAX_OBJ_SIZE 0.45//400m
 
@@ -332,12 +334,14 @@ public:
         mState=TrackState::removed;
         isUpdating = false;
         uniqId =-1;
+        flag = 0;
     }
     void Remove()
     {
         mState=TrackState::removed;
         isUpdating = false;
         uniqId =-1;
+        flag = 0;
     }
     QString printData()
     {
@@ -354,12 +358,14 @@ public:
         output.append(QString::fromUtf8("Mật độ:")+QString::number(posDensityFit,'f',2)+"\n");
         return output;
     }
-    bool isEnemy;
+//    bool isEnemy;
+    int flag;
 //    bool isDoplerShifted(){return (abs(mDoplerFit)>TRACK_START_DOPLER);}
     bool isHighDensityPos();
     bool isConfirmed(){return mState==TrackState::confirmed;}
     qint64 startTime;
     bool isSelected;
+    bool isMouseOver;
     AIS_object_t     *mAisPossibleObj,*mAisConfirmedObj;
     double  mAisMaxPosibility;
     qint64  mAisMaxPosibilityTimeMs;

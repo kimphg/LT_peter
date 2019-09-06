@@ -24,7 +24,7 @@ public:
     ~c_target_manager();
     void setCurToEnemy();
     void setCurToFriend();
-    QString addCurrTrackToTargets();
+    QString addCurrTrackToTargets(C_primary_track *track);
     void OutputTargetToKasu();
     void initDataGram();
     void ClearTargetTable();

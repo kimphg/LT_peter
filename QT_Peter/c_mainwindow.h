@@ -66,7 +66,7 @@ public:
     explicit Mainwindow(QWidget *parent = nullptr);
     ~Mainwindow();
     PointInt ConvKmXYToScrPoint(double x, double y);
-    C_primary_track* checkClickRadarTarget(int xclick, int yclick, bool isDoubleClick = false);
+//    C_primary_track* checkClickRadarTarget(int xclick, int yclick, bool isDoubleClick = false);
 protected:
     //void contextMenuEvent(QContextMenuEvent *event);
 //    void keyPressEvent(QKeyEvent *event);
@@ -721,8 +721,11 @@ private slots:
 
     void on_toolButton_radar_clicked(bool checked);
 
+    void on_tableWidgetTarget_clicked(const QModelIndex &index);
+
 private:
     bool isRadarShow;
+    C_primary_track *selectedTrack;
 //    int target_size;
 //    bool mShowobjects,
 //    bool mShowTracks;
@@ -756,11 +759,11 @@ private:
     void updateSimTargetStatus();
     void ConvXYradar2XYscr();
 //    PointInt ConvWGSToScrPoint(double m_Long, double m_Lat);
-    PointDouble ConvScrPointToKMXY(int x, int y);
+//    PointDouble ConvScrPointToKMXY(int x, int y);
     QPoint mBorderPoint2,mBorderPoint1,mBorderPoint0;
 //    void rotateVector(double angle, double *x, double *y);
     void SetUpTheonGUILayout();
-    PointAziRgkm ConvScrPointToAziRgkm(int x, int y);
+//    PointAziRgkm ConvScrPointToAziRgkm(int x, int y);
     void showTrackContext();
     void DrawViewFrameSquared(QPainter *p);
     void checkCuda();
@@ -771,7 +774,7 @@ private:
     void saveScreenShot(QString fileName);
     void SetTx(bool onoff);
     bool CheckTxCondition(bool isPopupMsg);
-    PointDouble ConvScrPointToWGS(int x, int y);
+//    PointDouble ConvScrPointToWGS(int x, int y);
     bool isInsideViewZone(int x, int y);
 };
 
