@@ -751,8 +751,8 @@ void dataProcessingThread::run()
 
 
         }
-//        if(!frameCount)
-//            usleep(1);
+        if(!frameCount)
+            usleep(1);
 
     }
 
