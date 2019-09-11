@@ -97,7 +97,7 @@ void C_arpa_area::setTarget_size(int value)
     target_size = value;
     if(target_size<8)target_size=8;
     else if(target_size>20)target_size=20;
-    int penSize = target_size/8;
+    int penSize = target_size/10;
     if(penSize<1)penSize=1;
     penTargetHistory          .setWidth(penSize);
     penTargetEnemy            .setWidth(penSize);

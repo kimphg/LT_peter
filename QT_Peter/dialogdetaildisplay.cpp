@@ -51,8 +51,12 @@ void DialogDetailDisplay::paintEvent(QPaintEvent *event)
     rda.target_size = rda.mScale*0.3;
     QPainter p(this);
     DrawSignal(&p);
+    if(view_mode==ViewMode::ZoomZoom)
+    {
+
     rda.drawAisTarget(&p);
     rda.DrawRadarTargets(&p);
+    }
 }
 
 void DialogDetailDisplay::timerEvent(QTimerEvent *event)

@@ -1,10 +1,28 @@
 
 
 #include "AIS.h"
-#include "c_radar_data.h"
+//#include "c_radar_data.h"
 #include <QStringList>
 
 /* Copied from util.h */
+void ConvkmxyToPolarDeg(double x, double y, double *azi, double *range)
+{
+    if(!y)
+    {
+        *azi = x>0? PI_CHIA2:(PI_NHAN2-PI_CHIA2);
+        *azi = *azi*DEG_RAD;
+        *range = abs(x);
+    }
+    else
+    {
+        *azi = atanf(x/y);
+        if(y<0)*azi+=PI;
+        if(*azi<0)*azi += PI_NHAN2;
+        *range = sqrt(x*x+y*y);
+        *azi = *azi*DEG_RAD;
+    }
+
+}
 
 #define htonl(x) ( ( ((x)<<24) & 0xFF000000UL) | \
     (((x)<< 8) & 0x00FF0000UL) | \
@@ -52,7 +70,7 @@ void AIS_object_t::merge(AIS_object_t oldObj)
         if(dLat*dLon!=0)
         {
             double heading, speed;
-            C_radar_data::ConvkmxyToPolarDeg(dLat,dLon,&heading,&speed);
+            ConvkmxyToPolarDeg(dLat,dLon,&heading,&speed);
             mCog       =    heading;
         }
         else

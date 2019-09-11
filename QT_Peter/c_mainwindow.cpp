@@ -869,6 +869,7 @@ void Mainwindow::UpdateMouseStat(QPainter *p)
     if(!isInsideViewZone(mMousex,mMousey))return;
     //QPen penmousePointer(QColor(0x50ffffff));
     //penmousePointer.setWidth(2);
+    p->setFont(QFont("Times",10));
     p->setPen(penYellow);
     p->drawText(mMousex,mMousey+25,100,15,0,ui->label_cursor_range->text());
     p->drawText(mMousex,mMousey+15,100,15,0,ui->label_cursor_azi->text());
@@ -1289,7 +1290,8 @@ void Mainwindow::checkCuda()
 
     //system("taskkill /f /im cudaFFT.exe");
     //    int a=rda_main.processing->mCudaAge200ms;
-    if(rda_main.processing->mCudaAge200ms<10)return;
+    if(rda_main.processing->mCudaAge200ms<20)return;
+    CConfig::AddMessage(QString::number(rda_main.processing->mCudaAge200ms));
     if(rda_main.processing->getIsPlaying())return;
     else {
         if(CConfig::getInt("runWithOutCuda",0))return;

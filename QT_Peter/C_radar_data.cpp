@@ -37,6 +37,7 @@ static int nNoiseFrameCount = 0;
 static short indexLastProcessAzi = 0;
 static short indexCurrProcessAzi = 0;
 static short    curIdCount = 1;
+static int rangeOffset;
 static qint64   cur_rot_timeMSecs ;//= QDateTime::currentMSecsSinceEpoch();
 //static int      antennaHeadOffset;
 static float    rot_period_min =0;
@@ -1005,6 +1006,7 @@ double xsum=0,x2sum=0,ysum=0,xysum=0;
 
 C_radar_data::C_radar_data()
 {
+    rangeOffset = CConfig::getInt("rangeOffset",0);
     mLinearFitStrength =  CConfig::getDouble("mLinearFitStrength",0.5);
     if(mLinearFitStrength>1||mLinearFitStrength<0.1)
     {
@@ -1239,6 +1241,7 @@ double C_radar_data::getArcMinAziRad() const
 void C_radar_data::addDetectionZoneAZ(double az, double rg, double dazi, double drg,bool isAllowDetection)
 {
 
+
     RangeAziWindow dw;//todo: save dw to config
     dw.isAllowDetection = isAllowDetection;
     dw.isRemoved = false;
@@ -1258,7 +1261,7 @@ void C_radar_data::addDetectionZone(RangeAziWindow dw)
         if(mDetectZonesList[i].isRemoved)
         {
             mDetectZonesList[i] = dw;
-            return;
+            return ;
         }
     }
     mDetectZonesList.push_back(dw);
@@ -2072,8 +2075,8 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
         if(dIntAzi>0)
         {
             curAzirTrue2048++;if(curAzirTrue2048>=MAX_AZIR)curAzirTrue2048=0;
-            memcpy(&data_mem.level[curAzirTrue2048][0],data+FRAME_HEADER_SIZE,range_max);
-            memcpy(&data_mem.dopler[curAzirTrue2048][0],data+FRAME_HEADER_SIZE+range_max,range_max);
+            memcpy(&data_mem.level[curAzirTrue2048][rangeOffset] ,data+FRAME_HEADER_SIZE,range_max-rangeOffset);
+            memcpy(&data_mem.dopler[curAzirTrue2048][rangeOffset],data+FRAME_HEADER_SIZE+range_max,range_max-rangeOffset);
             indexCurrRecAzi++;
             if(indexCurrRecAzi>=AZI_QUEUE_SIZE)indexCurrRecAzi=0;
             aziToProcess[indexCurrRecAzi]=curAzirTrue2048;
@@ -2082,8 +2085,8 @@ void C_radar_data::processSocketData(unsigned char* data,short len)
         {
 
             curAzirTrue2048--;if(curAzirTrue2048<0)        curAzirTrue2048+=MAX_AZIR;
-            memcpy(&data_mem.level[curAzirTrue2048][0],data+FRAME_HEADER_SIZE,range_max);
-            memcpy(&data_mem.dopler[curAzirTrue2048][0],data+FRAME_HEADER_SIZE+range_max,range_max);
+            memcpy(&data_mem.level[curAzirTrue2048][rangeOffset],data+FRAME_HEADER_SIZE,range_max-rangeOffset);
+            memcpy(&data_mem.dopler[curAzirTrue2048][rangeOffset],data+FRAME_HEADER_SIZE+range_max,range_max-rangeOffset);
             indexCurrRecAzi++;
             if(indexCurrRecAzi>=AZI_QUEUE_SIZE)indexCurrRecAzi=0;
             aziToProcess[indexCurrRecAzi]=curAzirTrue2048;
@@ -2687,7 +2690,7 @@ void C_radar_data::procPLot(plot_t* mPlot)
     newobject.azRad   = ctA/float(MAX_AZIR/PI_NHAN2);
     if(newobject.azRad>PI_NHAN2)newobject.azRad-=PI_NHAN2;
     newobject.rg   = ctR;
-    newobject.rgKm =  ctR*sn_scale;
+    newobject.rgKm =  (ctR)*sn_scale;
     //    newobject.p   = -1;
     newobject.xkm = newobject.rgKm*sin( newobject.azRad);
     newobject.ykm = newobject.rgKm*cos( newobject.azRad);
