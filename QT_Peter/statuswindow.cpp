@@ -12,21 +12,26 @@ StatusWindow::StatusWindow(dataProcessingThread *radar,QWidget *parent) :
     timerId = startTimer(500);
     moduleId = 0;
     paramId = 0xaa;
-    command[0]=0xaa;
-    command[1]=0xab;
-    command[2]=moduleId;
-    command[3]=0xaa;
-    command[4]=0x00;
-    command[5]=0x00;
-    command[6]=0x00;
-    command[7]=0x00;
+    command[0] =0xaa;
+    command[1] =0xab;
+    command[2] =moduleId;
+    command[3] =0xaa;
+    command[4] =0x00;
+    command[5] =0x00;
+    command[6] =0x00;
+    command[7] =0x00;
     this->setWindowFlags(Qt::WindowStaysOnTopHint);
     //
+
+#ifdef THEON
+    ui->tableWidget->hide();
+    ui->label_module_cong_suat->setText(QString::fromUtf8("Mô đun công suất"));
+    ui->groupBox_2->hide();
+#else
     ui->tableWidget->setColumnCount(2);
     ui->tableWidget->setColumnWidth(0,250);
     ui->tableWidget->setColumnWidth(1,20);
     ui->tableWidget->setRowCount(23);
-
     //
     QTableWidgetItem* item = new QTableWidgetItem(QString::fromUtf8("Chuyển mạch ăng ten chủ động/thụ động"));   ui->tableWidget->setItem(0,0,item);
     item = new QTableWidgetItem(QString::fromUtf8("Chuyển mạch ăng ten - đang ở vị trí A2"));                    ui->tableWidget->setItem(1,0,item);
@@ -67,6 +72,7 @@ StatusWindow::StatusWindow(dataProcessingThread *radar,QWidget *parent) :
     item = new QTableWidgetItem(QString::fromUtf8("Máy 2-1"));          ui->tableWidget_connection->setItem(8,0,item);
     item = new QTableWidgetItem(QString::fromUtf8("Máy 2-2"));          ui->tableWidget_connection->setItem(9,0,item);
     item = new QTableWidgetItem(QString::fromUtf8("Mô đun báo hỏng"));  ui->tableWidget_connection->setItem(10,0,item);
+#endif
 }
 void StatusWindow::closeEvent(QCloseEvent *event)
 {
@@ -124,6 +130,37 @@ các tham số trên nằm trong 3 byte 1,2,3  trong khung truyền:
 void StatusWindow::sendReq()
 {
     moduleId++;
+#ifdef THEON
+    switch (moduleId) {
+    case 1:
+        command[2]=0x01;
+        command[3]=0xaa;
+        break;
+    case 2:
+        command[2]=0x01;
+        command[3]=0xbb;
+        break;
+    case 3:
+        command[2]=0x01;
+        command[3]=0xcc;
+        break;
+    case 4:
+        command[2]=0x01;
+        command[3]=0xdd;
+        break;
+    case 5:
+        command[2]=0x00;
+        command[3]=0xbb;
+        break;
+    case 6:
+        command[2]=0x00;
+        command[3]=0xdd;
+        break;
+    default:
+        moduleId=0;
+        return;
+    }
+#else
     switch (moduleId) {
     case 1:
         command[2]=0x03;
@@ -153,6 +190,7 @@ void StatusWindow::sendReq()
         moduleId=0;
         return;
     }
+#endif
     mRadar->sendCommand(&command[0],8,true);
     mRadar->sendCommand(&command[0],8,true);
 //    mRadar->sendCommand(&command[0],8);
@@ -202,6 +240,23 @@ bool StatusWindow::receiveRes()
     ui->label_byte_2->setText(QString::number(paramIndex));
     ui->label_byte_3->setText(QString::number(paramValue));
     ui->label_byte_4->setText(QString::number(recvValue));
+#ifdef THEON
+    /*
+1. kiểm tra nhiệt độ hệ thống: aaab01aa
+2. kiểm tra công suất VCO1: aaab01bb
+3. kiểm tra công suất DDS: aaab01cc
+4. kiểm tra công suất VCO2: aaab01dd
+
+5. kiểm tra công suất  ra KĐCS: aaab00bb
+6. kiểm tra công suất  vao KĐCS: aaab00dd
+*/
+    if((moduleIndex==1)&&paramIndex==0xcc)ui->label_res_dds_out->setText(QString::number(paramValue));
+    if((moduleIndex==1)&&paramIndex==0xbb)ui->label_vco_output_1->setText(QString::number(paramValue));
+    if((moduleIndex==1)&&paramIndex==0xdd)ui->label_vco_output_2->setText(QString::number(paramValue));
+    if((moduleIndex==0)&&paramIndex==0xdd)ui->label_trans_input->setText(QString::number(paramValue));
+    if((moduleIndex==0)&&paramIndex==0xbb)ui->label_trans_output->setText(QString::number(paramValue));
+    if((moduleIndex==1)&&paramIndex==0xaa)ui->label_res_main_temp->setText(QString::number(paramValue/4.0));
+#else
     if((moduleIndex==3)&&paramIndex==0xcc)ui->label_res_dds_out->setText(QString::number(paramValue));
     if((moduleIndex==3)&&paramIndex==0xbb)ui->label_vco_output_1->setText(QString::number(paramValue));
     if((moduleIndex==2)&&paramIndex==0xbb)ui->label_vco_output_2->setText(QString::number(paramValue));
@@ -210,89 +265,16 @@ bool StatusWindow::receiveRes()
     if((moduleIndex==0)&&paramIndex==0xaa)ui->label_res_main_temp->setText(QString::number(paramValue/4.0));
     recvAver=60+20*log10(recvAver/55.0);
     ui->label_res_receiver->setText(QString::number(recvAver,'f',1));
+#endif
     return true;
-    /*QString resVal;
-    double hsTap = mRadar->mRadarData->get_tb_tap();
-    hsTap = 20*log10(hsTap/165.0)+77.0;
-    ui->label_res_receiver->setText(QString::number(hsTap,'f',1));
-    int resModId = mRadar->mRadarData->tempType;
-    unsigned char * pFeedBack = mRadar->mRadarData->getFeedback();
-    if(   (pFeedBack[0]==command[0])
-          &&(pFeedBack[1]==command[1])
-          &&(pFeedBack[2]==command[2])
-          &&(pFeedBack[3]==command[3])
-          &&(pFeedBack[4]==command[4])
-          &&(pFeedBack[5]==command[5])
-          &&(pFeedBack[6]==command[6])
-          &&(resModId==moduleId)
-       )
-    {
-        ansTrue = false;
-        double x =mRadar->mRadarData->moduleVal;
-        switch (resModId) {
-        case 0:
-            if(paramId==0xaa)
-            {
-                resVal = QString::number(x/4.0,'f',1);
-                ui->label_res_main_temp->setText(resVal);
-            }
-            else if(paramId==0xab)
-            {
-                resVal = QString::number(x-72.0,'f',1);
-                if(((x-72.0)>10||(x-72.0)<4)&warningBlink)ui->label_res_dds_out->setStyleSheet("border: 3px solid red;");
-                else ui->label_res_dds_out->setStyleSheet("");
-                ui->label_res_dds_out->setText(resVal);
-            }
-            else if(paramId==0xac)
-            {
-                resVal = QString::number(x-78.0,'f',1);
-                if(((x-78.0)>-5||(x-78.0)<-15)&warningBlink)ui->label_trans_input->setStyleSheet("border: 3px solid red;");
-                else ui->label_trans_input->setStyleSheet("");
-                ui->label_trans_input->setText(resVal);
-            }
-            break;
-        case 2:
-            if(paramId==0xaa)
-            {
-                resVal = QString::number(x,'f',1);
-                ui->label_res_trans_temp->setText(resVal);
-            }
-            else if(paramId==0xab)
-            {
-                double val = (x/62.0)*(x/62.0)*100.0;
-                resVal = QString::number(val,'f',1);
-                if((val<80||val>100)&warningBlink)ui->label_trans_output->setStyleSheet("border: 3px solid red;");
-                else ui->label_trans_output->setStyleSheet("");
-                ui->label_trans_output->setText(resVal);
-            }
-            break;
-
-        case 3:
-            if(paramId==0xaa)
-            {
-
-            }
-            else if(paramId==0xab)
-            {
-                resVal = QString::number((x-126.0)/1.515,'f',1);
-                ui->label_vco2_output->setText(resVal);
-            }
-            break;
-        default:
-            break;
-        }
-        return true;
-    }
-    printf("wrong respond:%d;%d\n",paramId,moduleId);
-    return false;*/
 }
-
 void StatusWindow::timerEvent(QTimerEvent *event)
 {
     /*if(!mRadar->isConnected())
-    {
-        return;
-    }*/
+        {
+            return;
+        }*/
+
     warningBlink=!warningBlink;
     ansTrue = receiveRes();
     sendReq();

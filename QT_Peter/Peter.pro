@@ -110,8 +110,8 @@ DEPENDPATH += $$PWD/
 #win32:LIBS += -L$$PWD/../armadillo/lib_winx86/ -lcbia.lib.lapack.dyn.rel.x86.12
 
 #unix: LIBS += -larmadillo
-win32:LIBS += -L$$PWD//WpdPack/Lib/ -lPacket
-win32:LIBS += -L$$PWD//WpdPack/Lib/ -lwpcap
+win32:LIBS += -L$$PWD//WpdPack/Lib/x64/ -lPacket
+win32:LIBS += -L$$PWD//WpdPack/Lib/x64/ -lwpcap
 LIBS += -lQt5Concurrent
 #win32:LIBS += -L$$PWD/mitab/ -lmitab
 #LIBS += -ltinyxml
