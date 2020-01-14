@@ -10,6 +10,15 @@
 # Version 4.0.1
 #-------------------------------------------------
 #data file type defined as .r2d,
+CONFIG += C4I_VIEW_MODE
+
+C4I_VIEW_MODE {
+  SOURCES  += c_mainwindowbasic.cpp
+  HEADERS  += c_mainwindowbasic.h
+} else {
+  SOURCES  += c_mainwindow.cpp
+  HEADERS  += c_mainwindow.h
+}
 @CONFIG  += debug_and_release@
 QT       += core gui
 QT       += network
@@ -33,10 +42,9 @@ SOURCES += main.cpp\
     dialogdocumentation.cpp \
     AIS/AIS.cpp \
     dialogaisinfo.cpp \
-    dialogcommandlog.cpp \
     statuswindow.cpp \
     dialogmenudisplay.cpp \
-    c_mainwindow.cpp \
+#    c_mainwindow.cpp \
 #    c_decision_tree.cpp
     c_gps.cpp \
     c_target_manager.cpp \
@@ -45,7 +53,8 @@ SOURCES += main.cpp\
     dialoginputvalue.cpp \
     dialogconfig.cpp \
     dialogdetaildisplay.cpp \
-    c_arpa_area.cpp
+    c_arpa_area.cpp \
+    c_mainwindowbasic.cpp
 HEADERS  += \
     qcustombutton.h \
     qcustomframe.h \
@@ -60,10 +69,9 @@ HEADERS  += \
     dialogdocumentation.h \
     AIS/AIS.h \
     dialogaisinfo.h \
-    dialogcommandlog.h \
     statuswindow.h \
     dialogmenudisplay.h \
-    c_mainwindow.h \
+#    c_mainwindow.h \
 #    c_decision_tree.h
     c_gps.h \
     c_target_manager.h \
@@ -74,11 +82,13 @@ HEADERS  += \
     dialogconfig.h \
     common.h \
     dialogdetaildisplay.h \
-    c_arpa_area.h
+    c_arpa_area.h \
+    c_mainwindowbasic.h
 #    pch_file.h
 #PRECOMPILED_HEADER = "pch_file.h"
 #CONFIG += precompile_header
-FORMS    += mainwindow.ui \
+FORMS    += \
+    mainwindow.ui \
     dialogdocumentation.ui \
     dialogaisinfo.ui \
     dialogcommandlog.ui \
@@ -86,14 +96,14 @@ FORMS    += mainwindow.ui \
     dialogmenudisplay.ui \
     dialoginputvalue.ui \
     dialogconfig.ui \
-    dialogdetaildisplay.ui
+    dialogdetaildisplay.ui \
+    c_mainwindowbasic.ui
 #win32:CONFIG(release, debug|release): LIBS += -L$$PWD/shapelib/ -lshapelib
 #else:unix: LIBS += -L$$PWD\shapelib\ -lshapelib
 #INCLUDEPATH += $$PWD/shapelib
 #DEPENDPATH += $$PWD/shapelib
 
-INCLUDEPATH += $$PWD/WpdPack/Include
-DEPENDPATH += $$PWD/WpdPack/Include
+
 INCLUDEPATH += $$PWD/tinyxml/
 DEPENDPATH += $$PWD/tinyxml/
 INCLUDEPATH += $$PWD/
@@ -110,8 +120,7 @@ DEPENDPATH += $$PWD/
 #win32:LIBS += -L$$PWD/../armadillo/lib_winx86/ -lcbia.lib.lapack.dyn.rel.x86.12
 
 #unix: LIBS += -larmadillo
-win32:LIBS += -L$$PWD//WpdPack/Lib/x64/ -lPacket
-win32:LIBS += -L$$PWD//WpdPack/Lib/x64/ -lwpcap
+
 LIBS += -lQt5Concurrent
 #win32:LIBS += -L$$PWD/mitab/ -lmitab
 #LIBS += -ltinyxml

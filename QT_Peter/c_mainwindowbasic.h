@@ -1,5 +1,5 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef C_MAINWINDOWBASIC_H
+#define C_MAINWINDOWBASIC_H
 
 #define _CRT_SECURE_NO_WARNINGS
 #define _WINSOCKAPI_
@@ -51,20 +51,20 @@
 #define SCR_BORDER_SIZE 120
 #endif
 namespace Ui {
-class MainWindow;
+class MainWindowBasic;
 class DialogDocumentation;
 //class QLabel;
 //class QPushButton;
 //class QUdpSocket;
 }
 
-class Mainwindow : public QMainWindow
+class MainWindowBasic : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit Mainwindow(QWidget *parent = nullptr);
-    ~Mainwindow();
+    explicit MainWindowBasic(QWidget *parent = nullptr);
+    ~MainWindowBasic();
     PointInt ConvKmXYToScrPoint(double x, double y);
 //    C_primary_track* checkClickRadarTarget(int xclick, int yclick, bool isDoubleClick = false);
 protected:
@@ -94,12 +94,14 @@ private:
     c_target_manager mTargetMan;
     int zoom_size;
     void DrawGrid(QPainter* p,short centerX,short centerY);
+    void CameraControl(int x,int y, int zoom);
+    void CameraControl(int direction);
 //    void detectZone();
     void InitSetting();
     void sendToRadarHS(const char *hexdata);
     void sendToRadar(unsigned char* hexdata);
 //    void SetSnScale(short value);
-    Ui::MainWindow* ui;
+    Ui::MainWindowBasic* ui;
 //    QMenu   *       m_fileMenu;
 //    QMenu   *       m_connectionMenu;
 //    QAction *       a_openShp;
@@ -677,7 +679,7 @@ private slots:
 
     void on_horizontalSlider_ppy_gain_valueChanged(int value);
 
-    void on_toolButton_tx_3_clicked(bool checked);
+//    void on_toolButton_tx_3_clicked(bool checked);
 
     void on_comboBox_currentIndexChanged(int index);
 
@@ -776,4 +778,4 @@ private:
     bool isInsideViewZone(int x, int y);
 };
 
-#endif // MAINWINDOW_H
+#endif // C_MAINWINDOWBASIC_H

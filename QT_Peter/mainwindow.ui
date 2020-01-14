@@ -478,8 +478,8 @@
    <widget class="QCustomTabWidget" name="tabWidget_menu">
     <property name="geometry">
      <rect>
-      <x>290</x>
-      <y>180</y>
+      <x>350</x>
+      <y>490</y>
       <width>531</width>
       <height>541</height>
      </rect>
