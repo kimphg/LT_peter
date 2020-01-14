@@ -1393,7 +1393,7 @@ void MainWindowBasic::InitSetting()
     //load map
     osmap = new CMap();
     //SetGPS(CConfig::mLat, CConfig::mLon);
-    osmap->setImgSize(SCR_W-20,SCR_H-20);
+    osmap->setImgSize(SCR_H-20,SCR_H-20);
     osmap->SetType(0);
     mMapOpacity = CConfig::getDouble("mMapOpacity");
     //config.setMapOpacity(value/50.0);
@@ -1419,7 +1419,7 @@ void MainWindowBasic::InitSetting()
     }
     else if(rec.width()==SCR_W)
     {
-        this->showFullScreen();
+        //this->showFullScreen();
     }
     else
     {

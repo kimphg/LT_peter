@@ -39,8 +39,8 @@
 #include <QMessageBox>
 #ifdef THEON
 #define SCR_W 1920
-#define SCR_H 1200
-#define SCR_LEFT_MARGIN 150
+#define SCR_H 1080
+#define SCR_LEFT_MARGIN 0
 #define SCR_TOP_MARGIN 0
 #define SCR_BORDER_SIZE 48
 #else
