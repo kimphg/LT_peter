@@ -760,9 +760,9 @@ void C_primary_track::checkNewObject()
         objectList.erase(objectList.begin());
         if(mState==TrackState::newDetection)
         {
-#ifdef THEON
-            if(isHighDensityPos())
-#endif
+
+            if(isHighDensityPos()||CConfig::getInt("isUseDensityMap")==false)
+
                 if(mSpeedkmhFit<targetMaxSpeedKmh)
                 {
 

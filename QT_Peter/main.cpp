@@ -1,4 +1,4 @@
-#define C4I_VIEW_MODE
+//#define C4I_VIEW_MODE
 
 #ifdef C4I_VIEW_MODE
 #include "c_mainwindowbasic.h"

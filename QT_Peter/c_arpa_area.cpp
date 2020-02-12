@@ -72,7 +72,7 @@ void C_arpa_area::drawAisTarget(QPainter *p)
     {
         AIS_object_t aisObj = iter->second;
 
-        if(aisObj.getAge()>300000)continue;
+        if(aisObj.getAge()>1200000)continue;
         PointInt s = ConvWGSToScrPoint(aisObj.mLong,aisObj.mLat);
         if(aisObj.isMatchToRadarTrack)continue;
         if(!isInsideViewRect(s.x,s.y))continue;

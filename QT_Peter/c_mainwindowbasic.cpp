@@ -323,7 +323,7 @@ void MainWindowBasic::keyPressEvent(QKeyEvent *event)
             if(posy)mMousey= posy;
 
             rda_main.setCenterLonLat(x2lon(mMousex - rda_main.radCtX),y2lat(-(mMousey - rda_main.radCtY)));
-
+            CConfig::setGPSLocation(rda_main.mLat,rda_main.mLon);
         }
         else if(key==Qt::Key_2)
         {
@@ -589,7 +589,7 @@ MainWindowBasic::MainWindowBasic(QWidget *parent) :
 //    setRadarState(DISCONNECTED);
 
     isRadarShow = true;
-    dialogZoom->init(rda_main.processing,dialogTargetInfo);
+    //dialogZoom->init(rda_main.processing,dialogTargetInfo);
     initCursor();
     controlPressed = false;
     pMap = new QPixmap(SCR_H,SCR_H);
@@ -968,7 +968,7 @@ void MainWindowBasic::paintEvent(QPaintEvent *event)
     DrawDetectZones(&p);
     if(isShowAIS)rda_main.drawAisTarget(&p);
     //DrawViewFrame(&p);
-    //    DrawViewFrameSquared(&p);
+        DrawViewFrameSquared(&p);
     //DrawIADArea(&p);
 
     clkEnd = clock();
@@ -1263,9 +1263,15 @@ void MainWindowBasic::SetUpTheonGUILayout()
     ui->groupBox_gps_3->hide();
     ui->groupBox_statuses->setGeometry(1400,1145,500,60);
 //    ui->groupBox_25->setGeometry(10,1010,130,100);
+    ui->groupBox_24->setGeometry(1084,5,ui->groupBox_24->width(),ui->groupBox_24->height());
+    ui->groupBox_8->setGeometry(1084,ui->groupBox_24->height()+10,360,250);
     ui->groupBox_16->setHidden(true);
+    ui->groupBox_25->setHidden(true);
+    ui->groupBox_15->setHidden(true);
+    ui->groupBox_5->setGeometry(900,950,ui->groupBox_5->width(),ui->groupBox_5->height());
     ui->customButton_openCPN->hide();
     ui->groupBox_gps->setGeometry(10,1120,211,70);
+    ui->groupBox_28->setGeometry(1450,50,ui->groupBox_28->width(),ui->groupBox_28->height());
 //    ui->groupBox_15->setGeometry(10,50,310,65);
 //    ui->groupBox_16->setGeometry(10,120,160,170);
 //    ui->groupBox_24->setGeometry(10,10,490,40);
@@ -1273,7 +1279,7 @@ void MainWindowBasic::SetUpTheonGUILayout()
     ui->tabWidget_iad->show();
     ui->tabWidget_iad->setTabEnabled(5,false);
     ui->tabWidget_iad->mMoveable = false;
-//    ui->tabWidget_menu_2->setGeometry(1600,10,310,590);
+    ui->tabWidget_menu_2->setGeometry(1084,305,340,695);
 //    ui->tableWidgetTarget->setGeometry(0,0,308,450);
 //    ui->groupBox_3->setGeometry(10,460,280,100);
     ui->tabWidget_iad->setCurrentIndex(4);
@@ -1281,7 +1287,7 @@ void MainWindowBasic::SetUpTheonGUILayout()
     on_bt_rg_5_clicked();
     ui->textBrowser_message->setStyleSheet("background-color:black");
     ui->textBrowser_message->setFont(QFont("Times", 8));
-//    ui->groupBox_8->setGeometry(1230,10,360,250);
+
     //   ui->groupBox_14->setGeometry(1450,390,160,120);
 //    ui->groupBox_5->setGeometry(1430,270,160,100);
 
@@ -1542,7 +1548,23 @@ bool MainWindowBasic::CalcAziContour(double theta, double d)
 
 void MainWindowBasic::DrawViewFrameSquared(QPainter* p)
 {
-    printf("not implemented yet");
+    if(toolButton_grid_checked)
+    {
+        if(ui->toolButton_measuring->isChecked())
+        {
+            DrawGrid(p,mMouseLastX,mMouseLastY);
+        }
+        else
+        {
+            DrawGrid(p,rda_main.radCtX,rda_main.radCtY);
+        }
+    }
+    //fill back ground
+    p->setPen(QPen(QColor(24 ,48 ,64,255),3));
+    p->setBrush(QBrush(QColor(60 ,80 ,120,255)));
+    p->drawRect(SCR_H+SCR_LEFT_MARGIN,SCR_TOP_MARGIN,SCR_W-SCR_H-SCR_LEFT_MARGIN,SCR_H);
+    p->drawRect(0,0,SCR_LEFT_MARGIN,SCR_H);
+    p->setBrush(Qt::NoBrush);
 }
 void MainWindowBasic::DrawViewFrame(QPainter* p)
 {
@@ -1563,6 +1585,7 @@ void MainWindowBasic::DrawViewFrame(QPainter* p)
     p->drawRect(SCR_H+SCR_LEFT_MARGIN,SCR_TOP_MARGIN,SCR_W-SCR_H-SCR_LEFT_MARGIN,SCR_H);
     p->drawRect(0,0,SCR_LEFT_MARGIN,SCR_H);
     p->setBrush(Qt::NoBrush);
+
 #ifdef THEON
     QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),224+SCR_BORDER_SIZE);
     QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
@@ -2586,6 +2609,10 @@ void MainWindowBasic::UpdateScale()
             setScaleRange(256);
             //if(isAdaptSn) sendToRadarString(CConfig::getString("mR8Command"));
             break;
+        case 8:
+            setScaleRange(512);
+            //if(isAdaptSn) sendToRadarString(CConfig::getString("mR8Command"));
+            break;
         default:
             setScaleRange(48);
             break;
@@ -2625,6 +2652,10 @@ void MainWindowBasic::UpdateScale()
             break;
         case 7:
             setScaleRange(320);
+            //            if(isAdaptSn) sendToRadarString(CConfig::getString("mR7Command"));
+            break;
+        case 8:
+            setScaleRange(640);
             //            if(isAdaptSn) sendToRadarString(CConfig::getString("mR7Command"));
             break;
         default:
@@ -4897,4 +4928,13 @@ void MainWindowBasic::on_toolButton_radar_clicked(bool checked)
 void MainWindowBasic::on_tableWidgetTarget_clicked(const QModelIndex &index)
 {
 
+}
+
+void MainWindowBasic::on_bt_rg_9_clicked(bool checked)
+{
+    mRangeIndex=8;
+    CConfig::setValue("mRangeLevel",mRangeIndex);
+    UpdateScale();
+    SendScaleCommand();
+    isMapOutdated = true;
 }

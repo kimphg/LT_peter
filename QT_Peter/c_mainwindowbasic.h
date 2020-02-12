@@ -723,6 +723,8 @@ private slots:
 
     void on_tableWidgetTarget_clicked(const QModelIndex &index);
 
+    void on_bt_rg_9_clicked(bool checked);
+
 private:
     bool isRadarShow;
     C_primary_track *selectedTrack;

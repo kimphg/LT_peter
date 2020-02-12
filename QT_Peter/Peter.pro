@@ -10,7 +10,7 @@
 # Version 4.0.1
 #-------------------------------------------------
 #data file type defined as .r2d,
-CONFIG += C4I_VIEW_MODE
+#CONFIG += C4I_VIEW_MODE
 
 C4I_VIEW_MODE {
   SOURCES  += c_mainwindowbasic.cpp
@@ -53,8 +53,7 @@ SOURCES += main.cpp\
     dialoginputvalue.cpp \
     dialogconfig.cpp \
     dialogdetaildisplay.cpp \
-    c_arpa_area.cpp \
-    c_mainwindowbasic.cpp
+    c_arpa_area.cpp
 HEADERS  += \
     qcustombutton.h \
     qcustomframe.h \
@@ -82,8 +81,7 @@ HEADERS  += \
     dialogconfig.h \
     common.h \
     dialogdetaildisplay.h \
-    c_arpa_area.h \
-    c_mainwindowbasic.h
+    c_arpa_area.h
 #    pch_file.h
 #PRECOMPILED_HEADER = "pch_file.h"
 #CONFIG += precompile_header
@@ -91,7 +89,6 @@ FORMS    += \
     mainwindow.ui \
     dialogdocumentation.ui \
     dialogaisinfo.ui \
-    dialogcommandlog.ui \
     statuswindow.ui \
     dialogmenudisplay.ui \
     dialoginputvalue.ui \

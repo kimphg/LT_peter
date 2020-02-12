@@ -262,7 +262,7 @@ void c_radar_simulation::setRange(int clk_adc)
     //15 30 60 120 240
     int nclk_adc = clk_adc-3;
     if(nclk_adc<0)nclk_adc=0;
-    if(nclk_adc>4)nclk_adc=4;
+    if(nclk_adc>3)nclk_adc=3;
     n_clk_adc = nclk_adc;
     rResolution = 0.015070644 * pow(2, n_clk_adc);
     updateTargets();

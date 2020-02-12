@@ -324,7 +324,7 @@ void Mainwindow::keyPressEvent(QKeyEvent *event)
             if(posy)mMousey= posy;
 
             rda_main.setCenterLonLat(x2lon(mMousex - rda_main.radCtX),y2lat(-(mMousey - rda_main.radCtY)));
-
+            CConfig::setGPSLocation(rda_main.mLat,rda_main.mLon);
         }
         else if(key==Qt::Key_2)
         {
