@@ -240,21 +240,7 @@ void C_arpa_area::DrawRadarTargets(QPainter* p)//draw radar target from pRadar->
 
 
     bool blink = (CConfig::time_now_ms/500)%2;
-#ifndef THEON
-    //draw targeted tracks
-    p->setPen(penTargetEnemy);
-    for (uint i = 0;i<TARGET_TABLE_SIZE;i++)
-    {
-        TrackPointer* trackPt = mTargetMan.getTargetAt(i);
-        if(!trackPt)continue;
-        C_primary_track* track = trackPt->track;
-        PointInt s = ConvWGSToScrPoint(track->lon,track->lat);
-        p->drawLine(s.x-20,s.y,s.x-10,s.y);
-        p->drawLine(s.x+20,s.y,s.x+10,s.y);
-        p->drawLine(s.x,s.y-20,s.x,s.y-10);
-        p->drawLine(s.x,s.y+20,s.x,s.y+10);
-    }
-#endif
+
     //draw all tracks
     for (uint i = 0;i<MAX_TRACKS_COUNT;i++)
     {
@@ -289,6 +275,14 @@ void C_arpa_area::DrawRadarTargets(QPainter* p)//draw radar target from pRadar->
 
             if(track->flag>=0)p->setPen(penTargetEnemy);
             else  p->setPen(penTargetFriend);
+        }
+        if(track->flag==2)//targeted enemy
+        {
+            PointInt s = ConvWGSToScrPoint(track->lon,track->lat);
+            p->drawLine(s.x-20,s.y,s.x-10,s.y);
+            p->drawLine(s.x+20,s.y,s.x+10,s.y);
+            p->drawLine(s.x,s.y-20,s.x,s.y-10);
+            p->drawLine(s.x,s.y+20,s.x,s.y+10);
         }
         if(track->isLost())
         {

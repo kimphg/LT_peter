@@ -1223,11 +1223,11 @@ void MainWindowBasic::changeID()
 }
 void MainWindowBasic::setEnemy()
 {
-    selectedTrack->flag=1;
+    if(selectedTrack->flag<1)selectedTrack->flag=1;
 }
 void MainWindowBasic::setFriend()
 {
-    selectedTrack->flag=-1;
+    if(selectedTrack->flag>-1)selectedTrack->flag=-1;
 }
 void MainWindowBasic::removeTarget()
 {

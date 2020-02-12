@@ -1,6 +1,7 @@
-//#define C4I_VIEW_MODE
+#define ARTEMIS
 
-#ifdef C4I_VIEW_MODE
+#ifdef ARTEMIS
+
 #include "c_mainwindowbasic.h"
 #else
 #include "c_mainwindow.h"
@@ -12,7 +13,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     //a.setOverrideCursor(QCursor(QPixmap("img\crossCursor.png")));
-#ifdef C4I_VIEW_MODE
+#ifdef ARTEMIS
     MainWindowBasic w;
 #else
     Mainwindow w;

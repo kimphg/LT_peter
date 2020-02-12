@@ -368,7 +368,7 @@ public:
         return output;
     }
 //    bool isEnemy;
-    int flag;
+    int flag;//<0: friends;0:undefined;  1 enemy; 2: targeted enemy
 //    bool isDoplerShifted(){return (abs(mDoplerFit)>TRACK_START_DOPLER);}
     bool isHighDensityPos();
     bool isConfirmed(){return mState==TrackState::confirmed;}

@@ -102,6 +102,7 @@ bool c_target_manager::addTarget(C_primary_track * track)
     {
         if(targetTable[i].track == nullptr)
         {
+            track->flag=2;
             targetTable[i].track = track;
             targetTable[i].flag = 0;
             targetTable[i].trackUniqID = track->uniqId;
