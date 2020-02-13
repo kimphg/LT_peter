@@ -10,9 +10,11 @@
 # Version 4.0.1
 #-------------------------------------------------
 #data file type defined as .r2d,
-#CONFIG += C4I_VIEW_MODE
-
-C4I_VIEW_MODE {
+CONFIG += ARTEMIS
+#define ARTEMIS for C4I view mode
+#define THEON for raytheon radar
+#define
+ARTEMIS {
   SOURCES  += c_mainwindowbasic.cpp
   HEADERS  += c_mainwindowbasic.h
 } else {
