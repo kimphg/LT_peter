@@ -504,9 +504,18 @@ void dataProcessingThread::sendRATTM()
             std::string str=(track->mTTM.toStdString());
             radarSocket->writeDatagram((char*)str.data(),
                                        len,
-                                       QHostAddress("192.168.1.252"),30001
+                                       QHostAddress(CConfig::getString("TTMOutputIP","192.168.1.252")),
+                                       CConfig::getInt("TTMOutputPort",30001)
+                                       );
+
+            str=(track->mTIF.toStdString());
+            radarSocket->writeDatagram((char*)str.data(),
+                                       len,
+                                       QHostAddress(CConfig::getString("TIFOutputIP","192.168.0.80")),
+                                       CConfig::getInt("TIFOutputPort",30001)
                                        );
             track->mTTM.clear();
+
         }
 
     }

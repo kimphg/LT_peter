@@ -884,6 +884,7 @@ void C_primary_track::update()
 }
 void C_primary_track::generateTTM()
 {
+    //generate TTM
     mTTM = "$RATTM,"+QString::number(uniqId)+","+
             QString::number(nm(rgKm),'f',2)+","+
             QString::number(aziDeg,'f',1)+","+
@@ -898,6 +899,19 @@ void C_primary_track::generateTTM()
     char chs[] = {0,0,0};
     bin2hex(a,&chs[0]);
     mTTM+="*"+QString(chs)+"\r\n";
+    //generate RATIF
+    mTIF = "$RATIF_SHIP,"+
+            QString::number(uniqId)+",,"+//ID
+            QString::number(lat,'f',5)+","+//lat
+            QString::number(lon,'f',5)+","+//lon
+            +"0"+ //altitude
+            QString::number((mSpeedkmhFit),'f',1)+","+
+            QString::number(courseDeg,'f',1)+","+
+            +"SUR_RADAR,"
+            +QString::number(lastUpdateTimeMs/1000);
+    a = getCheckSum(mTIF);
+    bin2hex(a,&chs[0]);
+    mTIF+="*"+QString(chs)+"\r\n";
 }
 
 uchar C_primary_track::getCheckSum(QString message)

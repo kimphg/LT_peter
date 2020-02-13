@@ -397,7 +397,7 @@ public:
         return mState==TrackState::lost;
     }
     TrackState mState;
-    QString mTTM;
+    QString mTTM,mTIF;
     uint ageMs;
     //    int operatorID;
 //    uint time;
