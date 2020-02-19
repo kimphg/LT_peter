@@ -476,6 +476,7 @@ public:
     int      antennaHeadOffset;
     int     freqHeadOffset;
     double rgStdErrKm;
+    std::queue<object_t> object_output_queue;
 //    qint64 time_start_ms;
     double sn_scale;
 //    bool isTrueHeadingFromRadar;

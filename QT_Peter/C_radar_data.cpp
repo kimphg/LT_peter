@@ -761,7 +761,7 @@ void C_primary_track::checkNewObject()
         if(mState==TrackState::newDetection)
         {
 
-            if(isHighDensityPos()||CConfig::getInt("isUseDensityMap")==false)
+            if(isHighDensityPos()||(CConfig::getInt("isUseDensityMap")==false))
 
                 if(mSpeedkmhFit<targetMaxSpeedKmh)
                 {
@@ -2642,43 +2642,7 @@ void C_radar_data::procPLot(plot_t* mPlot)
             printf("\nclutter rejected: %d / %d",engCount,mPlot->size);
             return;
         }
-        /*memset(doplerHistogram,0,256);
-        int leftA = mPlot->riseA-15;
-        if(leftA<0)leftA+=MAX_AZIR;
-        int rightA = mPlot->fallA+15;
-        if(rightA>=MAX_AZIR)rightA-=MAX_AZIR;
-        int maxRg = ctR+15;
-        int minRg = ctR-15;
-        if(minRg<0)minRg=0;if(maxRg>=range_max)maxRg=range_max-1;
-        for(int lAzi=leftA;;lAzi++)
-        {
-            if(lAzi>=MAX_AZIR)lAzi-=MAX_AZIR;
-            if(lAzi==rightA)break;
-            for(int lRg = minRg;lRg<maxRg;lRg++)
-            {
-                if(data_mem.detect[lAzi][lRg])
-                    doplerHistogram[data_mem.dopler[lAzi][lRg]]++;
-            }
-        }
-        //printf("\n");
-        int sumHis = 0;
-        int maxHis = 0;
-        for(int i=0;i<16;i++)
-        {
-            //printf(" %d:%d ",i,doplerHistogram[i]);
-            //sumHis+=doplerHistogram[i];
-            //if(doplerHistogram[i]>20)
-            sumHis+=doplerHistogram[i];
-            if(doplerHistogram[i]>maxHis)maxHis = doplerHistogram[i];
-            //            if((doplerHistogram[i]-mPlot->size)>50&&mPlot->dopler==i)
-            //            {
-            //                printf("mPlot->size: %d",mPlot->size);
-            //                return;
-            //            }
-        }
-        //printf("mPlot->size: %d",mPlot->size);
-        //printf("\n maxhis/sumHis: %f",maxHis/(float)sumHis);
-        if(maxHis/(float)sumHis<0.75)return;*/
+
 
     }
 
@@ -2710,6 +2674,10 @@ void C_radar_data::procPLot(plot_t* mPlot)
     newobject.ykm = newobject.rgKm*cos( newobject.azRad);
     ConvKmToWGS(newobject.xkm,newobject.ykm,&(newobject.lon),&(newobject.lat));
     ProcessObject(&newobject);
+    if(object_output_queue.size()<2000)
+    {
+        object_output_queue.push(newobject);
+    }
     mPlot->isUsed = false;
 }
 

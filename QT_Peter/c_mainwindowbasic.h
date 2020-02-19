@@ -725,6 +725,8 @@ private slots:
 
     void on_bt_rg_9_clicked(bool checked);
 
+    void on_toolButton_ais_request_clicked();
+
 private:
     bool isRadarShow;
     C_primary_track *selectedTrack;

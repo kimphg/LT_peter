@@ -469,11 +469,6 @@ AIS_object_t AIS::GetAisObject()
     AIS_object_t obj;
     obj.mMMSI = get_mmsi();
     int msgType = get_type();
-    if(obj.mMMSI==574092898)
-    {
-        printf("\n obj.mMMSI:%d ; type:%d",574092898,msgType);
-        flushall();
-    }
 
     switch (msgType) {
     case AIS::AIS_MSG_24_STATIC_DATA_REPORT:

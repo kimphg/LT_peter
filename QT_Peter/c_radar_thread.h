@@ -3,6 +3,9 @@
 #include <QThread>
 #include <queue>
 #include <QTimer>
+#include <QJsonDocument>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
 //#include <QGeoPositionInfo>
 #include "c_config.h"
 #include "C_radar_data.h"
@@ -51,7 +54,7 @@ class dataProcessingThread:public QThread
 public:
     bool isSimulationMode;
     int mCudaAge200ms;
-    QFile aisLogFile;
+    QFile logFile;
 //    std::queue<GPSData> mGpsData;
 //    unsigned char       connect_timeout;
     RadarSignMode       mRadMode;
@@ -66,6 +69,8 @@ public:
     QTimer commandSendTimer;
     QTimer readUdpBuffTimer;
     QTimer readSerialTimer;
+    QNetworkAccessManager *networkManager;
+    QNetworkRequest networkRequest;
     double mFramesPerSec;
     void forwardOldGps();
     void PlaybackFile();
@@ -100,7 +105,7 @@ public:
     //    void loadTargetDensityMap();
     void addAisObj(AIS_object_t obj);
     bool getIsPlaying() const;
-
+    void requestAISData();
 signals:
     void HeadingDataReceived(double heading);
 private:
@@ -135,8 +140,10 @@ private:
     bool readNmea(unsigned char *mReceiveBuff,int len);
     bool readMay22Msg(unsigned char *mReceiveBuff, int len);
     void ProcessData(unsigned char *data, unsigned short len);
-//    void LoadDensityMap(QByteArray inputdata);
+    //    void LoadDensityMap(QByteArray inputdata);
+
 private slots:
+    void managerFinished(QNetworkReply *reply);
     void ReadDataBuffer();
     void Timer200ms();
 //    void processRadarData();

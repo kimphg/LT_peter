@@ -1294,7 +1294,7 @@ void MainWindowBasic::SetUpTheonGUILayout()
 }
 void MainWindowBasic::checkCuda()
 {
-
+/*
     //system("taskkill /f /im cudaFFT.exe");
     //    int a=rda_main.processing->mCudaAge200ms;
     if(rda_main.processing->mCudaAge200ms<20)return;
@@ -1317,7 +1317,7 @@ void MainWindowBasic::checkCuda()
             CConfig::AddMessage(QString::fromUtf8("Không tìm thấy cudaFFT.exe"));
         }
     }
-
+*/
     //const char* systemCommand = "start D:\\HR2D\\cudaFFT.exe";
     //const char* exeFile = "cudaFFT.exe";
     //system("taskkill /f /im cudaFFT.exe");
@@ -2045,8 +2045,9 @@ void MainWindowBasic::ShutDown()
 //}
 void MainWindowBasic::sync1p()//period 1 min
 {
-    QString str = ui->textBrowser_message->toPlainText();
-    QDateTime now = QDateTime::currentDateTime();
+    rda_main.processing->requestAISData();
+    //QString str = ui->textBrowser_message->toPlainText();
+    //QDateTime now = QDateTime::currentDateTime();
     /*QString dir = "D:\\HR2D\\logs\\"+now.toString("\\dd.MM\\");
     if(!QDir(dir).exists())
     {
@@ -2301,7 +2302,7 @@ void MainWindowBasic::ViewTrackInfo()
 }
 void MainWindowBasic::sync1S()//period 1 second
 {
-    checkCuda();
+    //checkCuda();
 
     if(CConfig::getWarningList()->size())
     {
@@ -4937,4 +4938,9 @@ void MainWindowBasic::on_bt_rg_9_clicked(bool checked)
     UpdateScale();
     SendScaleCommand();
     isMapOutdated = true;
+}
+
+void MainWindowBasic::on_toolButton_ais_request_clicked()
+{
+    rda_main.processing->requestAISData();
 }

@@ -2,6 +2,9 @@
 #include "c_radar_thread.h"
 
 #include <QDir>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QNetworkReply>
 #define FRAME_LEN_NAV 1500
 #define FRAME_LEN_MAX 5000
 #define MAX_IREC 2000
@@ -18,7 +21,8 @@ bool *pIsPlaying;
 dataProcessingThread::~dataProcessingThread()
 {
     delete mRadarData;
-    aisLogFile.close();
+    logFile.close();
+    delete networkManager;
 //    signTTMFile.close();
     //    delete arpaData;
 }
@@ -92,15 +96,18 @@ double dataProcessingThread::getSelsynAzi() const
 dataProcessingThread::dataProcessingThread()
 {
 
-
+    networkManager = new QNetworkAccessManager();
+        QObject::connect(networkManager, SIGNAL(finished(QNetworkReply*)),
+            this, SLOT(managerFinished(QNetworkReply*)));
+    //set initial time
     QDateTime now = QDateTime::currentDateTime();
     QString logDirName = "D:\\HR2D\\logs\\"+now.toString("\\yy.MM\\");
     if(!QDir(logDirName).exists())
     {
         QDir().mkdir(logDirName);
     }
-    aisLogFile.setFileName(logDirName+now.toString("yy.MM.dd-hh.mm.ss")+"_ais.log");
-    aisLogFile.open(QIODevice::WriteOnly);
+    logFile.setFileName(logDirName+now.toString("yy.MM.dd-hh.mm.ss")+".log");
+    logFile.open(QIODevice::WriteOnly);
 
     mCudaAge200ms=50;
     mFramesPerSec=0;
@@ -179,7 +186,6 @@ bool dataProcessingThread::readGyroMsg(unsigned char *mReceiveBuff,int len)
     int n=0;
     while(n<len-31)
     {
-
         unsigned char *databegin =&mReceiveBuff[n];
         n++;
         if(databegin[0]==0x5a&&databegin[1]==0xa5&&databegin[31]==0xAA)
@@ -288,7 +294,7 @@ bool dataProcessingThread::readNmea(unsigned char *mReceiveBuff,int len)
                         if(mLat>-90&&mLat<90&&mLon>-180&&mLon<180)
                             CConfig::setGPSLocation(mLat,mLon);
                         else printf("\nwrong GPS value");
-                        aisLogFile.write(QByteArray((char*)(databegin),len));
+                        logFile.write(QByteArray((char*)(databegin),len));
                         return true;
                     }
 
@@ -299,7 +305,7 @@ bool dataProcessingThread::readNmea(unsigned char *mReceiveBuff,int len)
         {
             QByteArray ba=QByteArray((char*)databegin,len);
             inputAISData(ba);
-            if (!isPlaying)aisLogFile.write(ba);
+//            if (!isPlaying)aisLogFile.write(ba);
             return true;
         }
 
@@ -495,22 +501,13 @@ void dataProcessingThread::sendRATTM()
         int len = track->mTTM.size();
         if(len)
         {
-            /*std::string str=(track->mTTM.toStdString());
-            for(std::vector<QSerialPort*>::iterator it = serialPorts.begin() ; it != serialPorts.end(); ++it)
-            {
-                (*it)->write(str.data(),len);
-            }
-            signTTMFile.write(str.data());*/
-            std::string str=(track->mTTM.toStdString());
-            radarSocket->writeDatagram((char*)str.data(),
-                                       len,
+
+            radarSocket->writeDatagram(track->mTTM.toLatin1(),
                                        QHostAddress(CConfig::getString("TTMOutputIP","192.168.1.252")),
                                        CConfig::getInt("TTMOutputPort",30001)
                                        );
 
-            str=(track->mTIF.toStdString());
-            radarSocket->writeDatagram((char*)str.data(),
-                                       len,
+            radarSocket->writeDatagram(track->mTIF.toLatin1(),
                                        QHostAddress(CConfig::getString("TIFOutputIP","192.168.0.80")),
                                        CConfig::getInt("TIFOutputPort",30001)
                                        );
@@ -518,6 +515,26 @@ void dataProcessingThread::sendRATTM()
 
         }
 
+    }
+    QByteArray plotOutput;
+    while(mRadarData->object_output_queue.size())
+    {
+        object_t *obj = &(mRadarData->object_output_queue.back());
+        QString sentence = "$RAPLT,"+
+                QString::number(obj->lat, 'f',5) +","+
+                QString::number(obj->lon, 'f',5) +","+
+                QString::number(obj->dazi,'f',5) +","+
+                QString::number(obj->drg, 'f',5) +","+
+                QString::number(obj->timeMs)+"\r\n";
+        plotOutput.append(sentence);
+        mRadarData->object_output_queue.pop();
+    }
+    if(plotOutput.size())
+    {
+        radarSocket->writeDatagram(plotOutput,
+                                   QHostAddress(CConfig::getString("PLTOutputIP","192.168.0.80")),
+                                   CConfig::getInt("PLTOutputPort",30001)
+                                   );
     }
 }
 void dataProcessingThread::Timer200ms()
@@ -737,6 +754,57 @@ void dataProcessingThread::ProcessData(unsigned char* data,unsigned short len)
         return;
         //nframe++;
     }
+}
+
+void dataProcessingThread::managerFinished(QNetworkReply *reply)
+{
+    if (reply->error()) {
+        qDebug() << reply->errorString();
+        return;
+    }
+
+    QString answer = reply->readAll();
+    QJsonDocument temp = QJsonDocument::fromJson(answer.toUtf8());
+        if (temp.isArray()){
+            //printf(answer.toUtf8().data());
+        }
+        if (temp.isObject()){
+            //qDebug() << " It is an Object" <<endl;
+            //printf(answer.toUtf8().data());
+            QJsonObject jObject = temp.object();
+            if(jObject["ships"].isArray())
+            {
+                QJsonArray jsonArray = jObject["ships"].toArray();
+                foreach (const QJsonValue & value, jsonArray) {
+                    if(value.isObject())
+                    {
+                       QJsonObject jObj  =  value.toObject();
+                       AIS_object_t obj;
+                       obj.mMMSI = jObj["mmsi"].toString().toInt();
+                       obj.mLat = jObj ["lat"].toDouble();
+                       obj.mLong = jObj["lng"].toDouble();
+                       obj.mName = jObj["vsnm"].toString();
+                       obj.mCog = jObj ["cog"].toDouble();
+                       obj.mSog = jObj ["sog"].toDouble();
+                       obj.mLut = QDateTime::currentMSecsSinceEpoch();
+                       addAisObj(obj);
+                    }
+                    //QJsonObject obj = value.toObject();
+                    //propertyNames.append(obj["PropertyName"].toString());
+                    //propertyKeys.append(obj["key"].toString());
+                }
+            }
+        }
+    //delete networkManager;
+    //requestAISData();
+
+}
+void dataProcessingThread::requestAISData()
+{
+
+    networkRequest.setUrl(QUrl("http://quanlytau.vishipel.vn/Vishipel.VTS/TrackingHandler.ashx?cmd=live&range=101.042863,7.185843,111.430319,22.379662&areaW=0.055579335027628574,0.056304931640625&zoom=10&c=0&l=all"));
+    networkManager->get(networkRequest);
+
 }
 void dataProcessingThread::run()
 {

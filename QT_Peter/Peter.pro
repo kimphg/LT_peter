@@ -17,9 +17,11 @@ CONFIG += ARTEMIS
 ARTEMIS {
   SOURCES  += c_mainwindowbasic.cpp
   HEADERS  += c_mainwindowbasic.h
+    TARGET = Artemis
 } else {
   SOURCES  += c_mainwindow.cpp
   HEADERS  += c_mainwindow.h
+    TARGET = Peter
 }
 @CONFIG  += debug_and_release@
 QT       += core gui
@@ -28,7 +30,7 @@ QT       += serialport
 #QT	    += positioning
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 QMAKE_CXXFLAGS_WARN_OFF -= -Wunused-parameter
-TARGET = Peter
+
 TEMPLATE = app
 SOURCES += main.cpp\
     qcustombutton.cpp \

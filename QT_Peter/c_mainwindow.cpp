@@ -1291,10 +1291,11 @@ void Mainwindow::checkCuda()
     //system("taskkill /f /im cudaFFT.exe");
     //    int a=rda_main.processing->mCudaAge200ms;
     if(rda_main.processing->mCudaAge200ms<20)return;
-    CConfig::AddMessage(QString::number(rda_main.processing->mCudaAge200ms));
+
     if(rda_main.processing->getIsPlaying())return;
     else {
         if(CConfig::getInt("runWithOutCuda",0))return;
+        CConfig::AddMessage(QString::number(rda_main.processing->mCudaAge200ms));
 //        printf("\nreset cuda:%d ",rda_main.processing->mCudaAge200ms);
         system("taskkill /f /im cudaFFT.exe");
         QFileInfo check_file("D:\\HR2D\\cudaFFT.exe");
