@@ -30,7 +30,7 @@ void DialogDetailDisplay::init(dataProcessingThread *processingThread,DialogAisI
     rda.radCtY = height()/2;
     rda.rect = this->rect();
     this->setWindowFlags(this->windowFlags()|Qt::FramelessWindowHint);
-    //this->setWindowFlags(this->windowFlags()&(~Qt::WindowContextHelpButtonHint));
+    //this->setWindowFlags(this->windowFlags()&(Qt::WindowContextHelpButtonHint));
     this->setStyleSheet("background-color: rgb(0, 0, 0);color:rgb(255, 255, 255);font: bold 12pt \"MS Shell Dlg 2\";");
     this->show();
 
@@ -48,7 +48,7 @@ void DialogDetailDisplay::paintEvent(QPaintEvent *event)
 {
     rda.setScale(rda.mRadarData->getScale_PpiPerKm()*rda.mRadarData->getScale_zoom_ppi());
     rda.mZoomSizeKm = this->width()/rda.mScale;
-    rda.target_size = rda.mScale*0.3;
+    rda.target_size = rda.mScale*0.25;
     QPainter p(this);
     DrawSignal(&p);
     if(view_mode==ViewMode::ZoomZoom)
@@ -170,7 +170,7 @@ void DialogDetailDisplay::DrawSignal(QPainter*p)
 }
 DialogDetailDisplay::~DialogDetailDisplay()
 {
-    killTimer(timerId);
+    //killTimer(timerId);
     delete ui;
 }
 

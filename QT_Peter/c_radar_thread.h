@@ -69,7 +69,7 @@ public:
     QTimer commandSendTimer;
     QTimer readUdpBuffTimer;
     QTimer readSerialTimer;
-    QNetworkAccessManager *networkManager;
+    QNetworkAccessManager *networkManagerAis,*networkManagerAdsb;
     QNetworkRequest networkRequest;
     double mFramesPerSec;
     void forwardOldGps();
@@ -92,7 +92,8 @@ public:
     void run();
     bool getIsDrawn();
     AIS aisMessageHandler;
-    std::map<int,AIS_object_t> mAisData;
+    std::map<int,AIS_object_t> mAisVesselsList;
+    std::map<QString,AIS_object_t> mAisObjList;
     void setRotationSpeed(int index);
     bool getIsXuLyThuCap() const;
     void setIsXuLyThuCap(bool value);
@@ -106,6 +107,7 @@ public:
     void addAisObj(AIS_object_t obj);
     bool getIsPlaying() const;
     void requestAISData();
+    void requestADSBData();
 signals:
     void HeadingDataReceived(double heading);
 private:
@@ -143,7 +145,7 @@ private:
     //    void LoadDensityMap(QByteArray inputdata);
 
 private slots:
-    void managerFinished(QNetworkReply *reply);
+    void networkReplyAis(QNetworkReply *reply);
     void ReadDataBuffer();
     void Timer200ms();
 //    void processRadarData();
@@ -153,6 +155,7 @@ private slots:
 //    void gpsupdate(QGeoPositionInfo geo);
 
     void ReadNavData();
+    void networkReplyAdsb(QNetworkReply *reply);
 public slots:
     void StopProcessing();
 

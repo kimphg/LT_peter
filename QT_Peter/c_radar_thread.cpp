@@ -22,7 +22,7 @@ dataProcessingThread::~dataProcessingThread()
 {
     delete mRadarData;
     logFile.close();
-    delete networkManager;
+    //delete networkManager;
 //    signTTMFile.close();
     //    delete arpaData;
 }
@@ -96,9 +96,12 @@ double dataProcessingThread::getSelsynAzi() const
 dataProcessingThread::dataProcessingThread()
 {
 
-    networkManager = new QNetworkAccessManager();
-        QObject::connect(networkManager, SIGNAL(finished(QNetworkReply*)),
-            this, SLOT(managerFinished(QNetworkReply*)));
+    networkManagerAis = new QNetworkAccessManager();
+        QObject::connect(networkManagerAis, SIGNAL(finished(QNetworkReply*)),
+            this, SLOT(networkReplyAis(QNetworkReply*)));
+        networkManagerAdsb = new QNetworkAccessManager();
+            QObject::connect(networkManagerAdsb, SIGNAL(finished(QNetworkReply*)),
+                this, SLOT(networkReplyAdsb(QNetworkReply*)));
     //set initial time
     QDateTime now = QDateTime::currentDateTime();
     QString logDirName = "D:\\HR2D\\logs\\"+now.toString("\\yy.MM\\");
@@ -666,16 +669,24 @@ void dataProcessingThread::togglePlayPause(bool play)
 }
 void dataProcessingThread::addAisObj(AIS_object_t obj)
 {
-    int mmsi = obj.mMMSI;
-
-    if(mAisData.find(mmsi)!=mAisData.end())
+    if(obj.mName.contains("Phao")||obj.mName.contains("PHAO")||obj.mName.contains("P.")||obj.mName.contains("BUOY"))//
     {
-        obj.merge(mAisData[mmsi]);
-
+        QString key = QString::number(obj.mMMSI)+obj.mName;
+        mAisObjList[key] = obj;
     }
+    else
+    {
+        int mmsi = obj.mMMSI;
 
-    mAisData[mmsi] = obj;
-    mRadarData->integrateAisPoint(&(mAisData[mmsi]));
+        if(mAisVesselsList.find(mmsi)!=mAisVesselsList.end())
+        {
+            obj.merge(mAisVesselsList[mmsi]);
+
+        }
+
+        mAisVesselsList[mmsi] = obj;
+        mRadarData->integrateAisPoint(&(mAisVesselsList[mmsi]));
+    }
 }
 void dataProcessingThread::inputAISData(QByteArray inputdata)
 {
@@ -755,56 +766,76 @@ void dataProcessingThread::ProcessData(unsigned char* data,unsigned short len)
         //nframe++;
     }
 }
-
-void dataProcessingThread::managerFinished(QNetworkReply *reply)
+//bool isWaitingForAis = false;
+void dataProcessingThread::networkReplyAis(QNetworkReply *reply)
 {
     if (reply->error()) {
-        qDebug() << reply->errorString();
-        return;
-    }
+            qDebug() << reply->errorString();
+            return;
+        }
 
     QString answer = reply->readAll();
     QJsonDocument temp = QJsonDocument::fromJson(answer.toUtf8());
-        if (temp.isArray()){
-            //printf(answer.toUtf8().data());
-        }
-        if (temp.isObject()){
-            //qDebug() << " It is an Object" <<endl;
-            //printf(answer.toUtf8().data());
-            QJsonObject jObject = temp.object();
-            if(jObject["ships"].isArray())
-            {
-                QJsonArray jsonArray = jObject["ships"].toArray();
-                foreach (const QJsonValue & value, jsonArray) {
-                    if(value.isObject())
-                    {
-                       QJsonObject jObj  =  value.toObject();
-                       AIS_object_t obj;
-                       obj.mMMSI = jObj["mmsi"].toString().toInt();
-                       obj.mLat = jObj ["lat"].toDouble();
-                       obj.mLong = jObj["lng"].toDouble();
-                       obj.mName = jObj["vsnm"].toString();
-                       obj.mCog = jObj ["cog"].toDouble();
-                       obj.mSog = jObj ["sog"].toDouble();
-                       obj.mLut = QDateTime::currentMSecsSinceEpoch();
-                       obj.mUpdateTime = clock();
-                       addAisObj(obj);
-                    }
-                    //QJsonObject obj = value.toObject();
-                    //propertyNames.append(obj["PropertyName"].toString());
-                    //propertyKeys.append(obj["key"].toString());
+    if (temp.isArray()){
+        //printf(answer.toUtf8().data());
+    }
+    if (temp.isObject()){
+        //qDebug() << " It is an Object" <<endl;
+        //printf(answer.toUtf8().data());
+        QJsonObject jObject = temp.object();
+        if(jObject["ships"].isArray())
+        {
+            QJsonArray jsonArray = jObject["ships"].toArray();
+            foreach (const QJsonValue & value, jsonArray) {
+                if(value.isObject())
+                {
+                    QJsonObject jObj  =  value.toObject();
+                    AIS_object_t obj;
+                    obj.mMMSI = jObj["mmsi"].toString().toInt();
+                    obj.mLat = jObj ["lat"].toDouble();
+                    obj.mLong = jObj["lng"].toDouble();
+                    obj.mName = jObj["vsnm"].toString();
+
+                    obj.mCog = jObj ["cog"].toString().toDouble();
+                    obj.mSog = jObj ["sog"].toString().toDouble();
+                    obj.mType = jObj ["type"].toString().toInt();
+                    obj.mLut = QDateTime::currentMSecsSinceEpoch();
+                    obj.mUpdateTime = clock();
+
+                    addAisObj(obj);
                 }
+                //QJsonObject obj = value.toObject();
+                //propertyNames.append(obj["PropertyName"].toString());
+                //propertyKeys.append(obj["key"].toString());
             }
         }
-    //delete networkManager;
-    //requestAISData();
+    }
+}
+void dataProcessingThread::networkReplyAdsb(QNetworkReply *reply)
+{
+    if (reply->error()) {
+            qDebug() << reply->errorString();
+            return;
+        }
+
+    QString answer = reply->readAll();
+
+    QStringList sl = answer.split("[");
+    sl;
 
 }
 void dataProcessingThread::requestAISData()
 {
 
     networkRequest.setUrl(QUrl("http://quanlytau.vishipel.vn/Vishipel.VTS/TrackingHandler.ashx?cmd=live&range=101.042863,7.185843,111.430319,22.379662&areaW=0.055579335027628574,0.056304931640625&zoom=10&c=0&l=all"));
-    networkManager->get(networkRequest);
+    networkManagerAis->get(networkRequest);
+
+}
+void dataProcessingThread::requestADSBData()
+{
+
+    networkRequest.setUrl(QUrl("https://data-live.flightradar24.com/zones/fcgi/feed.js?bounds=26.19,04.98,100.87,119.33&faa=1&mlat=1&flarm=1&adsb=1&gnd=1&air=1&vehicles=1&estimated=1&maxage=14400&gliders=1&stats=1"));
+    networkManagerAdsb->get(networkRequest);
 
 }
 void dataProcessingThread::run()

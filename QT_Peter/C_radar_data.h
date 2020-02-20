@@ -94,10 +94,10 @@
 #include <queue>
 #include <AIS/AIS.h>
 
-struct PointInt
-{
-    int x,y;
-};
+//struct PointInt
+//{
+//    int x,y;
+//};
 struct PointDouble
 {
     double x,y;

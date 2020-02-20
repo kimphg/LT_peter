@@ -1,6 +1,7 @@
 #include "c_arpa_area.h"
 static QPen penTargetHistory(QBrush(Qt::gray),2);
 static QPen penTargetEnemy(QBrush(Qt::magenta),3);
+static QPen penYellow(QBrush(Qt::yellow),1);
 static QPen penTargetFriend(QBrush(QColor(0,200,200 ,255)),3);
 static QPen penTargetEnemySelected(QBrush(Qt::magenta),4);
 static QPen penTargetFriendSelected(QBrush(QColor(50,255,255 ,255)),5);
@@ -9,14 +10,14 @@ static QPen penCyan(QBrush(QColor(50,255,255 ,255)),1);//xoay mui tau
 
 void C_arpa_area::checkClickAIS(int xclick, int yclick)
 {
-    for(std::map<int,AIS_object_t>::iterator iter = processing->mAisData.begin();
-        iter!=processing->mAisData.end();iter++)
+    for(std::map<int,AIS_object_t>::iterator iter = processing->mAisVesselsList.begin();
+        iter!=processing->mAisVesselsList.end();iter++)
     {
         AIS_object_t *aisObj = &(iter->second);
         //if(aisObj->isSelected)continue;
         if(aisObj->isMatchToRadarTrack)continue;
 
-        PointInt  pt = ConvWGSToScrPoint(aisObj->mLong,aisObj->mLat);
+        PointDouble  pt = ConvWGSToScrPoint(aisObj->mLong,aisObj->mLat);
         if(abs(pt.x-xclick)<target_size/2&&abs(pt.y-yclick)<target_size/2)
         {
 
@@ -26,30 +27,52 @@ void C_arpa_area::checkClickAIS(int xclick, int yclick)
 
     }
 }
-void C_arpa_area::DrawAISMark(PointInt s ,double head,QPainter *p,QString name,int size,int vectorLen)
+void C_arpa_area::DrawAISBuoy(PointDouble s ,QPainter *p,QString name,int size)
+{
+    QPolygon poly;
+    QPoint point;
+    point.setX(s.x);
+    point.setY(s.y-size*0.5);
+    poly<<point;
+    point.setX(s.x-size*0.2);
+    point.setY(s.y+size*0.2);
+    poly<<point;
+    point.setX(s.x+size*0.2);
+    point.setY(s.y+size*0.2);
+    poly<<point;
+    p->setPen(penYellow);
+    p->drawPolygon(poly);
+    if(showAisName)
+    {
+        p->setFont(QFont("Times", 8));
+
+        p->drawText(s.x-100,s.y+size*0.2,200,30,Qt::AlignVCenter,name);
+    }
+}
+void C_arpa_area::DrawAISMark(PointDouble s ,double head,QPainter *p,QString name,int size,int vectorLen)
 {
 
     QPolygon poly;
     QPoint point;
     //    double head = aisObj.mCog*PI_NHAN2/360.0;
-    point.setX(s.x+size*sinFast(head));
-    point.setY(s.y-size*cosFast(head));
+    point.setX(s.x+size*sin(head));
+    point.setY(s.y-size*cos(head));
     poly<<point;
-    point.setX(s.x+size*sinFast(head+2.3562f));
-    point.setY(s.y-size*cosFast(head+2.3562f));
+    point.setX(s.x+size*sin(head+2.3562f));
+    point.setY(s.y-size*cos(head+2.3562f));
     poly<<point;
-    point.setX(s.x+size*sinFast(head-2.3562f));
-    point.setY(s.y-size*cosFast(head-2.3562f));
+    point.setX(s.x+size*sin(head-2.3562f));
+    point.setY(s.y-size*cos(head-2.3562f));
     poly<<point;
-    point.setX(s.x+size*sinFast(head));
-    point.setY(s.y-size*cosFast(head));
+    point.setX(s.x+size*sin(head));
+    point.setY(s.y-size*cos(head));
     poly<<point;
-    point.setX(s.x+vectorLen*sinFast(head));
-    point.setY(s.y-vectorLen*cosFast(head));
+    point.setX(s.x+vectorLen*sin(head));
+    point.setY(s.y-vectorLen*cos(head));
 //    poly<<point;
 
 
-    p->setPen(penTargetEnemy);
+
     p->drawPolygon(poly);
     p->drawLine(s.x,s.y,point.x(),point.y());
     if(showAisName)
@@ -60,6 +83,48 @@ void C_arpa_area::DrawAISMark(PointInt s ,double head,QPainter *p,QString name,i
 
 
 }
+void C_arpa_area::DrawPlaneMark(PointDouble s ,QPainter *p,QString name,int size)
+{
+
+    QPolygon poly;
+    QPoint point;
+    //    double head = aisObj.mCog*PI_NHAN2/360.0;
+    point.setX(s.x+0);                  point.setY(s.y-1.5*target_size);    poly<<point;
+    point.setX(s.x+0.25*target_size);    point.setY(s.y-1.2*target_size);   poly<<point;
+    point.setX(s.x+0.25*target_size);    point.setY(s.y-0.3*target_size);   poly<<point;
+    point.setX(s.x+1.5*target_size);    point.setY(s.y+0.6*target_size);    poly<<point;
+    point.setX(s.x+1.5*target_size);    point.setY(s.y+0.9*target_size);    poly<<point;
+    point.setX(s.x+0.25*target_size);    point.setY(s.y+0.3*target_size);   poly<<point;
+    point.setX(s.x+0.25*target_size);    point.setY(s.y+1.2*target_size);   poly<<point;
+    point.setX(s.x+0.6*target_size);    point.setY(s.y+1.5*target_size);    poly<<point;
+    point.setX(s.x+0.6*target_size);    point.setY(s.y+1.8*target_size);    poly<<point;
+    //
+    point.setX(s.x+0*target_size);      point.setY(s.y+1.5*target_size);    poly<<point;
+    //
+    point.setX(s.x-0.6*target_size);    point.setY(s.y+1.8*target_size);    poly<<point;
+    point.setX(s.x-0.6*target_size);    point.setY(s.y+1.5*target_size);    poly<<point;
+    point.setX(s.x-0.25*target_size);    point.setY(s.y+1.2*target_size);   poly<<point;
+    point.setX(s.x-0.25*target_size);    point.setY(s.y+0.3*target_size);   poly<<point;
+    point.setX(s.x-1.5*target_size);    point.setY(s.y+0.9*target_size);    poly<<point;
+    point.setX(s.x-1.5*target_size);    point.setY(s.y+0.6*target_size);    poly<<point;
+    point.setX(s.x-0.25*target_size);    point.setY(s.y-0.3*target_size);   poly<<point;
+    point.setX(s.x-0.25*target_size);    point.setY(s.y-1.2*target_size);   poly<<point;
+    point.setX(s.x+0);                  point.setY(s.y-1.5*target_size);    poly<<point;
+//    poly<<point;
+
+
+    p->setPen(penYellow);
+
+    p->drawPolygon(poly);
+    //p->drawLine(s.x,s.y,point.x(),point.y());
+//    if(showAisName)
+//    {
+//        p->setFont(QFont("Times", 12));
+//        p->drawText(s.x+size,s.y+size,250,30,0,name);
+//    }
+
+
+}
 bool C_arpa_area::isInsideViewRect(int x, int y)
 {
     return rect.contains(x,y);
@@ -67,17 +132,28 @@ bool C_arpa_area::isInsideViewRect(int x, int y)
 
 void C_arpa_area::drawAisTarget(QPainter *p)
 {
-    p->setBrush(Qt::NoBrush);
-    for(std::map<int,AIS_object_t>::iterator iter = processing->mAisData.begin();iter!=processing->mAisData.end();iter++)
+    p->setBrush(QBrush(penTargetEnemy.color()));
+    p->setPen(penTargetEnemy);
+    for(std::map<int,AIS_object_t>::iterator iter = processing->mAisVesselsList.begin();iter!=processing->mAisVesselsList.end();iter++)
     {
         AIS_object_t aisObj = iter->second;
 
         if(aisObj.getAge()>1200000)continue;
-        PointInt s = ConvWGSToScrPoint(aisObj.mLong,aisObj.mLat);
+        PointDouble s = ConvWGSToScrPoint(aisObj.mLong,aisObj.mLat);
         if(aisObj.isMatchToRadarTrack)continue;
         if(!isInsideViewRect(s.x,s.y))continue;
         int vectorLen = nm2km(aisObj.mSog)*mScale/6.0;
         DrawAISMark(s,radians(aisObj.mCog)+radians(trueShiftDeg),p,aisObj.mName,target_size,vectorLen);
+    }
+    p->setBrush(QBrush(penYellow.color()));
+    p->setPen(penYellow);
+    for(std::map<QString,AIS_object_t>::iterator iter = processing->mAisObjList.begin();iter!=processing->mAisObjList.end();iter++)
+    {
+        AIS_object_t aisObj = iter->second;
+
+        PointDouble s = ConvWGSToScrPoint(aisObj.mLong,aisObj.mLat);
+        if(!isInsideViewRect(s.x,s.y))continue;
+        DrawPlaneMark(s,p,aisObj.mName,target_size);
     }
 }
 C_arpa_area::C_arpa_area()
@@ -96,9 +172,8 @@ void C_arpa_area::setTarget_size(int value)
     isDrawTargetNumber = mScale>10;
     target_size = value;
     if(target_size<8)target_size=8;
-    else if(target_size>20)target_size=20;
-    int penSize = target_size/10;
-    if(penSize<1)penSize=1;
+    else if(target_size>12)target_size=12;
+    int penSize = 1;
     penTargetHistory          .setWidth(penSize);
     penTargetEnemy            .setWidth(penSize);
     penTargetFriend           .setWidth(penSize);
@@ -107,9 +182,9 @@ void C_arpa_area::setTarget_size(int value)
     penCyan                   .setWidth(penSize);
 }
 
-PointInt C_arpa_area::ConvWGSToScrPoint(double m_Long, double m_Lat)
+PointDouble C_arpa_area::ConvWGSToScrPoint(double m_Long, double m_Lat)
 {
-    PointInt s;
+    PointDouble s;
     double refLat = (mLat + (m_Lat))*0.00872664625997;//pi/360
     s.x	= mScale*(((m_Long) - mLon) * 111.31949079327357)*cos(refLat);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
     s.y	= mScale*((mLat - (m_Lat)) * 111.132954);
@@ -127,7 +202,7 @@ C_primary_track* C_arpa_area::MouseOverRadarTarget(int xclick, int yclick)
         C_primary_track* track = &(mRadarData->mTrackList[i]);
         if(track->mState!=TrackState::confirmed)continue;
 //        track->isMouseOver = false;
-        PointInt s = ConvWGSToScrPoint(track->lon,track->lat);
+        PointDouble s = ConvWGSToScrPoint(track->lon,track->lat);
         double distanceSQ = sq(s.x - xclick)+sq(s.y - yclick);
 
         if(distanceSQ<minDistanceToCursorSq)
@@ -188,7 +263,7 @@ C_primary_track* C_arpa_area::SelectRadarTarget(int xclick, int yclick)
         C_primary_track* track = &(mRadarData->mTrackList[i]);
         if(track->mState!=TrackState::confirmed)continue;
         track->isSelected = false;
-        PointInt s = ConvWGSToScrPoint(track->lon,track->lat);
+        PointDouble s = ConvWGSToScrPoint(track->lon,track->lat);
         double distanceSQ = sq((s.x - xclick))+sq((s.y - yclick));
         if(distanceSQ<minDistanceToCursorSq)
         {
@@ -216,11 +291,11 @@ void C_arpa_area::DrawRadarTargets(QPainter* p)//draw radar target from pRadar->
     std::vector<std::pair<double, double> > *locationHistory = CConfig::GetLocationHistory();
     if(locationHistory->size())
     {
-        PointInt s0 = ConvWGSToScrPoint(locationHistory->at(0).first,locationHistory->at(0).second);
+        PointDouble s0 = ConvWGSToScrPoint(locationHistory->at(0).first,locationHistory->at(0).second);
 
         for(int i=0;i<locationHistory->size();i++)
         {
-            PointInt s1 = ConvWGSToScrPoint(locationHistory->at(i).first,locationHistory->at(i).second);
+            PointDouble s1 = ConvWGSToScrPoint(locationHistory->at(i).first,locationHistory->at(i).second);
             p->drawLine(s0.x,s0.y,s1.x,s1.y);
             s0=s1;
         }
@@ -231,7 +306,7 @@ void C_arpa_area::DrawRadarTargets(QPainter* p)//draw radar target from pRadar->
         C_primary_track* track = &(mRadarData->mTrackList[i]);
         if(track->mState==TrackState::newDetection&&track->isUserInitialised)
         {
-            PointInt sTrack = ConvWGSToScrPoint(track->objectList.back().lon,track->objectList.back().lat);
+            PointDouble sTrack = ConvWGSToScrPoint(track->objectList.back().lon,track->objectList.back().lat);
             //p->drawPoint(sTrack.x,sTrack.y);
             p->drawRect(sTrack.x-target_size/2,sTrack.y-target_size/2,target_size,target_size);
             //p->drawText(sTrack.x+10,sTrack.y+10,100,50,0,QString::number(track->objectList.size()));
@@ -247,7 +322,7 @@ void C_arpa_area::DrawRadarTargets(QPainter* p)//draw radar target from pRadar->
         C_primary_track* track = &(mRadarData->mTrackList[i]);
         if(track->mState==TrackState::removed)continue;
         if(track->mState==TrackState::newDetection)continue;
-        PointInt sTrack = ConvWGSToScrPoint(track->lon,track->lat);
+        PointDouble sTrack = ConvWGSToScrPoint(track->lon,track->lat);
         if(track->isSelected)//selected
         {
             // draw track history
@@ -257,14 +332,14 @@ void C_arpa_area::DrawRadarTargets(QPainter* p)//draw radar target from pRadar->
             {
                 object_t* obj2 = &(track->objectHistory[j]);
 
-                PointInt s = ConvWGSToScrPoint(obj1->lon,obj1->lat);
-                PointInt s1 = ConvWGSToScrPoint(obj2->lon,obj2->lat);
+                PointDouble s = ConvWGSToScrPoint(obj1->lon,obj1->lat);
+                PointDouble s1 = ConvWGSToScrPoint(obj2->lon,obj2->lat);
                 p->drawLine(s1.x,s1.y,s.x,s.y);
                 obj1 = obj2;
             }
             object_t *obj2  = &(track->objectList.back());
-            PointInt s      = ConvWGSToScrPoint(obj1->lon,obj1->lat);
-            PointInt s1     = ConvWGSToScrPoint(obj2->lon,obj2->lat);
+            PointDouble s      = ConvWGSToScrPoint(obj1->lon,obj1->lat);
+            PointDouble s1     = ConvWGSToScrPoint(obj2->lon,obj2->lat);
             p->drawLine(s1.x,s1.y,s.x,s.y);
 
             if(track->flag>=0)p->setPen(penTargetEnemySelected);
@@ -278,7 +353,7 @@ void C_arpa_area::DrawRadarTargets(QPainter* p)//draw radar target from pRadar->
         }
         if(track->flag==2)//targeted enemy
         {
-            PointInt s = ConvWGSToScrPoint(track->lon,track->lat);
+            PointDouble s = ConvWGSToScrPoint(track->lon,track->lat);
             p->drawLine(s.x-20,s.y,s.x-10,s.y);
             p->drawLine(s.x+20,s.y,s.x+10,s.y);
             p->drawLine(s.x,s.y-20,s.x,s.y-10);

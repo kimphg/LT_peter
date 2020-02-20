@@ -1,4 +1,5 @@
 #include "c_mainwindowbasic.h"
+
 #include "ui_c_mainwindowbasic.h"
 
 
@@ -14,8 +15,7 @@ static PointAziRgkm AutoSelP1,AutoSelP2;
 //static bool hideAisFishingBoat = true;
 
 static C_arpa_area rda_main;
-DialogAisInfo *dialogTargetInfo ;
-DialogDetailDisplay* dialogZoom;
+
 QPixmap                     *pMap;// painter cho ban do
 DensityMap* pDensMap;
 //#ifdef THEON
@@ -83,9 +83,9 @@ static double curAziRad = 3;
 //static unsigned short cur_object_index = 0;
 
 
-//PointInt rda_main.ConvWGSToScrPoint(double m_Long,double m_Lat)
+//PointDouble rda_main.ConvWGSToScrPoint(double m_Long,double m_Lat)
 //{
-//    PointInt s;
+//    PointDouble s;
 //    double refLat = (CConfig::mLat + (m_Lat))*0.00872664625997;//pi/360
 //    s.x	= rda_main.mScale*(((m_Long) - CConfig::mLon) * 111.31949079327357)*cos(refLat);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
 //    s.y	= rda_main.mScale*((CConfig::mLat - (m_Lat)) * 111.132954);
@@ -516,7 +516,7 @@ void MainWindowBasic::mousePressEvent(QMouseEvent *event)
 
 void MainWindowBasic::checkClickAIS(int xclick, int yclick)
 {
-    for(std::map<int,AIS_object_t>::iterator iter = rda_main.processing->mAisData.begin();iter!=rda_main.processing->mAisData.end();iter++)
+    for(std::map<int,AIS_object_t>::iterator iter = rda_main.processing->mAisVesselsList.begin();iter!=rda_main.processing->mAisVesselsList.end();iter++)
     {
         AIS_object_t *aisObj = &(iter->second);
 //        if(aisObj->isSelected)continue;
@@ -536,7 +536,7 @@ void MainWindowBasic::checkClickAIS(int xclick, int yclick)
         {
             int dx= x-mZoomCenterx;
             int dy= y-mZoomCentery;
-            PointInt iadPoint;
+            PointDouble iadPoint;
             iadPoint.x = mIADCenter.x+dx*mZoomScale;
             iadPoint.y = mIADCenter.y+dy*mZoomScale;
             if(abs(iadPoint.x-xclick)<5&&abs(iadPoint.y-yclick)<5)
@@ -578,9 +578,11 @@ MainWindowBasic::MainWindowBasic(QWidget *parent) :
     ui->setupUi(this);
     dialogTargetInfo = new DialogAisInfo(this);
     dialogZoom = new DialogDetailDisplay(this);
-    //    mShowobjects = false;
-    //    mShowLines = false;
-    //    mShowTracks = false;
+    dialogModeSel = new DialogModeSelect(this);
+    dialogModeSel->setModal(true);
+    dialogModeSel->show();
+    connect(dialogModeSel, SIGNAL(accepted()), this, SLOT(InitSetting()));
+    connect(dialogModeSel, SIGNAL(rejected()), this, SLOT(close()));
     InitNetwork();
     InitTimer();
     setFocusPolicy(Qt::StrongFocus);
@@ -710,7 +712,7 @@ void DrawMap()
             {
                 int value = log2(it.second)*50;
                 if(value>255)value=255;
-                PointInt p = rda_main.ConvWGSToScrPoint(
+                PointDouble p = rda_main.ConvWGSToScrPoint(
                             ((key.second)+0.5)/1000.0,
                             ((key.first)+0.5)/1000.0
                             );
@@ -850,9 +852,9 @@ void MainWindowBasic::DrawDetectZones(QPainter* p)//draw radar target from pRada
 }
 
 
-PointInt MainWindowBasic::ConvKmXYToScrPoint(double x, double y)
+PointDouble MainWindowBasic::ConvKmXYToScrPoint(double x, double y)
 {
-    PointInt s;
+    PointDouble s;
     s.x = x*rda_main.mScale ;
     s.y = -y*rda_main.mScale ;
     C_arpa_area::rotateVector(rda_main.trueShiftDeg,&s.x,&s.y);
@@ -885,7 +887,7 @@ void MainWindowBasic::UpdateMouseStat(QPainter *p)
             C_primary_track*track= rda_main.mRadarData->getManualTrackzone(point.x,point.y,rgKm);
             if(track)
             {
-                PointInt sTrack = rda_main.ConvWGSToScrPoint(track->lon,track->lat);
+                PointDouble sTrack = rda_main.ConvWGSToScrPoint(track->lon,track->lat);
                 p->drawRect(sTrack.x-9,sTrack.y-9,18,18);
             }
             //select radar target
@@ -932,7 +934,7 @@ void MainWindowBasic::paintEvent(QPaintEvent *event)
 
     //printf("paint:%ld\n",clkBegin);
     QPainter p(this);
-    //p.setRenderHint(QPainter::Antialiasing, true);
+    p.setRenderHint(QPainter::Antialiasing, true);
     if(pMap)
     {
         p.drawPixmap(SCR_LEFT_MARGIN,SCR_TOP_MARGIN,SCR_H,SCR_H,
@@ -1271,7 +1273,7 @@ void MainWindowBasic::SetUpTheonGUILayout()
     ui->groupBox_5->setGeometry(900,950,ui->groupBox_5->width(),ui->groupBox_5->height());
     ui->customButton_openCPN->hide();
     ui->groupBox_gps->setGeometry(10,1120,211,70);
-    ui->groupBox_28->setGeometry(1450,50,ui->groupBox_28->width(),ui->groupBox_28->height());
+    ui->groupBox_target_simulation->setGeometry(1450,50,ui->groupBox_target_simulation->width(),ui->groupBox_target_simulation->height());
 //    ui->groupBox_15->setGeometry(10,50,310,65);
 //    ui->groupBox_16->setGeometry(10,120,160,170);
 //    ui->groupBox_24->setGeometry(10,10,490,40);
@@ -1327,7 +1329,28 @@ void MainWindowBasic::checkCuda()
 }
 void MainWindowBasic::InitSetting()
 {
-
+    int mode =CConfig::getInt("WorkMode");
+    printf("InitSetting mode:%d",mode);
+    if(mode==1)//radar mode
+    {
+        ui->tabWidget_menu->setCurrentIndex(0);
+        ui->groupBox_target_simulation->setHidden(false);
+    }
+    if(mode==2)//radar mode
+    {
+        ui->tabWidget_menu->setCurrentIndex(0);
+        ui->groupBox_target_simulation->setHidden(true);
+    }
+    if(mode==3)//radar mode
+    {
+        ui->tabWidget_menu->setCurrentIndex(0);
+        ui->groupBox_target_simulation->setHidden(true);
+    }
+    if(mode==4)//radar mode
+    {
+        ui->tabWidget_menu->setCurrentIndex(0);
+        ui->groupBox_target_simulation->setHidden(true);
+    }
     rda_main.showAisName = false;
     rda_main.rect = this->rect();
     rda_main.dialogTargetInfo =dialogTargetInfo;
@@ -2300,10 +2323,12 @@ void MainWindowBasic::ViewTrackInfo()
     }
     ui->toolButton_sled_reset_4->setText(QString::fromUtf8("Quỹ đạo(")+QString::number(numOfTracks)+")");*/
 }
+int count_adsb = 0;
 void MainWindowBasic::sync1S()//period 1 second
 {
     //checkCuda();
-
+    if(count_adsb<10)count_adsb++;
+    if(count_adsb>10){count_adsb=0;rda_main.processing->requestADSBData();}
     if(CConfig::getWarningList()->size())
     {
         std::queue<WarningMessage> * listMsg = (CConfig::getWarningList());
@@ -3280,7 +3305,7 @@ void MainWindowBasic::on_toolButton_export_data_clicked(bool checked)
 
 void MainWindowBasic::on_toolButton_ais_reset_clicked()
 {
-    rda_main.processing->mAisData.clear();
+    rda_main.processing->mAisVesselsList.clear();
 }
 
 
@@ -4943,4 +4968,9 @@ void MainWindowBasic::on_bt_rg_9_clicked(bool checked)
 void MainWindowBasic::on_toolButton_ais_request_clicked()
 {
     rda_main.processing->requestAISData();
+}
+
+void MainWindowBasic::on_toolButton_adsb_request_clicked()
+{
+    rda_main.processing->requestADSBData();
 }
