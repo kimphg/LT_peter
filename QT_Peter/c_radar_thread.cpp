@@ -787,6 +787,7 @@ void dataProcessingThread::managerFinished(QNetworkReply *reply)
                        obj.mCog = jObj ["cog"].toDouble();
                        obj.mSog = jObj ["sog"].toDouble();
                        obj.mLut = QDateTime::currentMSecsSinceEpoch();
+                       obj.mUpdateTime = clock();
                        addAisObj(obj);
                     }
                     //QJsonObject obj = value.toObject();
