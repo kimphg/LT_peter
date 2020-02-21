@@ -65,7 +65,7 @@ class Mainwindow : public QMainWindow
 public:
     explicit Mainwindow(QWidget *parent = nullptr);
     ~Mainwindow();
-    PointInt ConvKmXYToScrPoint(double x, double y);
+    PointDouble ConvKmXYToScrPoint(double x, double y);
 //    C_primary_track* checkClickRadarTarget(int xclick, int yclick, bool isDoubleClick = false);
 protected:
     //void contextMenuEvent(QContextMenuEvent *event);
@@ -83,7 +83,7 @@ private:
 
     QCursor cursor_default;
     QRect mIADrect;
-    PointInt mIADCenter;
+    PointDouble mIADCenter;
     double mZoomScale;
     QRect ppiRect;
     c_radar_simulation          *simulator;// thread tao gia tin hieu
@@ -756,7 +756,7 @@ private:
     void DrawDetectZones(QPainter *p);
     void updateSimTargetStatus();
     void ConvXYradar2XYscr();
-//    PointInt ConvWGSToScrPoint(double m_Long, double m_Lat);
+//    PointDouble ConvWGSToScrPoint(double m_Long, double m_Lat);
 //    PointDouble ConvScrPointToKMXY(int x, int y);
     QPoint mBorderPoint2,mBorderPoint1,mBorderPoint0;
 //    void rotateVector(double angle, double *x, double *y);
@@ -766,7 +766,7 @@ private:
     void DrawViewFrameSquared(QPainter *p);
     void checkCuda();
     void initCursor();
-    void DrawAISMark(PointInt s, double head, QPainter *p, QString name, int size, int vectorLen);
+    void DrawAISMark(PointDouble s, double head, QPainter *p, QString name, int size, int vectorLen);
     bool isInsideIADZone(int x, int y);
     bool checkInsideZoom(int x, int y);
     void saveScreenShot(QString fileName);

@@ -57,7 +57,8 @@ SOURCES += main.cpp\
     dialoginputvalue.cpp \
     dialogconfig.cpp \
     dialogdetaildisplay.cpp \
-    c_arpa_area.cpp
+    c_arpa_area.cpp \
+    dialogmodeselect.cpp
 HEADERS  += \
     qcustombutton.h \
     qcustomframe.h \
@@ -85,7 +86,8 @@ HEADERS  += \
     dialogconfig.h \
     common.h \
     dialogdetaildisplay.h \
-    c_arpa_area.h
+    c_arpa_area.h \
+    dialogmodeselect.h
 #    pch_file.h
 #PRECOMPILED_HEADER = "pch_file.h"
 #CONFIG += precompile_header
@@ -98,7 +100,8 @@ FORMS    += \
     dialoginputvalue.ui \
     dialogconfig.ui \
     dialogdetaildisplay.ui \
-    c_mainwindowbasic.ui
+    c_mainwindowbasic.ui \
+    dialogmodeselect.ui
 #win32:CONFIG(release, debug|release): LIBS += -L$$PWD/shapelib/ -lshapelib
 #else:unix: LIBS += -L$$PWD\shapelib\ -lshapelib
 #INCLUDEPATH += $$PWD/shapelib

@@ -84,9 +84,9 @@ static double curAziRad = 3;
 //static unsigned short cur_object_index = 0;
 
 
-//PointInt rda_main.ConvWGSToScrPoint(double m_Long,double m_Lat)
+//PointDouble rda_main.ConvWGSToScrPoint(double m_Long,double m_Lat)
 //{
-//    PointInt s;
+//    PointDouble s;
 //    double refLat = (CConfig::mLat + (m_Lat))*0.00872664625997;//pi/360
 //    s.x	= rda_main.mScale*(((m_Long) - CConfig::mLon) * 111.31949079327357)*cos(refLat);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
 //    s.y	= rda_main.mScale*((CConfig::mLat - (m_Lat)) * 111.132954);
@@ -516,7 +516,7 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
 
 void Mainwindow::checkClickAIS(int xclick, int yclick)
 {
-    for(std::map<int,AIS_object_t>::iterator iter = rda_main.processing->mAisData.begin();iter!=rda_main.processing->mAisData.end();iter++)
+    for(std::map<int,AIS_object_t>::iterator iter = rda_main.processing->mAisVesselsList.begin();iter!=rda_main.processing->mAisVesselsList.end();iter++)
     {
         AIS_object_t *aisObj = &(iter->second);
 //        if(aisObj->isSelected)continue;
@@ -536,7 +536,7 @@ void Mainwindow::checkClickAIS(int xclick, int yclick)
         {
             int dx= x-mZoomCenterx;
             int dy= y-mZoomCentery;
-            PointInt iadPoint;
+            PointDouble iadPoint;
             iadPoint.x = mIADCenter.x+dx*mZoomScale;
             iadPoint.y = mIADCenter.y+dy*mZoomScale;
             if(abs(iadPoint.x-xclick)<5&&abs(iadPoint.y-yclick)<5)
@@ -710,7 +710,7 @@ void DrawMap()
             {
                 int value = log2(it.second)*50;
                 if(value>255)value=255;
-                PointInt p = rda_main.ConvWGSToScrPoint(
+                PointDouble p = rda_main.ConvWGSToScrPoint(
                             ((key.second)+0.5)/1000.0,
                             ((key.first)+0.5)/1000.0
                             );
@@ -850,9 +850,9 @@ void Mainwindow::DrawDetectZones(QPainter* p)//draw radar target from rda_main.m
 }
 
 
-PointInt Mainwindow::ConvKmXYToScrPoint(double x, double y)
+PointDouble Mainwindow::ConvKmXYToScrPoint(double x, double y)
 {
-    PointInt s;
+    PointDouble s;
     s.x = x*rda_main.mScale ;
     s.y = -y*rda_main.mScale ;
     C_arpa_area::rotateVector(rda_main.trueShiftDeg,&s.x,&s.y);
@@ -885,7 +885,7 @@ void Mainwindow::UpdateMouseStat(QPainter *p)
             C_primary_track*track= rda_main.mRadarData->getManualTrackzone(point.x,point.y,rgKm);
             if(track)
             {
-                PointInt sTrack = rda_main.ConvWGSToScrPoint(track->lon,track->lat);
+                PointDouble sTrack = rda_main.ConvWGSToScrPoint(track->lon,track->lat);
                 p->drawRect(sTrack.x-9,sTrack.y-9,18,18);
             }
             //select radar target
@@ -3248,7 +3248,7 @@ void Mainwindow::on_toolButton_export_data_clicked(bool checked)
 
 void Mainwindow::on_toolButton_ais_reset_clicked()
 {
-    rda_main.processing->mAisData.clear();
+    rda_main.processing->mAisVesselsList.clear();
 }
 
 

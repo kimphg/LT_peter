@@ -19,6 +19,7 @@
 #include <QtCore>
 #include <QtGui>
 #include "pkp.h"
+#include "dialogmodeselect.h"
 #include <time.h>
 #include <dialogaisinfo.h>
 //#include <CLocal.h>
@@ -65,7 +66,7 @@ class MainWindowBasic : public QMainWindow
 public:
     explicit MainWindowBasic(QWidget *parent = nullptr);
     ~MainWindowBasic();
-    PointInt ConvKmXYToScrPoint(double x, double y);
+    PointDouble ConvKmXYToScrPoint(double x, double y);
 //    C_primary_track* checkClickRadarTarget(int xclick, int yclick, bool isDoubleClick = false);
 protected:
     //void contextMenuEvent(QContextMenuEvent *event);
@@ -80,10 +81,12 @@ protected:
     void mouseDoubleClickEvent( QMouseEvent * e );
 //    enum radarSate   { DISCONNECTED,CONNECTED,CONNECTED_ROTATE9_TXOFF,CONNECTED_ROTATE12_TXOFF, CONNECTED_ROTATE9_TXON,CONNECTED_ROTATE12_TXON } radar_state;
 private:
-
+    DialogAisInfo *dialogTargetInfo ;
+    DialogDetailDisplay* dialogZoom;
+    DialogModeSelect* dialogModeSel;
     QCursor cursor_default;
     QRect mIADrect;
-    PointInt mIADCenter;
+    PointDouble mIADCenter;
     double mZoomScale;
     QRect ppiRect;
     c_radar_simulation          *simulator;// thread tao gia tin hieu
@@ -97,7 +100,7 @@ private:
     void CameraControl(int x,int y, int zoom);
     void CameraControl(int direction);
 //    void detectZone();
-    void InitSetting();
+
     void sendToRadarHS(const char *hexdata);
     void sendToRadar(unsigned char* hexdata);
 //    void SetSnScale(short value);
@@ -163,6 +166,7 @@ private:
     void on_actionOpen_rec_file_triggered();
 private slots:
 //    void DrawMap();
+    void InitSetting();
     void readBuffer();
     void sync1S();
     void sync1p();
@@ -727,6 +731,8 @@ private slots:
 
     void on_toolButton_ais_request_clicked();
 
+    void on_toolButton_adsb_request_clicked();
+
 private:
     bool isRadarShow;
     C_primary_track *selectedTrack;
@@ -762,7 +768,7 @@ private:
     void DrawDetectZones(QPainter *p);
     void updateSimTargetStatus();
     void ConvXYradar2XYscr();
-//    PointInt ConvWGSToScrPoint(double m_Long, double m_Lat);
+//    PointDouble ConvWGSToScrPoint(double m_Long, double m_Lat);
 //    PointDouble ConvScrPointToKMXY(int x, int y);
     QPoint mBorderPoint2,mBorderPoint1,mBorderPoint0;
 //    void rotateVector(double angle, double *x, double *y);
@@ -772,7 +778,7 @@ private:
     void DrawViewFrameSquared(QPainter *p);
     void checkCuda();
     void initCursor();
-    void DrawAISMark(PointInt s, double head, QPainter *p, QString name, int size, int vectorLen);
+    void DrawAISMark(PointDouble s, double head, QPainter *p, QString name, int size, int vectorLen);
     bool isInsideIADZone(int x, int y);
     bool checkInsideZoom(int x, int y);
     void saveScreenShot(QString fileName);

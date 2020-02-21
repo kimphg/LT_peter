@@ -27,11 +27,11 @@ public:
     double trueShiftDeg,headShift;
     int radCtX,radCtY;
     double mZoomSizeRg,    mZoomSizeAz;
-    PointInt ConvWGSToScrPoint(double m_Long, double m_Lat);
+    PointDouble ConvWGSToScrPoint(double m_Long, double m_Lat);
     C_primary_track *SelectRadarTarget(int xclick, int yclick);
     void checkClickAIS(int xclick, int yclick);
     void drawAisTarget(QPainter *p);
-    void DrawAISMark(PointInt s, double head, QPainter *p, QString name, int size,int vectorLen);
+    void DrawAISMark(PointDouble s, double head, QPainter *p, QString name, int size,int vectorLen);
     bool isInsideViewRect(int x, int y);
     void setCenterLonLat(double lon,double lat);
     void DrawRadarTargets(QPainter *p);
@@ -66,6 +66,9 @@ public:
     PointDouble ConvScrPointToWGS(int x, int y);
     PointDouble ConvScrPointToKMXY(int x, int y);
     PointAziRgkm ConvScrPointToAziRgkm(int x, int y);
+private:
+    void DrawAISBuoy(PointDouble s, QPainter *p, QString name, int size);
+    void DrawPlaneMark(PointDouble s , QPainter *p, QString name, int size);
 };
 
 #endif // C_ARPA_AREA_H
