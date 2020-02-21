@@ -39,11 +39,11 @@ public:
     int                  mNavStat;
     int                  mType;
     int                  mBow,mStern,mStarboard,mPort;
-    double               mLat;//in deg
-    double               mLong;//in deg
-    double               mCog;//course
-    double               mSog;//speed
-    qint64               mLut;//last update time
+    double               mLat;  //in deg
+    double               mLong; //in deg
+    double               mCog;  //course
+    double               mSog;  //speed
+    qint64               mLut;  //last update time
 //    bool                isNewest;
 //    bool                isSelected;
     unsigned long       mUpdateTime;

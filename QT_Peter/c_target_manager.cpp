@@ -41,7 +41,7 @@ void c_target_manager::setCurToFriend()
     }
 }
 
-QString c_target_manager::addCurrTrackToTargets(C_primary_track* track)
+QString c_target_manager::addCurrTrackToTargets(C_SEA_TRACK* track)
 {
     if(track)
     {
@@ -87,7 +87,7 @@ TrackPointer* c_target_manager::getTrackAt(int i)
     return trackPt;
 }
 
-bool c_target_manager::addTarget(C_primary_track * track)
+bool c_target_manager::addTarget(C_SEA_TRACK * track)
 {
     //search for duplication
     for (uint i = 0;i<TARGET_TABLE_SIZE;i++)
@@ -152,7 +152,7 @@ bool c_target_manager::changeCurrTrackID(int id)
     return true;
 
 }
-bool c_target_manager::addTrack(C_primary_track* track)
+bool c_target_manager::addTrack(C_SEA_TRACK* track)
 {
     //search for empty slot
     for (uint i = 0;i<TRACK_TABLE_SIZE;i++)
@@ -172,7 +172,7 @@ bool c_target_manager::addTrack(C_primary_track* track)
             if(trackTable[i].track->isRemoved()||(trackTable[i].trackUniqID!=trackTable[i].track->uniqId))
             {
                 trackTable[i].track = track;
-                track->uniqId = C_primary_track::IDCounter++;
+                track->uniqId = C_SEA_TRACK::IDCounter++;
                 trackTable[i].trackUniqID = track->uniqId;
                 return true;
             }
@@ -369,7 +369,7 @@ void c_target_manager::OutputTargetToKasu()
     for(int i=0;i<6;i++)
     {
         memset(dataPacket,0,22);
-        C_primary_track* target = targetTable[i].track;
+        C_SEA_TRACK* target = targetTable[i].track;
         if(target==nullptr)
         {
             memcpy(kasudatagram+10+i*22,dataPacket,22);

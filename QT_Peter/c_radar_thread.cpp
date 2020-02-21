@@ -821,7 +821,29 @@ void dataProcessingThread::networkReplyAdsb(QNetworkReply *reply)
     QString answer = reply->readAll();
 
     QStringList sl = answer.split("[");
-    sl;
+    foreach (QString str, sl) {
+        QStringList datafields = str.split(",");
+        if(datafields.count()>=20)
+        {
+            //["88819C",20.26,106.18,154,27325,420,"4146","F-VVNB2","A320","VN-A583",1582251039,"HAN","DAD","QH109",0,1408,"BAV109",0,"BAV"]
+            //"881052",12.39,100.86,172,29850,460,"4522","F-VTPH1","B738","HS-DBR",1582250825,"DMK","NST","DD6458",0,1920,"NOK6458",0,"NOK"
+            QString icaoAddress24  = datafields.at(0);
+            double lat = datafields.at(1).toDouble();
+            double lon = datafields.at(2).toDouble();
+            double head = datafields.at(3).toDouble();
+            double alt = datafields.at(4).toDouble();
+            double spd = datafields.at(5).toDouble();
+            QString vesselType = datafields.at(8);
+            QString registrationName = datafields.at(9);
+
+        }
+        else
+        {
+            printf("adsb reject, len:%d",datafields.count());
+            qDebug() << str;
+            flushall();
+        }
+    }
 
 }
 void dataProcessingThread::requestAISData()

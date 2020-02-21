@@ -8,7 +8,7 @@
 #define KASU_DATA_SIZE 144
 
 typedef struct {
-    C_primary_track* track;
+    C_SEA_TRACK* track;
     int trackUniqID;
     bool selected;
     int flag;
@@ -24,15 +24,15 @@ public:
     ~c_target_manager();
     void setCurToEnemy();
     void setCurToFriend();
-    QString addCurrTrackToTargets(C_primary_track *track);
+    QString addCurrTrackToTargets(C_SEA_TRACK *track);
     void OutputTargetToKasu();
     void initDataGram();
     void ClearTargetTable();
     TrackPointer *getTrackById(int id);
     TrackPointer *getTargetById(int id);
     TrackPointer *getTrackAt(int i);
-    bool addTrack(C_primary_track *);
-    bool addTarget(C_primary_track *);
+    bool addTrack(C_SEA_TRACK *);
+    bool addTarget(C_SEA_TRACK *);
     bool checkIDExist(int id);
     bool changeCurrTrackID(int id);
     void setSelectedTrack(int uniqID);

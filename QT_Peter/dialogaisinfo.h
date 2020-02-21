@@ -17,9 +17,9 @@ public:
     explicit DialogAisInfo(QWidget *parent = 0);
     ~DialogAisInfo();
     int timerId;
-    void setDataSource(AIS_object_t *aisData, C_primary_track *radarData);
+    void setDataSource(AIS_object_t *aisData, C_SEA_TRACK *radarData);
     AIS_object_t * mAisData;
-    C_primary_track *mRadarData;
+    C_SEA_TRACK *mRadarData;
     int radarID;
     int aisMmsi;
 

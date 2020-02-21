@@ -42,12 +42,7 @@ void C_arpa_area::DrawAISBuoy(PointDouble s ,QPainter *p,QString name,int size)
     poly<<point;
     p->setPen(penYellow);
     p->drawPolygon(poly);
-    if(showAisName)
-    {
-        p->setFont(QFont("Times", 8));
 
-        p->drawText(s.x-100,s.y+size*0.2,200,30,Qt::AlignVCenter,name);
-    }
 }
 void C_arpa_area::DrawAISMark(PointDouble s ,double head,QPainter *p,QString name,int size,int vectorLen)
 {
@@ -71,11 +66,9 @@ void C_arpa_area::DrawAISMark(PointDouble s ,double head,QPainter *p,QString nam
     point.setY(s.y-vectorLen*cos(head));
 //    poly<<point;
 
-
-
     p->drawPolygon(poly);
     p->drawLine(s.x,s.y,point.x(),point.y());
-    if(showAisName)
+    if(size>10)
     {
         p->setFont(QFont("Times", 12));
         p->drawText(s.x+size,s.y+size,250,30,0,name);
@@ -153,7 +146,7 @@ void C_arpa_area::drawAisTarget(QPainter *p)
 
         PointDouble s = ConvWGSToScrPoint(aisObj.mLong,aisObj.mLat);
         if(!isInsideViewRect(s.x,s.y))continue;
-        DrawPlaneMark(s,p,aisObj.mName,target_size);
+        DrawAISBuoy(s,p,aisObj.mName,target_size);
     }
 }
 C_arpa_area::C_arpa_area()

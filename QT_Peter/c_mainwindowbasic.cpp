@@ -949,7 +949,6 @@ void MainWindowBasic::paintEvent(QPaintEvent *event)
         QImage newImg = rda_main.mRadarData->getMimg_ppi()->transformed(mTrans);
         QRectF signRectTemp = QRectF(newImg.width()/2-(rda_main.radCtX),newImg.height()/2-(rda_main.radCtY),SCR_W,SCR_H);
         p.drawImage(screen,newImg,signRectTemp,Qt::AutoColor);
-
         //        pMapPainter.drawPixmap((-pix.width()/2+pMap->width()/2),
         //                     (-pix.height()/2+pMap->height()/2),pix.width(),pix.height(),pix
         //                     );

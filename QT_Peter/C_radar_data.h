@@ -335,10 +335,24 @@ enum class TrackState {newDetection = 0,
                        lost         = 2,
                        manualTrack  = 4,
                        removed      = 1};
-class C_primary_track
+class C_AIR_TRACK
 {
 public:
-    C_primary_track()
+    C_AIR_TRACK() {}
+public:
+    QString mAddr;
+    double mlat  ;
+    double mlon  ;
+    double mhead ;
+    double malt  ;
+    double mspd  ;
+    QString mvesselType ;
+    QString registrationName ;
+};
+class C_SEA_TRACK
+{
+public:
+    C_SEA_TRACK()
     {
         mState=TrackState::removed;
         isUpdating = false;
@@ -383,7 +397,7 @@ public:
     void init(double txkm,double tykm);
     void init(object_t* obj1,object_t* obj2,int id=-1);
 
-    ~C_primary_track()
+    ~C_SEA_TRACK()
     {
 
     }
@@ -462,7 +476,7 @@ public:
     double                      mInverseRotAziCorrection;
     double                      rotation_per_min ;
 //    double                      azi_er_rad;
-    std::vector<C_primary_track>mTrackList;
+    std::vector<C_SEA_TRACK>mTrackList;
     std::vector<plot_t>         plot_list;
     std::vector<object_t>       mFreeObjList;
     bool isManualTracking;
@@ -471,7 +485,7 @@ public:
         isManualTracking = isManual;
     }
     void addManualTrack(double xkm,double ykm);
-    C_primary_track*  getManualTrackzone(double xkm,double ykm,double rgkm);
+    C_SEA_TRACK*  getManualTrackzone(double xkm,double ykm,double rgkm);
 //    double manualTrackX,manualTracky,manualTrackR;
     int      antennaHeadOffset;
     int     freqHeadOffset;
@@ -625,7 +639,7 @@ private:
     //    double estimateScore(object_t *obj1, track_t *track);
     void CreateTrack(object_t *obj1, object_t *obj2);
     //    void LinearFit(track_t *track);
-    void LeastSquareFit(C_primary_track* track);
+    void LeastSquareFit(C_SEA_TRACK* track);
     //    double LinearFitCost(track_t *track, object_t *myobj);
     void ProcessGOData(unsigned char *data, short len, int aziMH);
     void addDetectionZone(RangeAziWindow dw);

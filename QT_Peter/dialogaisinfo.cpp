@@ -22,7 +22,7 @@ DialogAisInfo::~DialogAisInfo()
 
 }
 
-void DialogAisInfo::setDataSource(AIS_object_t *aisData ,C_primary_track* radarData)
+void DialogAisInfo::setDataSource(AIS_object_t *aisData ,C_SEA_TRACK* radarData)
 {
     mAisData = aisData;
     mRadarData = radarData;
