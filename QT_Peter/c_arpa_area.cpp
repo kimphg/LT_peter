@@ -46,7 +46,7 @@ void C_arpa_area::DrawAISBuoy(PointDouble s ,QPainter *p,QString name,int size)
 }
 void C_arpa_area::DrawAISMark(PointDouble s ,double head,QPainter *p,QString name,int size,int vectorLen)
 {
-
+    head = radians(head)+radians(trueShiftDeg);
     QPolygon poly;
     QPoint point;
     //    double head = aisObj.mCog*PI_NHAN2/360.0;
@@ -81,36 +81,42 @@ void C_arpa_area::DrawPlaneMark(PointDouble s ,QPainter *p,double head, QString 
 {
     QPolygon poly;
     QPoint point;
+    double viewhead = head+trueShiftDeg;
     //    double head = aisObj.mCog*PI_NHAN2/360.0;
-    point.setX(s.x+0);                   point.setY(s.y-1.5*target_size);    poly<<point;
-    point.setX(s.x+0.25*target_size);    point.setY(s.y-1.2*target_size);   poly<<point;
-    point.setX(s.x+0.25*target_size);    point.setY(s.y-0.3*target_size);   poly<<point;
-    point.setX(s.x+1.5*target_size);     point.setY(s.y+0.6*target_size);    poly<<point;
-    point.setX(s.x+1.5*target_size);     point.setY(s.y+0.9*target_size);    poly<<point;
-    point.setX(s.x+0.25*target_size);    point.setY(s.y+0.3*target_size);   poly<<point;
-    point.setX(s.x+0.25*target_size);    point.setY(s.y+1.2*target_size);   poly<<point;
-    point.setX(s.x+0.6*target_size);     point.setY(s.y+1.5*target_size);    poly<<point;
-    point.setX(s.x+0.6*target_size);     point.setY(s.y+1.8*target_size);    poly<<point;
+    point.setX(+0);                   point.setY(-1.5*target_size);    poly<<point;
+    point.setX(+0.25*target_size);    point.setY(-1.2*target_size);   poly<<point;
+    point.setX(+0.25*target_size);    point.setY(-0.3*target_size);   poly<<point;
+    point.setX(+1.5*target_size);     point.setY(+0.6*target_size);    poly<<point;
+    point.setX(+1.5*target_size);     point.setY(+0.9*target_size);    poly<<point;
+    point.setX(+0.25*target_size);    point.setY(+0.3*target_size);   poly<<point;
+    point.setX(+0.25*target_size);    point.setY(+1.2*target_size);   poly<<point;
+    point.setX(+0.6*target_size);     point.setY(+1.5*target_size);    poly<<point;
+    point.setX(+0.6*target_size);     point.setY(+1.8*target_size);    poly<<point;
     //
-    point.setX(s.x+0*target_size);       point.setY(s.y+1.5*target_size);    poly<<point;
+    point.setX(+0*target_size);       point.setY(+1.5*target_size);    poly<<point;
     //
-    point.setX(s.x-0.6*target_size);     point.setY(s.y+1.8*target_size);    poly<<point;
-    point.setX(s.x-0.6*target_size);     point.setY(s.y+1.5*target_size);    poly<<point;
-    point.setX(s.x-0.25*target_size);    point.setY(s.y+1.2*target_size);   poly<<point;
-    point.setX(s.x-0.25*target_size);    point.setY(s.y+0.3*target_size);   poly<<point;
-    point.setX(s.x-1.5*target_size);     point.setY(s.y+0.9*target_size);    poly<<point;
-    point.setX(s.x-1.5*target_size);     point.setY(s.y+0.6*target_size);    poly<<point;
-    point.setX(s.x-0.25*target_size);    point.setY(s.y-0.3*target_size);   poly<<point;
-    point.setX(s.x-0.25*target_size);    point.setY(s.y-1.2*target_size);   poly<<point;
-    point.setX(s.x+0);                   point.setY(s.y-1.5*target_size);    poly<<point;
+    point.setX(-0.6*target_size);     point.setY(+1.8*target_size);    poly<<point;
+    point.setX(-0.6*target_size);     point.setY(+1.5*target_size);    poly<<point;
+    point.setX(-0.25*target_size);    point.setY(+1.2*target_size);   poly<<point;
+    point.setX(-0.25*target_size);    point.setY(+0.3*target_size);   poly<<point;
+    point.setX(-1.5*target_size);     point.setY(+0.9*target_size);    poly<<point;
+    point.setX(-1.5*target_size);     point.setY(+0.6*target_size);    poly<<point;
+    point.setX(-0.25*target_size);    point.setY(-0.3*target_size);   poly<<point;
+    point.setX(-0.25*target_size);    point.setY(-1.2*target_size);   poly<<point;
+    point.setX(+0);                   point.setY(-1.5*target_size);    poly<<point;
 //    poly<<point;
     poly = QTransform()
-       .translate(-s.x, -s.y)
-       .rotate(head)
+       .rotate(viewhead)
        .translate(s.x, s.y)
        .map(poly);
     p->setPen(penYellow);
     p->drawPolygon(poly);
+    printf("\nviewhead:%f",viewhead);
+    if(size>10)
+    {
+        p->setFont(QFont("Times", 12));
+        p->drawText(s.x+size,s.y+size,250,30,0,name);
+    }
 
 }
 bool C_arpa_area::isInsideViewRect(int x, int y)
@@ -131,7 +137,8 @@ void C_arpa_area::drawAisTarget(QPainter *p)
         if(aisObj.isMatchToRadarTrack)continue;
         if(!isInsideViewRect(s.x,s.y))continue;
         int vectorLen = nm2km(aisObj.mSog)*mScale/6.0;
-        DrawAISMark(s,radians(aisObj.mCog)+radians(trueShiftDeg),p,aisObj.mName,target_size,vectorLen);
+        if(vectorLen>target_size*10)target_size=target_size*10;
+        DrawAISMark(s,aisObj.mCog,p,aisObj.mName,target_size,vectorLen);
     }
     p->setBrush(QBrush(penYellow.color()));
     p->setPen(penYellow);
@@ -142,6 +149,14 @@ void C_arpa_area::drawAisTarget(QPainter *p)
         PointDouble s = ConvWGSToScrPoint(aisObj.mLong,aisObj.mLat);
         if(!isInsideViewRect(s.x,s.y))continue;
         DrawAISBuoy(s,p,aisObj.mName,target_size);
+    }
+    //
+    for(const auto&kv:processing->mPlaneList)
+    {
+        C_AIR_TRACK plane = kv.second;
+        PointDouble s = ConvWGSToScrPoint(plane.mlon,plane.mlat);
+        if(!isInsideViewRect(s.x,s.y))continue;
+        DrawPlaneMark(s,p,plane.mhead,plane.registrationName,target_size);
     }
 }
 C_arpa_area::C_arpa_area()

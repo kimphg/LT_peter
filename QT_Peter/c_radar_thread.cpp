@@ -837,7 +837,7 @@ void dataProcessingThread::networkReplyAdsb(QNetworkReply *reply)
             new_track.mlat  = datafields.at(1).toDouble();
             new_track.mlon  = datafields.at(2).toDouble();
             new_track.mhead = datafields.at(3).toDouble();
-            new_track.malt  = datafields.at(4).toDouble()/304.8;
+            new_track.malt  = datafields.at(4).toDouble()/3.0480;
             new_track.mspd  = datafields.at(5).toDouble()*1.852;
             new_track.mvesselType = datafields.at(8);
             new_track.registrationName = datafields.at(9);
@@ -865,6 +865,27 @@ void dataProcessingThread::requestAISData()
 }
 void dataProcessingThread::requestADSBData()
 {
+    for(const auto&kv:mAisVesselsList)
+    {
+        AIS_object_t track = kv.second;
+        QString outputString;
+        outputString.append("$RATIF_SHIP,");
+        outputString.append(track.mMMSI+",");
+        outputString.append(track.mName+ ",");
+        outputString.append(QString::number(track.mLat)   +  ",");
+        outputString.append(QString::number(track.mLong) + ",");
+        outputString.append("0,");
+        outputString.append(QString::number(track.mSog)+ ",");
+        outputString.append(QString::number(track.mCog)+ ",");
+        outputString.append("ais,");
+        outputString.append(QString::number(track.mUpdateTime)+",");
+        outputString.append(QString::number(track.mType)+",*");
+        //outputString.append(","+ ",");
+        radarSocket->writeDatagram(outputString.toUtf8(),
+                                   QHostAddress(CConfig::getString("TargetOutputIP","192.168.0.80")),
+                                   CConfig::getInt("AISOutputPort",30002)
+                                   );
+    }
     for(const auto&kv:mPlaneList)
     {
         C_AIR_TRACK track = kv.second;
@@ -874,7 +895,7 @@ void dataProcessingThread::requestADSBData()
         outputString.append(track.registrationName+ ",");
         outputString.append(QString::number(track.mlat)   +  ",");
         outputString.append(QString::number(track.mlon) + ",");
-        outputString.append(QString::number(track.malt)+ ",");
+        outputString.append(QString::number(int(track.malt))+ ",");
         outputString.append(QString::number(track.mspd)+ ",");
         outputString.append(QString::number(track.mhead)+ ",");
         outputString.append("adsb/icao,");
