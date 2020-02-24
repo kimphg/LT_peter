@@ -499,20 +499,20 @@ void dataProcessingThread::sendRATTM()
 
     for(int i=0;i<mRadarData->mTrackList.size();i++)
     {
-        C_primary_track *track = &(mRadarData->mTrackList.at(i));
+        C_SEA_TRACK *track = &(mRadarData->mTrackList.at(i));
         if(track->isRemoved())continue;
         int len = track->mTTM.size();
         if(len)
         {
 
             radarSocket->writeDatagram(track->mTTM.toLatin1(),
-                                       QHostAddress(CConfig::getString("TTMOutputIP","192.168.1.252")),
-                                       CConfig::getInt("TTMOutputPort",30001)
+                                       QHostAddress(CConfig::getString("TargetOutputIP","192.168.0.80")),
+                                       CConfig::getInt("TargetOutputPort",30001)
                                        );
 
             radarSocket->writeDatagram(track->mTIF.toLatin1(),
-                                       QHostAddress(CConfig::getString("TIFOutputIP","192.168.0.80")),
-                                       CConfig::getInt("TIFOutputPort",30001)
+                                       QHostAddress(CConfig::getString("TargetOutputIP","192.168.0.80")),
+                                       CConfig::getInt("TargetOutputPort",30001)
                                        );
             track->mTTM.clear();
 
@@ -535,8 +535,8 @@ void dataProcessingThread::sendRATTM()
     if(plotOutput.size())
     {
         radarSocket->writeDatagram(plotOutput,
-                                   QHostAddress(CConfig::getString("PLTOutputIP","192.168.0.80")),
-                                   CConfig::getInt("PLTOutputPort",30001)
+                                   QHostAddress(CConfig::getString("TargetOutputIP","192.168.0.80")),
+                                   CConfig::getInt("TargetOutputPort",30001)
                                    );
     }
 }
@@ -792,7 +792,7 @@ void dataProcessingThread::networkReplyAis(QNetworkReply *reply)
                     QJsonObject jObj  =  value.toObject();
                     AIS_object_t obj;
                     obj.mMMSI = jObj["mmsi"].toString().toInt();
-                    obj.mLat = jObj ["lat"].toDouble();
+                    obj.mLat  = jObj ["lat"].toDouble();
                     obj.mLong = jObj["lng"].toDouble();
                     obj.mName = jObj["vsnm"].toString();
 
@@ -815,7 +815,10 @@ void dataProcessingThread::networkReplyAdsb(QNetworkReply *reply)
 {
     if (reply->error()) {
             qDebug() << reply->errorString();
-            return;
+
+            networkManagerAdsb = new QNetworkAccessManager();
+                QObject::connect(networkManagerAdsb, SIGNAL(finished(QNetworkReply*)),
+                    this, SLOT(networkReplyAdsb(QNetworkReply*)));
         }
 
     QString answer = reply->readAll();
@@ -823,18 +826,23 @@ void dataProcessingThread::networkReplyAdsb(QNetworkReply *reply)
     QStringList sl = answer.split("[");
     foreach (QString str, sl) {
         QStringList datafields = str.split(",");
+
         if(datafields.count()>=20)
         {
+            C_AIR_TRACK new_track;
             //["88819C",20.26,106.18,154,27325,420,"4146","F-VVNB2","A320","VN-A583",1582251039,"HAN","DAD","QH109",0,1408,"BAV109",0,"BAV"]
             //"881052",12.39,100.86,172,29850,460,"4522","F-VTPH1","B738","HS-DBR",1582250825,"DMK","NST","DD6458",0,1920,"NOK6458",0,"NOK"
-            QString icaoAddress24  = datafields.at(0);
-            double lat = datafields.at(1).toDouble();
-            double lon = datafields.at(2).toDouble();
-            double head = datafields.at(3).toDouble();
-            double alt = datafields.at(4).toDouble();
-            double spd = datafields.at(5).toDouble();
-            QString vesselType = datafields.at(8);
-            QString registrationName = datafields.at(9);
+            new_track.mAddr = datafields.at(0);
+            new_track.mAddr.remove("\"");
+            new_track.mlat  = datafields.at(1).toDouble();
+            new_track.mlon  = datafields.at(2).toDouble();
+            new_track.mhead = datafields.at(3).toDouble();
+            new_track.malt  = datafields.at(4).toDouble()/304.8;
+            new_track.mspd  = datafields.at(5).toDouble()*1.852;
+            new_track.mvesselType = datafields.at(8);
+            new_track.registrationName = datafields.at(9);
+            mPlaneList[new_track.registrationName] = new_track;
+
 
         }
         else
@@ -844,6 +852,8 @@ void dataProcessingThread::networkReplyAdsb(QNetworkReply *reply)
             flushall();
         }
     }
+//std::map<QString,C_AIR_TRACK>  mPlaneList;
+
 
 }
 void dataProcessingThread::requestAISData()
@@ -855,7 +865,27 @@ void dataProcessingThread::requestAISData()
 }
 void dataProcessingThread::requestADSBData()
 {
-
+    for(const auto&kv:mPlaneList)
+    {
+        C_AIR_TRACK track = kv.second;
+        QString outputString;
+        outputString.append("$RATIF_PLANE,");
+        outputString.append(track.mAddr+",");
+        outputString.append(track.registrationName+ ",");
+        outputString.append(QString::number(track.mlat)   +  ",");
+        outputString.append(QString::number(track.mlon) + ",");
+        outputString.append(QString::number(track.malt)+ ",");
+        outputString.append(QString::number(track.mspd)+ ",");
+        outputString.append(QString::number(track.mhead)+ ",");
+        outputString.append("adsb/icao,");
+        outputString.append("time,");
+        outputString.append(track.mvesselType+",*");
+        //outputString.append(","+ ",");
+        radarSocket->writeDatagram(outputString.toUtf8(),
+                                   QHostAddress(CConfig::getString("TargetOutputIP","192.168.0.80")),
+                                   CConfig::getInt("TargetOutputPort",30001)
+                                   );
+    }
     networkRequest.setUrl(QUrl("https://data-live.flightradar24.com/zones/fcgi/feed.js?bounds=26.19,04.98,100.87,119.33&faa=1&mlat=1&flarm=1&adsb=1&gnd=1&air=1&vehicles=1&estimated=1&maxage=14400&gliders=1&stats=1"));
     networkManagerAdsb->get(networkRequest);
 

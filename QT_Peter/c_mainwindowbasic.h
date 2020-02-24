@@ -735,7 +735,7 @@ private slots:
 
 private:
     bool isRadarShow;
-    C_primary_track *selectedTrack;
+    C_SEA_TRACK *selectedTrack;
 //    int target_size;
 //    bool mShowobjects,
 //    bool mShowTracks;

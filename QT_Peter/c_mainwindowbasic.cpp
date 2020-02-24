@@ -120,7 +120,7 @@ void MainWindowBasic::mouseDoubleClickEvent( QMouseEvent * e )
         if(posy)mMousey= posy;
         if(isInsideViewZone(mMousex,mMousey))
         {
-            C_primary_track* track = rda_main.SelectRadarTarget(mMousex,mMousey);
+            C_SEA_TRACK* track = rda_main.SelectRadarTarget(mMousex,mMousey);
             if(track)
             {
                 track->isUserInitialised=true;
@@ -445,7 +445,7 @@ void MainWindowBasic::mousePressEvent(QMouseEvent *event)
             {
                 PointDouble point = rda_main.ConvScrPointToKMXY(mMousex,mMousey);
                 double rgKm = rda_main.mRadarData->sn_scale*80.0;
-                C_primary_track*track= rda_main.mRadarData->getManualTrackzone(point.x,point.y,rgKm);
+                C_SEA_TRACK*track= rda_main.mRadarData->getManualTrackzone(point.x,point.y,rgKm);
                 if(track)
                 {
                     track->addManualPossible(point.x,point.y);
@@ -884,7 +884,7 @@ void MainWindowBasic::UpdateMouseStat(QPainter *p)
             double rgXY = rgKm*rda_main.mScale;
             //ve vong tron
             p->drawEllipse(QPoint(mMousex,mMousey),int(rgXY),int(rgXY));
-            C_primary_track*track= rda_main.mRadarData->getManualTrackzone(point.x,point.y,rgKm);
+            C_SEA_TRACK*track= rda_main.mRadarData->getManualTrackzone(point.x,point.y,rgKm);
             if(track)
             {
                 PointDouble sTrack = rda_main.ConvWGSToScrPoint(track->lon,track->lat);
@@ -1187,7 +1187,7 @@ void MainWindowBasic::trackTableItemMenu(int row,int col)
     //mTargetMan.setSelectedTrack(selectedTrackID);
     for (uint i = 0;i<MAX_TRACKS_COUNT;i++)
     {
-        C_primary_track* track = &(rda_main.mRadarData->mTrackList[i]);
+        C_SEA_TRACK* track = &(rda_main.mRadarData->mTrackList[i]);
         if(track->isRemoved())continue;
         if(track->uniqId==selectedTrackID)
         {
@@ -1208,7 +1208,7 @@ void MainWindowBasic::changeID()
     if(value>MAX_TRACKS_COUNT*10)value = MAX_TRACKS_COUNT*10;
     for (uint i = 0;i<MAX_TRACKS_COUNT;i++)
     {
-        C_primary_track* track = &(rda_main.mRadarData->mTrackList[i]);
+        C_SEA_TRACK* track = &(rda_main.mRadarData->mTrackList[i]);
         if(track->isRemoved())continue;
         if(track==selectedTrack)continue;
         if(track->uniqId==value)
@@ -2196,7 +2196,7 @@ void MainWindowBasic::ViewTrackInfo()
     //find new tracks
     for(uint i =0;i<rda_main.mRadarData->mTrackList.size();i++)
     {
-        C_primary_track* track = &(rda_main.mRadarData->mTrackList[i]);
+        C_SEA_TRACK* track = &(rda_main.mRadarData->mTrackList[i]);
         if(track->isConfirmed()&&track->isUserInitialised)
             if(!mTargetMan.checkIDExist(rda_main.mRadarData->mTrackList[i].uniqId))
                 mTargetMan.addTrack(&rda_main.mRadarData->mTrackList[i]);
@@ -2326,8 +2326,10 @@ int count_adsb = 0;
 void MainWindowBasic::sync1S()//period 1 second
 {
     //checkCuda();
-    if(count_adsb<10)count_adsb++;
-    if(count_adsb>10){count_adsb=0;rda_main.processing->requestADSBData();}
+    if(count_adsb<20)count_adsb++;
+    if(count_adsb>=20){
+        count_adsb=0;
+        rda_main.processing->requestADSBData();}
     if(CConfig::getWarningList()->size())
     {
         std::queue<WarningMessage> * listMsg = (CConfig::getWarningList());

@@ -30,7 +30,7 @@ static double  scale_zoom_ppi;
 static QImage     *img_ppi,*img_RAmp,*img_zoom_ppi,*img_histogram,*img_spectre,*img_zoom_ar;
 static  FILE *logfile;
 static bool isShowSled ;
-int C_primary_track::IDCounter =1;
+int C_SEA_TRACK::IDCounter =1;
 static int sumvar = 0;
 double brightness =1;
 static int nNoiseFrameCount = 0;
@@ -338,14 +338,14 @@ bool DrawZoomAR(int a,int r,short val,short dopler,short sled)
 */
 
 
-void C_primary_track::addPossible(object_t *obj,double score)
+void C_SEA_TRACK::addPossible(object_t *obj,double score)
 {
     possibleObj=(*obj);
     possibleMaxScore=score;
     waitingForBetterScore = 0;
 }
 
-void C_primary_track::addManualPossible(double xkm, double ykm)
+void C_SEA_TRACK::addManualPossible(double xkm, double ykm)
 {
     object_t newobject;
     newobject.timeMs = CConfig::time_now_ms;
@@ -367,7 +367,7 @@ void C_primary_track::addManualPossible(double xkm, double ykm)
     update();
 }
 
-double C_primary_track::estimateScore(object_t *obj1,object_t *obj2)
+double C_SEA_TRACK::estimateScore(object_t *obj1,object_t *obj2)
 {
     double dtime = int(obj1->timeMs - obj2->timeMs);
     if(dtime<TRACK_MIN_DTIME)return -1;
@@ -430,7 +430,7 @@ double C_primary_track::estimateScore(object_t *obj1,object_t *obj2)
 
 }
 #define FIT_ELEMENTS 3
-double C_primary_track::LinearFitProbability(object_t *myobj)
+double C_SEA_TRACK::LinearFitProbability(object_t *myobj)
 {
     int nEle = FIT_ELEMENTS;
     //    if(this->objectList.size()<nEle-1)
@@ -506,7 +506,7 @@ double C_primary_track::LinearFitProbability(object_t *myobj)
     return probability;
 }
 
-double C_primary_track::estimateScore(object_t *obj1)
+double C_SEA_TRACK::estimateScore(object_t *obj1)
 {
     //return estimateScore(obj1,&(this->objectList.back()));
     if(objectList.size()<2)
@@ -592,13 +592,13 @@ double C_primary_track::estimateScore(object_t *obj1)
 #endif
     return score;
 }
-bool C_primary_track::isHighDensityPos()
+bool C_SEA_TRACK::isHighDensityPos()
 {
     //if(posDensityFit>1)printf("\nposDensityFit:%f",posDensityFit);
     return posDensityFit>MIN_TARGET_DENSITY;
 }
 
-void C_primary_track::init(double txkm, double tykm)
+void C_SEA_TRACK::init(double txkm, double tykm)
 {
     flag = 1;
     isMouseOver = false;
@@ -608,7 +608,7 @@ void C_primary_track::init(double txkm, double tykm)
     sko_cour=0;
     sko_rgKm=0;
     sko_spdKmh=0;
-    uniqId = C_primary_track::IDCounter++;
+    uniqId = C_SEA_TRACK::IDCounter++;
     mState = TrackState::confirmed;
     isUserInitialised = true;
     mAisPossibleObj = 0;
@@ -661,7 +661,7 @@ void C_primary_track::init(double txkm, double tykm)
 
 }
 
-void C_primary_track::init(object_t *obj1, object_t *obj2, int id)
+void C_SEA_TRACK::init(object_t *obj1, object_t *obj2, int id)
 {
     flag = 1;
     isMouseOver = false;
@@ -711,7 +711,7 @@ void C_primary_track::init(object_t *obj1, object_t *obj2, int id)
     mState = TrackState::newDetection;
     //        operatorID = 0;
 }
-int C_primary_track::getPosDensity()
+int C_SEA_TRACK::getPosDensity()
 {
     std::pair<int,int> key(int(lat*1000),int(lon*1000));
     DensityMap::iterator it =targetDensityMap.find(key);
@@ -723,7 +723,7 @@ int C_primary_track::getPosDensity()
         return 0;
 
 }
-void C_primary_track::checkNewObject()
+void C_SEA_TRACK::checkNewObject()
 {
     if((possibleMaxScore<TARGET_MINMUM_SCORE))return;//no new plot
     //printf("possibleMaxScore:%f \n",possibleMaxScore);
@@ -773,7 +773,7 @@ void C_primary_track::checkNewObject()
                     }
                     else
                     {
-                        uniqId = C_primary_track::IDCounter++;
+                        uniqId = C_SEA_TRACK::IDCounter++;
                         mState = TrackState::confirmed;
                     }
 
@@ -844,7 +844,7 @@ void C_primary_track::checkNewObject()
 #endif
 
 }
-void C_primary_track::update()
+void C_SEA_TRACK::update()
 {
     isUpdating = true;
     ageMs=uint(CConfig::time_now_ms-lastUpdateTimeMs);
@@ -882,7 +882,7 @@ void C_primary_track::update()
 
     isUpdating = false;
 }
-void C_primary_track::generateTTM()
+void C_SEA_TRACK::generateTTM()
 {
     //generate TTM
     mTTM = "$RATTM,"+QString::number(uniqId)+","+
@@ -914,7 +914,7 @@ void C_primary_track::generateTTM()
     mTIF+="*"+QString(chs)+"\r\n";
 }
 
-uchar C_primary_track::getCheckSum(QString message)
+uchar C_SEA_TRACK::getCheckSum(QString message)
 {
     char* data = (char*)message.toStdString().data();
     uchar sum = 0;
@@ -924,7 +924,7 @@ uchar C_primary_track::getCheckSum(QString message)
     }
     return (sum);
 }
-void C_primary_track::LinearFit(int nEle)
+void C_SEA_TRACK::LinearFit(int nEle)
 {
     /*
 double xsum=0,x2sum=0,ysum=0,xysum=0;
@@ -1051,8 +1051,8 @@ C_radar_data::C_radar_data()
     mRealAziRate = 0;
     mUpdateTime = clock();
     cur_rot_timeMSecs = QDateTime::currentMSecsSinceEpoch();
-    C_primary_track track;
-    mTrackList = std::vector<C_primary_track>(MAX_TRACKS_COUNT,track);
+    C_SEA_TRACK track;
+    mTrackList = std::vector<C_SEA_TRACK>(MAX_TRACKS_COUNT,track);
     giaQuayPhanCung = false;
     //    mShipHeading = 0;
     //    isTrueHeadingFromRadar = CConfig::getInt("isTrueHeadingFromRadar");
@@ -1159,13 +1159,13 @@ void C_radar_data::addManualTrack(double xkm, double ykm)
     }
 }
 
-C_primary_track* C_radar_data::getManualTrackzone(double xkm, double ykm, double rgkm)
+C_SEA_TRACK* C_radar_data::getManualTrackzone(double xkm, double ykm, double rgkm)
 {
-    C_primary_track* result = 0 ;
+    C_SEA_TRACK* result = 0 ;
     double minDistance2 = rgkm*rgkm;
     for(int i=0;i<MAX_TRACKS_COUNT;i++)
     {
-        C_primary_track* track=&(mTrackList[i]);
+        C_SEA_TRACK* track=&(mTrackList[i]);
         if(track->mState==TrackState::confirmed)
         {
             double dx = track->xkm-xkm;
@@ -1191,7 +1191,7 @@ bool C_radar_data::integrateAisPoint(AIS_object_t *obj)
 
     for(int i=0;i<MAX_TRACKS_COUNT;i++)
     {
-        C_primary_track* track=&(mTrackList[i]);
+        C_SEA_TRACK* track=&(mTrackList[i]);
         //        double dlat = (track.lat-lat);
         //        double dlon = (track.lon-lon);
         if(track->mState!=TrackState::confirmed)continue;
@@ -2389,7 +2389,7 @@ void C_radar_data::addDensityPoint(double lat, double lon)
 }
 
 #define POLY_DEG 2
-void C_radar_data::LeastSquareFit(C_primary_track* track)
+void C_radar_data::LeastSquareFit(C_SEA_TRACK* track)
 {
     /*
     uint  nElement = 6;
@@ -3140,10 +3140,10 @@ void C_radar_data::setScaleZoom(float scale)
 void C_radar_data::resetTrack()
 {
     init_time += 3;
-    C_primary_track::IDCounter=1;
+    C_SEA_TRACK::IDCounter=1;
     for(int i=0;i<MAX_TRACKS_COUNT;i++)
     {
-        C_primary_track* track=&(mTrackList[i]);
+        C_SEA_TRACK* track=&(mTrackList[i]);
         track->mState = TrackState::removed;
 
     }
@@ -3159,7 +3159,7 @@ void C_radar_data::ProcessTracks()
     //processTracks
     for (ushort j=0;j<MAX_TRACKS_COUNT;j++)
     {
-        C_primary_track* track = &(mTrackList[j]);
+        C_SEA_TRACK* track = &(mTrackList[j]);
         if(track->mState==TrackState::removed)continue;
         track->update();
 
@@ -3196,7 +3196,7 @@ void C_radar_data::UpdateTrackStatistic()
     double sumEng=0;
     for (ushort j=0;j<MAX_TRACKS_COUNT;j++)
     {
-        C_primary_track* track = &(mTrackList[j]);
+        C_SEA_TRACK* track = &(mTrackList[j]);
         if(!track->isConfirmed())continue;
         for(int i=0;i<track->objectList.size();i++)
         {
@@ -3336,11 +3336,11 @@ void C_radar_data::ProcessObject(object_t *obj1)
 bool C_radar_data::checkBelongToTrack(object_t *obj1)
 {
     bool isBelongingToTrack = false;
-    C_primary_track* chosenTrack =nullptr;
+    C_SEA_TRACK* chosenTrack =nullptr;
     double maxScore = TARGET_MINMUM_SCORE;
     for (ushort j=0;j<MAX_TRACKS_COUNT;j++)
     {
-        C_primary_track* track = &(mTrackList[j]);
+        C_SEA_TRACK* track = &(mTrackList[j]);
 
         if(track->mState==TrackState::removed||
                 track->mState==TrackState::lost)continue;
@@ -3483,7 +3483,7 @@ bool C_radar_data::checkBelongToObj(object_t* obj1)
         object_t *obj2 = &(mFreeObjList.at(j));
         //find new line
         if(obj2->isRemoved)continue;
-        double score = C_primary_track::estimateScore(obj1,obj2);
+        double score = C_SEA_TRACK::estimateScore(obj1,obj2);
         if(score<=0)continue;
         if(score>maxScore)
         {

@@ -197,7 +197,7 @@ void DialogDetailDisplay::mouseDoubleClickEvent( QMouseEvent * e )
         int mMousey = e->y();
         if(rda.isInsideViewRect(mMousex,mMousey))
         {
-            C_primary_track* track = rda.SelectRadarTarget(mMousex,mMousey);
+            C_SEA_TRACK* track = rda.SelectRadarTarget(mMousex,mMousey);
             if(track)
             {
                 track->isUserInitialised=true;

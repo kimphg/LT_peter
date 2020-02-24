@@ -92,8 +92,9 @@ public:
     void run();
     bool getIsDrawn();
     AIS aisMessageHandler;
-    std::map<int,AIS_object_t> mAisVesselsList;
-    std::map<QString,AIS_object_t> mAisObjList;
+    std::map<int,AIS_object_t>      mAisVesselsList;
+    std::map<QString,AIS_object_t>  mAisObjList;
+    std::map<QString,C_AIR_TRACK>  mPlaneList;
     void setRotationSpeed(int index);
     bool getIsXuLyThuCap() const;
     void setIsXuLyThuCap(bool value);
