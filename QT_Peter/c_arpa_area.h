@@ -23,7 +23,7 @@ public:
     int mMousex,mMousey;
     bool showAisName;
     bool isDrawTargetNumber;
-    int target_size;
+    double target_size;
     double trueShiftDeg,headShift;
     int radCtX,radCtY;
     double mZoomSizeRg,    mZoomSizeAz;
@@ -67,8 +67,10 @@ public:
     PointDouble ConvScrPointToKMXY(int x, int y);
     PointAziRgkm ConvScrPointToAziRgkm(int x, int y);
 private:
+    QPolygon polyPlane;
     void DrawAISBuoy(PointDouble s, QPainter *p, QString name, int size);
     void DrawPlaneMark(PointDouble s , QPainter *p, double head, QString name, int size);
+    void initMarkPolygons();
 };
 
 #endif // C_ARPA_AREA_H

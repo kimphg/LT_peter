@@ -77,41 +77,48 @@ void C_arpa_area::DrawAISMark(PointDouble s ,double head,QPainter *p,QString nam
 
 
 }
+void C_arpa_area::initMarkPolygons()
+{
+
+    QPoint point;
+
+    //   initPolyplane
+    point.setX(+0);                   point.setY(-150);   polyPlane<<point;
+    point.setX(+25);    point.setY(-120);   polyPlane<<point;
+    point.setX(+25);    point.setY(-30);   polyPlane<<point;
+    point.setX(+150);     point.setY(+60);   polyPlane<<point;
+    point.setX(+150);     point.setY(+90);   polyPlane<<point;
+    point.setX(+25);    point.setY(+30);   polyPlane<<point;
+    point.setX(+25);    point.setY(+120);   polyPlane<<point;
+    point.setX(+60);     point.setY(+150);   polyPlane<<point;
+    point.setX(+60);     point.setY(+180);   polyPlane<<point;
+    //                                                                polyPlane
+    point.setX(+0);       point.setY(+150);   polyPlane<<point;
+    //                                                                polyPlane
+    point.setX(-60);     point.setY(+180);   polyPlane<<point;
+    point.setX(-60);     point.setY(+150);   polyPlane<<point;
+    point.setX(-25);    point.setY(+120);   polyPlane<<point;
+    point.setX(-25);    point.setY(+30);   polyPlane<<point;
+    point.setX(-150);     point.setY(+90);   polyPlane<<point;
+    point.setX(-150);     point.setY(+60);   polyPlane<<point;
+    point.setX(-25);    point.setY(-30);   polyPlane<<point;
+    point.setX(-25);    point.setY(-120);   polyPlane<<point;
+    point.setX(+0);                   point.setY(-150);   polyPlane<<point;
+}
+
 void C_arpa_area::DrawPlaneMark(PointDouble s ,QPainter *p,double head, QString name,int size)
 {
-    QPolygon poly;
-    QPoint point;
     double viewhead = head+trueShiftDeg;
-    //    double head = aisObj.mCog*PI_NHAN2/360.0;
-    point.setX(+0);                   point.setY(-1.5*target_size);    poly<<point;
-    point.setX(+0.25*target_size);    point.setY(-1.2*target_size);   poly<<point;
-    point.setX(+0.25*target_size);    point.setY(-0.3*target_size);   poly<<point;
-    point.setX(+1.5*target_size);     point.setY(+0.6*target_size);    poly<<point;
-    point.setX(+1.5*target_size);     point.setY(+0.9*target_size);    poly<<point;
-    point.setX(+0.25*target_size);    point.setY(+0.3*target_size);   poly<<point;
-    point.setX(+0.25*target_size);    point.setY(+1.2*target_size);   poly<<point;
-    point.setX(+0.6*target_size);     point.setY(+1.5*target_size);    poly<<point;
-    point.setX(+0.6*target_size);     point.setY(+1.8*target_size);    poly<<point;
-    //
-    point.setX(+0*target_size);       point.setY(+1.5*target_size);    poly<<point;
-    //
-    point.setX(-0.6*target_size);     point.setY(+1.8*target_size);    poly<<point;
-    point.setX(-0.6*target_size);     point.setY(+1.5*target_size);    poly<<point;
-    point.setX(-0.25*target_size);    point.setY(+1.2*target_size);   poly<<point;
-    point.setX(-0.25*target_size);    point.setY(+0.3*target_size);   poly<<point;
-    point.setX(-1.5*target_size);     point.setY(+0.9*target_size);    poly<<point;
-    point.setX(-1.5*target_size);     point.setY(+0.6*target_size);    poly<<point;
-    point.setX(-0.25*target_size);    point.setY(-0.3*target_size);   poly<<point;
-    point.setX(-0.25*target_size);    point.setY(-1.2*target_size);   poly<<point;
-    point.setX(+0);                   point.setY(-1.5*target_size);    poly<<point;
 //    poly<<point;
-    poly = QTransform()
-       .rotate(viewhead)
-       .translate(s.x, s.y)
-       .map(poly);
+    QPolygon poly = QTransform()
+            .translate(s.x, s.y)
+            .rotate(viewhead)
+            .scale(target_size/100.0,target_size/100.0)
+            .map(polyPlane);
+
     p->setPen(penYellow);
     p->drawPolygon(poly);
-    printf("\nviewhead:%f",viewhead);
+    //printf("\nviewhead:%f",viewhead);
     if(size>10)
     {
         p->setFont(QFont("Times", 12));
@@ -137,7 +144,7 @@ void C_arpa_area::drawAisTarget(QPainter *p)
         if(aisObj.isMatchToRadarTrack)continue;
         if(!isInsideViewRect(s.x,s.y))continue;
         int vectorLen = nm2km(aisObj.mSog)*mScale/6.0;
-        if(vectorLen>target_size*10)target_size=target_size*10;
+        if(vectorLen>target_size*10)vectorLen=target_size*10;
         DrawAISMark(s,aisObj.mCog,p,aisObj.mName,target_size,vectorLen);
     }
     p->setBrush(QBrush(penYellow.color()));
@@ -161,20 +168,21 @@ void C_arpa_area::drawAisTarget(QPainter *p)
 }
 C_arpa_area::C_arpa_area()
 {
+    initMarkPolygons();
 
 }
 
 void C_arpa_area::setScale(double scale)
 {
     mScale = scale;
-    setTarget_size( 0.5*mScale);
+    setTarget_size( 0.4*mScale);
 }
 
 void C_arpa_area::setTarget_size(int value)
 {
     isDrawTargetNumber = mScale>10;
     target_size = value;
-    if(target_size<8)target_size=8;
+    if(target_size<3)target_size=3;
     else if(target_size>12)target_size=12;
     int penSize = 1;
     penTargetHistory          .setWidth(penSize);

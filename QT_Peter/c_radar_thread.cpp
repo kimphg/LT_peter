@@ -669,7 +669,7 @@ void dataProcessingThread::togglePlayPause(bool play)
 }
 void dataProcessingThread::addAisObj(AIS_object_t obj)
 {
-    if(obj.mName.contains("Phao")||obj.mName.contains("PHAO")||obj.mName.contains("P.")||obj.mName.contains("BUOY"))//
+    if(obj.mType<0)//
     {
         QString key = QString::number(obj.mMMSI)+obj.mName;
         mAisObjList[key] = obj;
@@ -859,27 +859,28 @@ void dataProcessingThread::networkReplyAdsb(QNetworkReply *reply)
 void dataProcessingThread::requestAISData()
 {
 
-    networkRequest.setUrl(QUrl("http://quanlytau.vishipel.vn/Vishipel.VTS/TrackingHandler.ashx?cmd=live&range=101.042863,7.185843,111.430319,22.379662&areaW=0.055579335027628574,0.056304931640625&zoom=10&c=0&l=all"));
+    networkRequest.setUrl(QUrl("http://quanlytau.vishipel.vn/Vishipel.VTS/TrackingHandler.ashx?cmd=live&range=101.042863,7.185843,121.430319,23.379662&areaW=0.055579335027628574,0.056304931640625&zoom=10&c=0&l=all"));
     networkManagerAis->get(networkRequest);
 
 }
 void dataProcessingThread::requestADSBData()
 {
-    for(const auto&kv:mAisVesselsList)
+    for(std::map<int,AIS_object_t>::iterator iter = mAisVesselsList.begin();iter!=mAisVesselsList.end();iter++)
     {
-        AIS_object_t track = kv.second;
+        AIS_object_t *track = &(iter->second);
+        if(!track)continue;
         QString outputString;
         outputString.append("$RATIF_SHIP,");
-        outputString.append(track.mMMSI+",");
-        outputString.append(track.mName+ ",");
-        outputString.append(QString::number(track.mLat)   +  ",");
-        outputString.append(QString::number(track.mLong) + ",");
+        outputString.append(QString::number(track->mMMSI)+",");
+        outputString.append(track->mName+ ",");
+        outputString.append(QString::number(track->mLat)   +  ",");
+        outputString.append(QString::number(track->mLong) + ",");
         outputString.append("0,");
-        outputString.append(QString::number(track.mSog)+ ",");
-        outputString.append(QString::number(track.mCog)+ ",");
+        outputString.append(QString::number(track->mSog)+ ",");
+        outputString.append(QString::number(track->mCog)+ ",");
         outputString.append("ais,");
-        outputString.append(QString::number(track.mUpdateTime)+",");
-        outputString.append(QString::number(track.mType)+",*");
+        outputString.append(QString::number(track->mUpdateTime)+",");
+        outputString.append(QString::number(track->mType)+",*");
         //outputString.append(","+ ",");
         radarSocket->writeDatagram(outputString.toUtf8(),
                                    QHostAddress(CConfig::getString("TargetOutputIP","192.168.0.80")),
