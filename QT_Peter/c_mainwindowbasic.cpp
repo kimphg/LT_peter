@@ -2329,7 +2329,7 @@ void MainWindowBasic::sync1S()//period 1 second
     if(count_adsb<20)count_adsb++;
     if(count_adsb>=20){
         count_adsb=0;
-        rda_main.processing->requestADSBData();}
+        rda_main.processing->outputReport();}
     if(CConfig::getWarningList()->size())
     {
         std::queue<WarningMessage> * listMsg = (CConfig::getWarningList());

@@ -595,7 +595,7 @@ double C_SEA_TRACK::estimateScore(object_t *obj1)
 bool C_SEA_TRACK::isHighDensityPos()
 {
     //if(posDensityFit>1)printf("\nposDensityFit:%f",posDensityFit);
-    return posDensityFit>MIN_TARGET_DENSITY;
+    return posDensityFit>=MIN_TARGET_DENSITY;
 }
 
 void C_SEA_TRACK::init(double txkm, double tykm)
@@ -3300,7 +3300,7 @@ void C_radar_data::ProcessObject(object_t *obj1)
     if(isAutoTracking)
     if(!checkInsideDWAvoid(degrees(obj1->azRad),obj1->rgKm))
     {
-        if(getDensityLatLon(obj1->lat,obj1->lon))
+        if(getDensityLatLon(obj1->lat,obj1->lon)>=MIN_OBJ_DENSITY)
         {
             obj1->isUserInitialized=false;
             addFreeObj(obj1);

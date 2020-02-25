@@ -109,6 +109,7 @@ public:
     bool getIsPlaying() const;
     void requestAISData();
     void requestADSBData();
+    void outputReport();
 signals:
     void HeadingDataReceived(double heading);
 private:

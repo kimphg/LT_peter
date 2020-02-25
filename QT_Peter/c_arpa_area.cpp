@@ -182,7 +182,7 @@ void C_arpa_area::setTarget_size(int value)
 {
     isDrawTargetNumber = mScale>10;
     target_size = value;
-    if(target_size<3)target_size=3;
+    if(target_size<8)target_size=8;
     else if(target_size>12)target_size=12;
     int penSize = 1;
     penTargetHistory          .setWidth(penSize);

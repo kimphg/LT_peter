@@ -506,12 +506,12 @@ void dataProcessingThread::sendRATTM()
         {
 
             radarSocket->writeDatagram(track->mTTM.toLatin1(),
-                                       QHostAddress(CConfig::getString("TargetOutputIP","192.168.0.80")),
+                                       QHostAddress(CConfig::getString("OutputIP","192.168.0.80")),
                                        CConfig::getInt("TargetOutputPort",30001)
                                        );
 
             radarSocket->writeDatagram(track->mTIF.toLatin1(),
-                                       QHostAddress(CConfig::getString("TargetOutputIP","192.168.0.80")),
+                                       QHostAddress(CConfig::getString("OutputIP","192.168.0.80")),
                                        CConfig::getInt("TargetOutputPort",30001)
                                        );
             track->mTTM.clear();
@@ -519,26 +519,28 @@ void dataProcessingThread::sendRATTM()
         }
 
     }
-    QByteArray plotOutput;
+
     while(mRadarData->object_output_queue.size())
     {
-        object_t *obj = &(mRadarData->object_output_queue.back());
-        QString sentence = "$RAPLT,"+
+        object_t *obj = &(mRadarData->object_output_queue.front());
+        QString sentence = "$RATIF_PLOT,"+
+                QString::number(clock()) +","+
+                 +"_radar_plot,"+
                 QString::number(obj->lat, 'f',5) +","+
                 QString::number(obj->lon, 'f',5) +","+
-                QString::number(obj->dazi,'f',5) +","+
-                QString::number(obj->drg, 'f',5) +","+
-                QString::number(obj->timeMs)+"\r\n";
-        plotOutput.append(sentence);
+                +"0.0,"+
+                +"0.0,"+
+                +"0.0,"+
+                +"sea_sur,"
+                +"radar,"+
+                QString::number(obj->timeMs)+"*\r\n";
+        radarSocket->writeDatagram(sentence.toUtf8(),
+                                   QHostAddress(CConfig::getString("OutputIP","192.168.0.80")),
+                                   CConfig::getInt("PlotOutputPort",30003)
+                                   );
         mRadarData->object_output_queue.pop();
     }
-    if(plotOutput.size())
-    {
-        radarSocket->writeDatagram(plotOutput,
-                                   QHostAddress(CConfig::getString("TargetOutputIP","192.168.0.80")),
-                                   CConfig::getInt("TargetOutputPort",30001)
-                                   );
-    }
+
 }
 void dataProcessingThread::Timer200ms()
 {
@@ -547,7 +549,7 @@ void dataProcessingThread::Timer200ms()
     CalculateRFR();
     sendAziData();
     SerialDataRead();
-    sendRATTM();
+
     if(radarComQ.size())
     {
         if(radarComQ.front().bytes[1]==0xab)
@@ -863,6 +865,11 @@ void dataProcessingThread::requestAISData()
     networkManagerAis->get(networkRequest);
 
 }
+void dataProcessingThread::outputReport()
+{
+    requestADSBData();
+    sendRATTM();
+}
 void dataProcessingThread::requestADSBData()
 {
     for(std::map<int,AIS_object_t>::iterator iter = mAisVesselsList.begin();iter!=mAisVesselsList.end();iter++)
@@ -878,12 +885,13 @@ void dataProcessingThread::requestADSBData()
         outputString.append("0,");
         outputString.append(QString::number(track->mSog)+ ",");
         outputString.append(QString::number(track->mCog)+ ",");
+        outputString.append(QString::number(track->mType)+ ",");
         outputString.append("ais,");
         outputString.append(QString::number(track->mUpdateTime)+",");
         outputString.append(QString::number(track->mType)+",*");
         //outputString.append(","+ ",");
         radarSocket->writeDatagram(outputString.toUtf8(),
-                                   QHostAddress(CConfig::getString("TargetOutputIP","192.168.0.80")),
+                                   QHostAddress(CConfig::getString("OutputIP","192.168.0.80")),
                                    CConfig::getInt("AISOutputPort",30002)
                                    );
     }
@@ -904,13 +912,12 @@ void dataProcessingThread::requestADSBData()
         outputString.append(track.mvesselType+",*");
         //outputString.append(","+ ",");
         radarSocket->writeDatagram(outputString.toUtf8(),
-                                   QHostAddress(CConfig::getString("TargetOutputIP","192.168.0.80")),
+                                   QHostAddress(CConfig::getString("OutputIP","192.168.0.80")),
                                    CConfig::getInt("TargetOutputPort",30001)
                                    );
     }
     networkRequest.setUrl(QUrl("https://data-live.flightradar24.com/zones/fcgi/feed.js?bounds=26.19,04.98,100.87,119.33&faa=1&mlat=1&flarm=1&adsb=1&gnd=1&air=1&vehicles=1&estimated=1&maxage=14400&gliders=1&stats=1"));
     networkManagerAdsb->get(networkRequest);
-
 }
 void dataProcessingThread::run()
 {
