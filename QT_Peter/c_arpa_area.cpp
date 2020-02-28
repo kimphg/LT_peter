@@ -165,6 +165,12 @@ void C_arpa_area::drawAisTarget(QPainter *p)
         if(!isInsideViewRect(s.x,s.y))continue;
         DrawPlaneMark(s,p,plane.mhead,plane.registrationName,target_size);
     }
+    for(sim_target_t plane:processing->simulator->targetList)
+    {
+        PointDouble s = ConvWGSToScrPoint(plane.mlon,plane.mlat);
+        if(!isInsideViewRect(s.x,s.y))continue;
+        DrawPlaneMark(s,p,0,"",target_size);
+    }
 }
 C_arpa_area::C_arpa_area()
 {
@@ -327,7 +333,7 @@ void C_arpa_area::DrawRadarTargets(QPainter* p)//draw radar target from pRadar->
 
     bool blink = (CConfig::time_now_ms/500)%2;
 
-    //draw all tracks
+    //draw all radar tracks
     for (uint i = 0;i<MAX_TRACKS_COUNT;i++)
     {
         C_SEA_TRACK* track = &(mRadarData->mTrackList[i]);

@@ -4,6 +4,7 @@ static std::normal_distribution<double> distribNoise(30, 8);
 static std::normal_distribution<double> distribAzi(0, 0.01);//radian
 static std::normal_distribution<double> distribRot(180, 0.5 );//deg per sec
 static unsigned char n_clk_adc = 0;
+bool isManeuver=false, isWithSignal=false;
 double rResolution = 0.015070644;
 unsigned char outputFrame[MAX_AZI][OUTPUT_FRAME_SIZE];
 double ConvXYToR(double x, double y)
@@ -42,7 +43,7 @@ void regenerate(int azi)
         dataPointer[i] = rand()%16;
     }
 }
-bool isManeuver;
+
 sim_target_t::sim_target_t()
 {
     enabled = false;
@@ -55,6 +56,7 @@ void sim_target_t::init()
     speedKmh = rand()%50+5;
     x = (rand()%80)*((rand()%2)*2-1);
     y = (rand()%80)*((rand()%2)*2-1);
+    C_radar_data::ConvKmToWGS(x,y,&mlat,&mlon);
     bearing = radians(rand()%360);
     azi = ConvXYToAziRad(x, y) / 3.141592653589*1024.0;
     range = ConvXYToR(x, y);
@@ -72,6 +74,7 @@ void sim_target_t::init(double tx, double ty, double tspeedKmh, double tbearing,
     speedKmh = tspeedKmh;
     x = tx;
     y = ty;
+    C_radar_data::ConvKmToWGS(tx,ty,&mlon,&mlat);
     bearing = radians(tbearing);
     azi = ConvXYToAziRad(x, y) / 3.141592653589*1024.0;
     range = ConvXYToR(x, y);
@@ -149,7 +152,7 @@ void sim_target_t::update()
     //
     azi = (ConvXYToAziRad(x, y) + distribAzi(generator))/ 3.141592653589*1024.0;
     range	= ConvXYToR(x, y) / rResolution;
-    if(rand()%100>lostRate)generateSignal();
+    if(isWithSignal)if(rand()%100>lostRate)generateSignal();
 }
 
 bool sim_target_t::getIsManeuver() const
@@ -178,16 +181,16 @@ void c_radar_simulation::initTargets()
     for (int i = 0; i < NUM_OF_TARG; i++)
     {
         sim_target_t t;
-        target.push_back(t);
+        targetList.push_back(t);
     }
 
 }
 
 void c_radar_simulation::updateTargets()
 {
-    for (uint i = 0; i < target.size(); i++)
+    for (uint i = 0; i < targetList.size(); i++)
     {
-        target[i].update();
+        targetList[i].update();
     }
 }
 void c_radar_simulation::socketInit()
@@ -210,6 +213,16 @@ void c_radar_simulation::setLostRate(int rate)
 }
 c_radar_simulation::c_radar_simulation(C_radar_data *radarData)//QObject *parent)
 {
+    socketInit();
+    int port = CConfig::getInt("simSocketPort",32000);
+    while(port<31100)
+    {
+        if(radarSocket->bind(port))
+        {
+            break;
+        }
+        port++;
+    }
     isManeuver = false;
     for (int i = 0; i < MAX_AZI; i++)
     {
@@ -220,7 +233,7 @@ c_radar_simulation::c_radar_simulation(C_radar_data *radarData)//QObject *parent
     for (int i = 0; i < NUM_OF_TARG; i++)
     {
         sim_target_t t;
-        target.push_back(t);
+        targetList.push_back(t);
     }
     setRange(2);
     //socketInit();
@@ -231,9 +244,10 @@ c_radar_simulation::c_radar_simulation(C_radar_data *radarData)//QObject *parent
     azi = 200;
 }
 
-void c_radar_simulation::play()
+void c_radar_simulation::play(bool isSig = true)
 {
     isPlaying = true;
+    isWithSignal = isSig;
 }
 
 void c_radar_simulation::pause()
@@ -243,18 +257,26 @@ void c_radar_simulation::pause()
 void c_radar_simulation::setTarget(int id,double aziDeg, double rangeKm,  double tbearingDeg,double tspeedKn, int dople,int tlostRate)
 {
     //target_t newTarget(tx,ty,tspeed,tbearing,dople);
-    if(id>=target.size())return;
+    if(id>=targetList.size())id=id%targetList.size();
     double tx,ty;
     tx = rangeKm*CONST_NM*sin(radians(aziDeg));
     ty = rangeKm*CONST_NM*cos(radians(aziDeg));
     lostRate = tlostRate%100;
-    target[id].init(tx,ty,tspeedKn*CONST_NM,tbearingDeg,dople);//(double tx, double ty, double tspeedKmh, double tbearing, int dople)
+    targetList[id].init(tx,ty,tspeedKn*CONST_NM,tbearingDeg,dople);//(double tx, double ty, double tspeedKmh, double tbearing, int dople)
+}
+void c_radar_simulation::setAirTarget(int id,double lat,double lon, double tspeedKm,double tbearingDeg)
+{
+    //target_t newTarget(tx,ty,tspeed,tbearing,dople);
+    if(id>=targetList.size())id=id%targetList.size();
+    double tx,ty;
+    C_radar_data::ConvWGSToKm(&tx,&ty,lon,lat);
+    targetList[id].init(tx,ty,tspeedKm,tbearingDeg);//(double tx, double ty, double tspeedKmh, double tbearing, int dople)
 }
 void c_radar_simulation::setAllTarget()
 {
-    for(int i =0;i<target.size();i++)
+    for(int i =0;i<targetList.size();i++)
     {
-        target[i].init();
+        targetList[i].init();
     }
 }
 void c_radar_simulation::setRange(int clk_adc)
@@ -267,31 +289,7 @@ void c_radar_simulation::setRange(int clk_adc)
     rResolution = 0.015070644 * pow(2, n_clk_adc);
     updateTargets();
 }
-void c_radar_simulation::sendData()
-{
-    if(!isPlaying)
-    {
-        return;
-    }
-    int a=0;
-    while(true)
-    {
-        if(a++>10)break;
-        azi += 1;
-        if (azi >= 2048)
-        {
-            //nPeriod++;
-            //if (nPeriod > 50)nPeriod = 0;
-            azi = 0;
-            updateTargets();
-        }
-        outputFrame[azi][0] = 0x55;
-        outputFrame[azi][2] = (azi >> 8);
-        outputFrame[azi][3] = (azi);
-        outputFrame[azi][4] = n_clk_adc;
-        mRadarData->processSocketData((unsigned char*)(&outputFrame[azi][0]),OUTPUT_FRAME_SIZE);
-    }
-}
+
 void c_radar_simulation::run()
 {
     while (true)
@@ -302,24 +300,53 @@ void c_radar_simulation::run()
             msleep(500);
             continue;
         }
-        int a=0;
-        while(true)
+        if(isWithSignal)
         {
-            if(a++>10)break;
-            azi += 1;
-            if (azi >= 2048)
+            int a=0;
+            while(true)
             {
-                //nPeriod++;
-                //if (nPeriod > 50)nPeriod = 0;
-                azi = 0;
-                updateTargets();
+                if(a++>10)break;
+                azi += 1;
+                if (azi >= 2048)
+                {
+                    //nPeriod++;
+                    //if (nPeriod > 50)nPeriod = 0;
+                    azi = 0;
+                    updateTargets();
+                }
+                outputFrame[azi][0] = 0x55;
+                outputFrame[azi][2] = (azi >> 8);
+                outputFrame[azi][3] = (azi);
+                outputFrame[azi][4] = n_clk_adc;
+                mRadarData->processSocketData((unsigned char*)(&outputFrame[azi][0]),OUTPUT_FRAME_SIZE);
+                regenerate(azi);
             }
-            outputFrame[azi][0] = 0x55;
-            outputFrame[azi][2] = (azi >> 8);
-            outputFrame[azi][3] = (azi);
-            outputFrame[azi][4] = n_clk_adc;
-            mRadarData->processSocketData((unsigned char*)(&outputFrame[azi][0]),OUTPUT_FRAME_SIZE);
-            regenerate(azi);
+        }
+        else
+        {
+            updateTargets();
+            for(sim_target_t obj:targetList)
+            {
+                if(obj.getEnabled())
+                {
+                    QString sentence = "$RATIF_PLOT,"+
+                            QString::number(clock()) +","+
+                            +"_radar_plot,"+
+                            QString::number(obj.mlat, 'f',5) +","+
+                            QString::number(obj.mlon, 'f',5) +","+
+                            +"0.0,"+
+                            +"0.0,"+
+                            +"0.0,"+
+                            +"air,"
+                            +"radar,"+
+                            QString::number(CConfig::time_now_ms)+"*\r\n";
+                    radarSocket->writeDatagram(sentence.toUtf8(),
+                                               QHostAddress(CConfig::getString("OutputIP","192.168.0.80")),
+                                               CConfig::getInt("TargetOutputPort3",30003)
+                                               );
+                }
+            }
+            msleep(CConfig::getInt("simTargetUpdatePeriod",10000));
         }
     }
 }

@@ -95,7 +95,12 @@ double dataProcessingThread::getSelsynAzi() const
 }
 dataProcessingThread::dataProcessingThread()
 {
-
+    //init simulator
+    simulator = new c_radar_simulation(mRadarData);
+    connect(this,SIGNAL(destroyed()),simulator,SLOT(deleteLater()));
+    simulator->start(QThread::HighPriority);
+    //init output ip and network manager
+    mOutputIP = QHostAddress(CConfig::getString("targetOutputIP","192.168.0.80"));
     networkManagerAis = new QNetworkAccessManager();
         QObject::connect(networkManagerAis, SIGNAL(finished(QNetworkReply*)),
             this, SLOT(networkReplyAis(QNetworkReply*)));
@@ -506,13 +511,13 @@ void dataProcessingThread::sendRATTM()
         {
 
             radarSocket->writeDatagram(track->mTTM.toLatin1(),
-                                       QHostAddress(CConfig::getString("OutputIP","192.168.0.80")),
-                                       CConfig::getInt("TargetOutputPort",30001)
+                                       mOutputIP,
+                                       mTargetOutputPort
                                        );
 
             radarSocket->writeDatagram(track->mTIF.toLatin1(),
-                                       QHostAddress(CConfig::getString("OutputIP","192.168.0.80")),
-                                       CConfig::getInt("TargetOutputPort",30001)
+                                       mOutputIP,
+                                       mTargetOutputPort
                                        );
             track->mTTM.clear();
 
@@ -535,12 +540,16 @@ void dataProcessingThread::sendRATTM()
                 +"radar,"+
                 QString::number(obj->timeMs)+"*\r\n";
         radarSocket->writeDatagram(sentence.toUtf8(),
-                                   QHostAddress(CConfig::getString("OutputIP","192.168.0.80")),
-                                   CConfig::getInt("PlotOutputPort",30003)
+                                   mOutputIP,
+                                   mTargetOutputPort
                                    );
         mRadarData->object_output_queue.pop();
     }
 
+}
+void dataProcessingThread::setTargetOutputPort(int targetOutputPort)
+{
+    mTargetOutputPort = targetOutputPort;
 }
 void dataProcessingThread::Timer200ms()
 {
@@ -891,8 +900,8 @@ void dataProcessingThread::requestADSBData()
         outputString.append(QString::number(track->mType)+",*");
         //outputString.append(","+ ",");
         radarSocket->writeDatagram(outputString.toUtf8(),
-                                   QHostAddress(CConfig::getString("OutputIP","192.168.0.80")),
-                                   CConfig::getInt("AISOutputPort",30002)
+                                   mOutputIP,
+                                   mTargetOutputPort
                                    );
     }
     for(const auto&kv:mPlaneList)
@@ -912,8 +921,8 @@ void dataProcessingThread::requestADSBData()
         outputString.append(track.mvesselType+",*");
         //outputString.append(","+ ",");
         radarSocket->writeDatagram(outputString.toUtf8(),
-                                   QHostAddress(CConfig::getString("OutputIP","192.168.0.80")),
-                                   CConfig::getInt("TargetOutputPort",30001)
+                                   mOutputIP,
+                                   mTargetOutputPort
                                    );
     }
     networkRequest.setUrl(QUrl("https://data-live.flightradar24.com/zones/fcgi/feed.js?bounds=26.19,04.98,100.87,119.33&faa=1&mlat=1&flarm=1&adsb=1&gnd=1&air=1&vehicles=1&estimated=1&maxage=14400&gliders=1&stats=1"));

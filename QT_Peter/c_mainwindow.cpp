@@ -4167,7 +4167,7 @@ void Mainwindow::updateSimTargetStatus()
     }
     else
     {
-        simulator->target[0].setEnabled(false);
+        simulator->targetList[0].setEnabled(false);
         ui->doubleSpinBox_1->setEnabled(true);
         ui->doubleSpinBox_2->setEnabled(true);
         ui->doubleSpinBox_3->setEnabled(true);
@@ -4188,7 +4188,7 @@ void Mainwindow::updateSimTargetStatus()
     }
     else
     {
-        simulator->target[1].setEnabled(false);
+        simulator->targetList[1].setEnabled(false);
         ui->doubleSpinBox_11->setEnabled(true);
         ui->doubleSpinBox_12->setEnabled(true);
         ui->doubleSpinBox_13->setEnabled(true);
@@ -4209,7 +4209,7 @@ void Mainwindow::updateSimTargetStatus()
     }
     else
     {
-        simulator->target[2].setEnabled(false);
+        simulator->targetList[2].setEnabled(false);
         ui->doubleSpinBox_21->setEnabled(true);
         ui->doubleSpinBox_22->setEnabled(true);
         ui->doubleSpinBox_23->setEnabled(true);
@@ -4230,7 +4230,7 @@ void Mainwindow::updateSimTargetStatus()
     }
     else
     {
-        simulator->target[3].setEnabled(false);
+        simulator->targetList[3].setEnabled(false);
         ui->doubleSpinBox_31->setEnabled(true);
         ui->doubleSpinBox_32->setEnabled(true);
         ui->doubleSpinBox_33->setEnabled(true);
@@ -4251,7 +4251,7 @@ void Mainwindow::updateSimTargetStatus()
     }
     else
     {
-        simulator->target[4].setEnabled(false);
+        simulator->targetList[4].setEnabled(false);
         ui->doubleSpinBox_41->setEnabled(true);
         ui->doubleSpinBox_42->setEnabled(true);
         ui->doubleSpinBox_43->setEnabled(true);
@@ -4272,7 +4272,7 @@ void Mainwindow::updateSimTargetStatus()
     }
     else
     {
-        simulator->target[5].setEnabled(false);
+        simulator->targetList[5].setEnabled(false);
         ui->doubleSpinBox_51->setEnabled(true);
         ui->doubleSpinBox_52->setEnabled(true);
         ui->doubleSpinBox_53->setEnabled(true);
@@ -4293,7 +4293,7 @@ void Mainwindow::updateSimTargetStatus()
     }
     else
     {
-        simulator->target[6].setEnabled(false);
+        simulator->targetList[6].setEnabled(false);
         ui->doubleSpinBox_61->setEnabled(true);
         ui->doubleSpinBox_62->setEnabled(true);
         ui->doubleSpinBox_63->setEnabled(true);
@@ -4314,7 +4314,7 @@ void Mainwindow::updateSimTargetStatus()
     }
     else
     {
-        simulator->target[7].setEnabled(false);
+        simulator->targetList[7].setEnabled(false);
         ui->doubleSpinBox_71->setEnabled(true);
         ui->doubleSpinBox_72->setEnabled(true);
         ui->doubleSpinBox_73->setEnabled(true);

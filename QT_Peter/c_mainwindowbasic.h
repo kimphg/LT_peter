@@ -89,7 +89,7 @@ private:
     PointDouble mIADCenter;
     double mZoomScale;
     QRect ppiRect;
-    c_radar_simulation          *simulator;// thread tao gia tin hieu
+
     QThread                     *tprocessing;
 
     QString degreeSymbol ;
@@ -732,6 +732,10 @@ private slots:
     void on_toolButton_ais_request_clicked();
 
     void on_toolButton_adsb_request_clicked();
+
+    void on_toolButton_sim_create_clicked();
+
+    void on_toolButton_sim_create_2_clicked(bool checked);
 
 private:
     bool isRadarShow;

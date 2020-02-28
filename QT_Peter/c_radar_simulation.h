@@ -38,11 +38,11 @@ public:
 
     bool getEnabled() const;
     void setEnabled(bool value);
-
+    double  x, y,mlat,mlon;
 private:
-//    bool isManeuver;
+
     bool enabled;
-    double speedKmh, x, y, azi, range;
+    double speedKmh, azi, range;
     double bearing,rot;
     int dopler;
     int targetSize;
@@ -55,23 +55,23 @@ class c_radar_simulation:public QThread
 {
     Q_OBJECT
 public:
-    std::vector<sim_target_t> target;
+    std::vector<sim_target_t> targetList;
     c_radar_simulation(C_radar_data* radarData);
-    void play();
+    void play(bool isSig);
     void pause();
     void run();
     void setTarget(int id, double aziDeg, double rangeKm, double tbearingDeg, double tspeed, int dople =0, int tlostRate=0);
     void setRange(int clk_adc);
     C_radar_data* mRadarData;
     bool getIsPlaying() const;
-//    bool isManeuver;
     void setIsManeuver(bool checked);
     void setLostRate(int rate);
     void setAllTarget();
-public slots:
-    void sendData();
+
+    void setAirTarget(int id, double lat, double lon, double tspeedKm, double tbearingDeg);
 private:
     int azi;
+
 //    QTimer dataSendTimer;
     void updateTargets();
     void socketInit();

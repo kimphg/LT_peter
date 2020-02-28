@@ -437,7 +437,18 @@ void MainWindowBasic::mousePressEvent(QMouseEvent *event)
     int posy = event->y();
     if(posx)mMouseLastX= posx;
     if(posy)mMouseLastY= posy;
-    if(isctr)
+    if(isControlPressed)
+    {
+        if(isInsideViewZone(mMousex,mMousey))
+        {
+            PointDouble latlon = rda_main.ConvScrPointToWGS(
+                        mMousex,
+                        mMousey
+                        );
+            ui->textEdit_sim_input_lat->setText(QString::number( latlon.y));
+            ui->textEdit_sim_input_long->setText(QString::number( latlon.x));
+        }
+    }
     else if(event->buttons() & Qt::MiddleButton)
     {
         if(isInsideViewZone(mMousex,mMousey))
@@ -1336,12 +1347,14 @@ void MainWindowBasic::InitSetting()
         ui->tabWidget_menu->setCurrentIndex(0);
         ui->groupBox_target_simulation->setHidden(false);
         ui->groupBox_sim_tgt->hide();
+        rda_main.processing->setTargetOutputPort(CConfig::getInt("TargetOutputPort1"));
     }
     if(mode==2)//HF radar mode
     {
         ui->tabWidget_menu->setCurrentIndex(0);
         ui->groupBox_target_simulation->setHidden(true);
         ui->groupBox_sim_tgt->hide();
+        rda_main.processing->setTargetOutputPort(CConfig::getInt("TargetOutputPort2"));
 
     }
     if(mode==3)//air radar mode
@@ -1349,11 +1362,13 @@ void MainWindowBasic::InitSetting()
         ui->tabWidget_menu->setCurrentIndex(0);
         ui->groupBox_target_simulation->setHidden(true);
         ui->groupBox_sim_tgt->setGeometry(1450,52,ui->groupBox_sim_tgt->width(),ui->groupBox_sim_tgt->height());
+        rda_main.processing->setTargetOutputPort(CConfig::getInt("TargetOutputPort3"));
     }
     if(mode==4)//AIS mode
     {
         ui->tabWidget_menu->setCurrentIndex(0);
         ui->groupBox_target_simulation->setHidden(true);
+        rda_main.processing->setTargetOutputPort(CConfig::getInt("TargetOutputPort4"));
     }
     rda_main.showAisName = false;
     rda_main.rect = this->rect();
@@ -1814,10 +1829,7 @@ void MainWindowBasic::InitTimer()
     tprocessing = new QThread();
     rda_main.processing = new dataProcessingThread();
     rda_main.mRadarData = rda_main.processing->mRadarData;
-    //init simulator
-    simulator = new c_radar_simulation(rda_main.processing->mRadarData);
-    connect(this,SIGNAL(destroyed()),simulator,SLOT(deleteLater()));
-    simulator->start(QThread::HighPriority);
+
     //
     connect(&syncTimer1s, SIGNAL(timeout()), this, SLOT(sync1S()));
     syncTimer1s.start(1000);
@@ -2601,10 +2613,11 @@ void MainWindowBasic::setScaleRange(double srange)
 }
 void MainWindowBasic::UpdateScale()
 {
-    if(simulator->getIsPlaying())
+    if(rda_main.processing->simulator->getIsPlaying())
     {
-        simulator->setRange(mRangeIndex);
+        rda_main.processing->simulator->setRange(mRangeIndex);
     }
+
     float oldScale = rda_main.mScale;
     if(mDistanceUnit==0)//NM
     {
@@ -4202,7 +4215,7 @@ void MainWindowBasic::on_toolButton_start_simulation_start_clicked(bool checked)
 {
     if(checked)
     {
-        simulator->play();//todo: stop receving signal
+        rda_main.processing->simulator->play(true);//todo: stop receving signal
         rda_main.processing->isSimulationMode = true;
     }
 }
@@ -4210,7 +4223,7 @@ void MainWindowBasic::on_toolButton_start_simulation_start_clicked(bool checked)
 void MainWindowBasic::on_toolButton_start_simulation_set_clicked(bool checked)
 {
 
-    simulator->setIsManeuver(checked);
+    rda_main.processing->simulator->setIsManeuver(checked);
 
 }
 void MainWindowBasic::updateSimTargetStatus()
@@ -4222,7 +4235,7 @@ void MainWindowBasic::updateSimTargetStatus()
         ui->doubleSpinBox_2->setEnabled(false);
         ui->doubleSpinBox_3->setEnabled(false);
         ui->doubleSpinBox_4->setEnabled(false);
-        simulator->setTarget(0
+        rda_main.processing->simulator->setTarget(0
                              ,ui->doubleSpinBox_1->value()
                              ,ui->doubleSpinBox_2->value()
                              ,ui->doubleSpinBox_3->value()
@@ -4230,7 +4243,7 @@ void MainWindowBasic::updateSimTargetStatus()
     }
     else
     {
-        simulator->target[0].setEnabled(false);
+        rda_main.processing->simulator->targetList[0].setEnabled(false);
         ui->doubleSpinBox_1->setEnabled(true);
         ui->doubleSpinBox_2->setEnabled(true);
         ui->doubleSpinBox_3->setEnabled(true);
@@ -4243,7 +4256,7 @@ void MainWindowBasic::updateSimTargetStatus()
         ui->doubleSpinBox_12->setEnabled(false);
         ui->doubleSpinBox_13->setEnabled(false);
         ui->doubleSpinBox_14->setEnabled(false);
-        simulator->setTarget(1
+        rda_main.processing->simulator->setTarget(1
                              ,ui->doubleSpinBox_11->value()
                              ,ui->doubleSpinBox_12->value()
                              ,ui->doubleSpinBox_13->value()
@@ -4251,7 +4264,7 @@ void MainWindowBasic::updateSimTargetStatus()
     }
     else
     {
-        simulator->target[1].setEnabled(false);
+        rda_main.processing->simulator->targetList[1].setEnabled(false);
         ui->doubleSpinBox_11->setEnabled(true);
         ui->doubleSpinBox_12->setEnabled(true);
         ui->doubleSpinBox_13->setEnabled(true);
@@ -4264,7 +4277,7 @@ void MainWindowBasic::updateSimTargetStatus()
         ui->doubleSpinBox_22->setEnabled(false);
         ui->doubleSpinBox_23->setEnabled(false);
         ui->doubleSpinBox_24->setEnabled(false);
-        simulator->setTarget(2
+        rda_main.processing->simulator->setTarget(2
                              ,ui->doubleSpinBox_21->value()
                              ,ui->doubleSpinBox_22->value()
                              ,ui->doubleSpinBox_23->value()
@@ -4272,7 +4285,7 @@ void MainWindowBasic::updateSimTargetStatus()
     }
     else
     {
-        simulator->target[2].setEnabled(false);
+        rda_main.processing->simulator->targetList[2].setEnabled(false);
         ui->doubleSpinBox_21->setEnabled(true);
         ui->doubleSpinBox_22->setEnabled(true);
         ui->doubleSpinBox_23->setEnabled(true);
@@ -4285,7 +4298,7 @@ void MainWindowBasic::updateSimTargetStatus()
         ui->doubleSpinBox_32->setEnabled(false);
         ui->doubleSpinBox_33->setEnabled(false);
         ui->doubleSpinBox_34->setEnabled(false);
-        simulator->setTarget(3
+        rda_main.processing->simulator->setTarget(3
                              ,ui->doubleSpinBox_31->value()
                              ,ui->doubleSpinBox_32->value()
                              ,ui->doubleSpinBox_33->value()
@@ -4293,7 +4306,7 @@ void MainWindowBasic::updateSimTargetStatus()
     }
     else
     {
-        simulator->target[3].setEnabled(false);
+        rda_main.processing->simulator->targetList[3].setEnabled(false);
         ui->doubleSpinBox_31->setEnabled(true);
         ui->doubleSpinBox_32->setEnabled(true);
         ui->doubleSpinBox_33->setEnabled(true);
@@ -4306,7 +4319,7 @@ void MainWindowBasic::updateSimTargetStatus()
         ui->doubleSpinBox_42->setEnabled(false);
         ui->doubleSpinBox_43->setEnabled(false);
         ui->doubleSpinBox_44->setEnabled(false);
-        simulator->setTarget(4
+        rda_main.processing->simulator->setTarget(4
                              ,ui->doubleSpinBox_41->value()
                              ,ui->doubleSpinBox_42->value()
                              ,ui->doubleSpinBox_43->value()
@@ -4314,7 +4327,7 @@ void MainWindowBasic::updateSimTargetStatus()
     }
     else
     {
-        simulator->target[4].setEnabled(false);
+        rda_main.processing->simulator->targetList[4].setEnabled(false);
         ui->doubleSpinBox_41->setEnabled(true);
         ui->doubleSpinBox_42->setEnabled(true);
         ui->doubleSpinBox_43->setEnabled(true);
@@ -4327,7 +4340,7 @@ void MainWindowBasic::updateSimTargetStatus()
         ui->doubleSpinBox_52->setEnabled(false);
         ui->doubleSpinBox_53->setEnabled(false);
         ui->doubleSpinBox_54->setEnabled(false);
-        simulator->setTarget(5
+        rda_main.processing->simulator->setTarget(5
                              ,ui->doubleSpinBox_51->value()
                              ,ui->doubleSpinBox_52->value()
                              ,ui->doubleSpinBox_53->value()
@@ -4335,7 +4348,7 @@ void MainWindowBasic::updateSimTargetStatus()
     }
     else
     {
-        simulator->target[5].setEnabled(false);
+        rda_main.processing->simulator->targetList[5].setEnabled(false);
         ui->doubleSpinBox_51->setEnabled(true);
         ui->doubleSpinBox_52->setEnabled(true);
         ui->doubleSpinBox_53->setEnabled(true);
@@ -4348,7 +4361,7 @@ void MainWindowBasic::updateSimTargetStatus()
         ui->doubleSpinBox_62->setEnabled(false);
         ui->doubleSpinBox_63->setEnabled(false);
         ui->doubleSpinBox_64->setEnabled(false);
-        simulator->setTarget(6
+        rda_main.processing->simulator->setTarget(6
                              ,ui->doubleSpinBox_61->value()
                              ,ui->doubleSpinBox_62->value()
                              ,ui->doubleSpinBox_63->value()
@@ -4356,7 +4369,7 @@ void MainWindowBasic::updateSimTargetStatus()
     }
     else
     {
-        simulator->target[6].setEnabled(false);
+        rda_main.processing->simulator->targetList[6].setEnabled(false);
         ui->doubleSpinBox_61->setEnabled(true);
         ui->doubleSpinBox_62->setEnabled(true);
         ui->doubleSpinBox_63->setEnabled(true);
@@ -4369,7 +4382,7 @@ void MainWindowBasic::updateSimTargetStatus()
         ui->doubleSpinBox_72->setEnabled(false);
         ui->doubleSpinBox_73->setEnabled(false);
         ui->doubleSpinBox_74->setEnabled(false);
-        simulator->setTarget(7
+        rda_main.processing->simulator->setTarget(7
                              ,ui->doubleSpinBox_71->value()
                              ,ui->doubleSpinBox_72->value()
                              ,ui->doubleSpinBox_73->value()
@@ -4377,7 +4390,7 @@ void MainWindowBasic::updateSimTargetStatus()
     }
     else
     {
-        simulator->target[7].setEnabled(false);
+        rda_main.processing->simulator->targetList[7].setEnabled(false);
         ui->doubleSpinBox_71->setEnabled(true);
         ui->doubleSpinBox_72->setEnabled(true);
         ui->doubleSpinBox_73->setEnabled(true);
@@ -4434,37 +4447,37 @@ void MainWindowBasic::on_checkBox_8_stateChanged(int arg1)
 
 //void MainWindowBasic::on_toolButton_start_simulation_set_2_clicked(bool checked)
 //{
-//    simulator->target[1].setIsManeuver(checked);
+//    rda_main.processing->simulator->target[1].setIsManeuver(checked);
 //}
 
 //void MainWindowBasic::on_toolButton_start_simulation_set_3_clicked(bool checked)
 //{
-//    simulator->target[2].setIsManeuver(checked);
+//    rda_main.processing->simulator->target[2].setIsManeuver(checked);
 //}
 
 //void MainWindowBasic::on_toolButton_start_simulation_set_4_clicked(bool checked)
 //{
-//    simulator->target[3].setIsManeuver(checked);
+//    rda_main.processing->simulator->target[3].setIsManeuver(checked);
 //}
 
 //void MainWindowBasic::on_toolButton_start_simulation_set_5_clicked(bool checked)
 //{
-//    simulator->target[4].setIsManeuver(checked);
+//    rda_main.processing->simulator->target[4].setIsManeuver(checked);
 //}
 
 //void MainWindowBasic::on_toolButton_start_simulation_set_6_clicked(bool checked)
 //{
-//    simulator->target[5].setIsManeuver(checked);
+//    rda_main.processing->simulator->target[5].setIsManeuver(checked);
 //}
 
 //void MainWindowBasic::on_toolButton_start_simulation_set_7_clicked(bool checked)
 //{
-//    simulator->target[6].setIsManeuver(checked);
+//    rda_main.processing->simulator->target[6].setIsManeuver(checked);
 //}
 
 //void MainWindowBasic::on_toolButton_start_simulation_set_8_clicked(bool checked)
 //{
-//    simulator->target[7].setIsManeuver(checked);
+//    rda_main.processing->simulator->target[7].setIsManeuver(checked);
 //}
 
 void MainWindowBasic::on_toolButton_start_simulation_stop_clicked()
@@ -4476,7 +4489,7 @@ void MainWindowBasic::on_toolButton_start_simulation_stop_clicked(bool checked)
 {
     if(checked)
     {
-        simulator->pause();
+        rda_main.processing->simulator->pause();
         rda_main.processing->isSimulationMode = false;
     }
 }
@@ -4917,7 +4930,7 @@ void MainWindowBasic::on_customButton_openCPN_clicked()
 
 void MainWindowBasic::on_lineEdit_simulation_lost_editingFinished()
 {
-    simulator->setLostRate(ui->lineEdit_simulation_lost->text().toInt());
+    rda_main.processing->simulator->setLostRate(ui->lineEdit_simulation_lost->text().toInt());
 }
 
 void MainWindowBasic::on_toolButton_manual_tracking_clicked(bool checked)
@@ -4928,7 +4941,7 @@ void MainWindowBasic::on_toolButton_manual_tracking_clicked(bool checked)
 
 void MainWindowBasic::on_toolButton_start_simulation_set_all_clicked(bool checked)
 {
-    simulator->setAllTarget();
+    rda_main.processing->simulator->setAllTarget();
 }
 
 //void MainWindowBasic::on_toolButton_replay_clicked(bool checked)
@@ -4979,4 +4992,27 @@ void MainWindowBasic::on_toolButton_ais_request_clicked()
 void MainWindowBasic::on_toolButton_adsb_request_clicked()
 {
     rda_main.processing->requestADSBData();
+}
+int currSimId = 0;
+void MainWindowBasic::on_toolButton_sim_create_clicked()
+{
+    sim_target_t target;
+    double x,y;
+    C_radar_data::ConvWGSToKm(&x,&y,ui->textEdit_sim_input_long->text().toDouble(),ui->textEdit_sim_input_lat->text().toDouble());
+    target.init();
+    rda_main.processing->simulator->setAirTarget(currSimId,
+                                                 ui->textEdit_sim_input_lat->text().toDouble(),
+                                                 ui->textEdit_sim_input_long->text().toDouble(),
+                                                 ui->textEdit_sim_input_speed->text().toDouble(),
+                                                 ui->textEdit_sim_input_course->text().toDouble());
+}
+
+void MainWindowBasic::on_toolButton_sim_create_2_clicked(bool checked)
+{
+    if(checked)
+    {
+        rda_main.processing->simulator->play(false);
+    }
+    else
+        rda_main.processing->simulator->pause();
 }

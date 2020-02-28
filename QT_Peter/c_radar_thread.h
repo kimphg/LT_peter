@@ -9,6 +9,7 @@
 //#include <QGeoPositionInfo>
 #include "c_config.h"
 #include "C_radar_data.h"
+#include "c_radar_simulation.h"
 //#include "c_arpa_data.h"
 
 #include "c_gps.h"
@@ -52,6 +53,7 @@ class dataProcessingThread:public QThread
 {
     Q_OBJECT
 public:
+    c_radar_simulation          *simulator;// thread tao gia tin hieu
     bool isSimulationMode;
     int mCudaAge200ms;
     QFile logFile;
@@ -110,6 +112,7 @@ public:
     void requestAISData();
     void requestADSBData();
     void outputReport();
+    void setTargetOutputPort(int targetOutputPort);
 signals:
     void HeadingDataReceived(double heading);
 private:
@@ -131,6 +134,8 @@ private:
     QUdpSocket      *radarSocket;
     QUdpSocket      *navSocket;
     QUdpSocket      *ARPADataSocket;
+    int mTargetOutputPort;
+    QHostAddress mOutputIP;
     double selsynEncoderAzi;
 //    void listenToRadar();
 //    void initSerialComm();
