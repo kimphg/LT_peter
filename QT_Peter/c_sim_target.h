@@ -49,7 +49,7 @@ double ConvXYToAziRd(double x, double y)
 }
 extern unsigned char outputFrame[MAX_AZI][OUTPUT_FRAME_SIZE];
 extern double rResolution;
-class target_t
+class sim_target_t
 {
 public:
 	double speed, x, y, azi, range;
@@ -58,7 +58,7 @@ public:
 	int targetSize;
 	unsigned char nUpdates;
 	time_t  timeLast;
-	target_t(double tx, double ty, double tspeed, double tbearing, int dople)
+	sim_target_t(double tx, double ty, double tspeed, double tbearing, int dople)
 	{
 		speed = tspeed;
 		x = tx;
@@ -136,5 +136,5 @@ public:
 		range	= ConvXYToRg(x, y) / rResolution;
 		generateSignal();
 	}
-	~target_t();
+	~sim_target_t();
 };

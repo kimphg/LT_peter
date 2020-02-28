@@ -303,9 +303,9 @@ void MainWindowBasic::keyPressEvent(QKeyEvent *event)
     }
     else if(key == Qt::Key_Control)
     {
-        controlPressed  = true;
+        isControlPressed  = true;
     }
-    else if(controlPressed)
+    else if(isControlPressed)
     {
         if(key==Qt::Key_F2)
         {
@@ -358,7 +358,7 @@ void MainWindowBasic::keyPressEvent(QKeyEvent *event)
 
     }
 
-    else if((!controlPressed)&&key >= Qt::Key_1&&key<=Qt::Key_6)
+    else if((!isControlPressed)&&key >= Qt::Key_1&&key<=Qt::Key_6)
     {
         /*int keyNum = key-Qt::Key_1;
         if(keyNum>=TARGET_TABLE_SIZE)return;
@@ -391,7 +391,7 @@ void MainWindowBasic::keyReleaseEvent(QKeyEvent *event)
 {
     if(event->key() == Qt::Key_Control)
     {
-        controlPressed  = false;
+        isControlPressed  = false;
     }
 }
 
@@ -437,7 +437,8 @@ void MainWindowBasic::mousePressEvent(QMouseEvent *event)
     int posy = event->y();
     if(posx)mMouseLastX= posx;
     if(posy)mMouseLastY= posy;
-    if(event->buttons() & Qt::MiddleButton)
+    if(isctr)
+    else if(event->buttons() & Qt::MiddleButton)
     {
         if(isInsideViewZone(mMousex,mMousey))
         {
@@ -593,7 +594,7 @@ MainWindowBasic::MainWindowBasic(QWidget *parent) :
     isRadarShow = true;
     //dialogZoom->init(rda_main.processing,dialogTargetInfo);
     initCursor();
-    controlPressed = false;
+    isControlPressed = false;
     pMap = new QPixmap(SCR_H,SCR_H);
     //    processCuda = new QProcess();
     degreeSymbol= QString::fromLocal8Bit("\260");
@@ -1330,22 +1331,26 @@ void MainWindowBasic::InitSetting()
 {
     int mode =CConfig::getInt("WorkMode");
     printf("InitSetting mode:%d",mode);
-    if(mode==1)//radar mode
+    if(mode==1)//marine radar mode
     {
         ui->tabWidget_menu->setCurrentIndex(0);
         ui->groupBox_target_simulation->setHidden(false);
+        ui->groupBox_sim_tgt->hide();
     }
-    if(mode==2)//radar mode
+    if(mode==2)//HF radar mode
     {
         ui->tabWidget_menu->setCurrentIndex(0);
         ui->groupBox_target_simulation->setHidden(true);
+        ui->groupBox_sim_tgt->hide();
+
     }
-    if(mode==3)//radar mode
+    if(mode==3)//air radar mode
     {
         ui->tabWidget_menu->setCurrentIndex(0);
         ui->groupBox_target_simulation->setHidden(true);
+        ui->groupBox_sim_tgt->setGeometry(1450,52,ui->groupBox_sim_tgt->width(),ui->groupBox_sim_tgt->height());
     }
-    if(mode==4)//radar mode
+    if(mode==4)//AIS mode
     {
         ui->tabWidget_menu->setCurrentIndex(0);
         ui->groupBox_target_simulation->setHidden(true);

@@ -21,17 +21,17 @@ using namespace std;
 
 extern unsigned char outputFrame[MAX_AZI][OUTPUT_FRAME_SIZE];
 extern double rResolution;
-class target_t
+class sim_target_t
 {
 public:
 
-    target_t();
+    sim_target_t();
     void init();
     void init(double tx, double ty, double tspeedKmh, double tbearing, int dople =5);
     void generateSignal();
     void eraseSIgnal();
     void update();
-    ~target_t()
+    ~sim_target_t()
     {}
     bool getIsManeuver() const;
     void setIsManeuver(bool value);
@@ -55,7 +55,7 @@ class c_radar_simulation:public QThread
 {
     Q_OBJECT
 public:
-    std::vector<target_t> target;
+    std::vector<sim_target_t> target;
     c_radar_simulation(C_radar_data* radarData);
     void play();
     void pause();

@@ -43,13 +43,13 @@ void regenerate(int azi)
     }
 }
 bool isManeuver;
-target_t::target_t()
+sim_target_t::sim_target_t()
 {
     enabled = false;
 
 }
 
-void target_t::init()
+void sim_target_t::init()
 {
     enabled = true;
     speedKmh = rand()%50+5;
@@ -65,7 +65,7 @@ void target_t::init()
     rot = 0;
 }
 
-void target_t::init(double tx, double ty, double tspeedKmh, double tbearing, int dople)
+void sim_target_t::init(double tx, double ty, double tspeedKmh, double tbearing, int dople)
 {
 //    lostRate = tlostRate;
     enabled = true;
@@ -82,7 +82,7 @@ void target_t::init(double tx, double ty, double tspeedKmh, double tbearing, int
     rot = 0;
 
 }
-void target_t::generateSignal()
+void sim_target_t::generateSignal()
 {
     if (range >= FRAME_LEN - 1)return;
     //if (rand() % 5)return;
@@ -104,7 +104,7 @@ void target_t::generateSignal()
     }
 }
 
-void target_t::eraseSIgnal()
+void sim_target_t::eraseSIgnal()
 {
     return;
     if (range >= FRAME_LEN - 1)return;
@@ -126,7 +126,7 @@ void target_t::eraseSIgnal()
     }
 }
 
-void target_t::update()
+void sim_target_t::update()
 {
     if(!enabled)return;
     //recalculate coodinates
@@ -152,22 +152,22 @@ void target_t::update()
     if(rand()%100>lostRate)generateSignal();
 }
 
-bool target_t::getIsManeuver() const
+bool sim_target_t::getIsManeuver() const
 {
     return isManeuver;
 }
 
-void target_t::setIsManeuver(bool value)
+void sim_target_t::setIsManeuver(bool value)
 {
     isManeuver = value;
 }
 
-bool target_t::getEnabled() const
+bool sim_target_t::getEnabled() const
 {
     return enabled;
 }
 
-void target_t::setEnabled(bool value)
+void sim_target_t::setEnabled(bool value)
 {
 //    eraseSIgnal();
     enabled = value;
@@ -177,7 +177,7 @@ void c_radar_simulation::initTargets()
     //target[0] = new target_t(250, -300, 4, 100,4);
     for (int i = 0; i < NUM_OF_TARG; i++)
     {
-        target_t t;
+        sim_target_t t;
         target.push_back(t);
     }
 
@@ -219,7 +219,7 @@ c_radar_simulation::c_radar_simulation(C_radar_data *radarData)//QObject *parent
     }
     for (int i = 0; i < NUM_OF_TARG; i++)
     {
-        target_t t;
+        sim_target_t t;
         target.push_back(t);
     }
     setRange(2);

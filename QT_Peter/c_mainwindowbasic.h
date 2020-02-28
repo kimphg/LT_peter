@@ -93,7 +93,7 @@ private:
     QThread                     *tprocessing;
 
     QString degreeSymbol ;
-    bool controlPressed;
+    bool isControlPressed;
     c_target_manager mTargetMan;
     int zoom_size;
     void DrawGrid(QPainter* p,short centerX,short centerY);
