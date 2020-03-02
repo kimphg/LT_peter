@@ -1354,7 +1354,8 @@ void MainWindowBasic::InitSetting()
     {
         ui->tabWidget_menu->setCurrentIndex(0);
         ui->groupBox_target_simulation->setHidden(false);
-        ui->groupBox_sim_tgt->hide();
+        ui->groupBox_sim_tgt->show();
+        ui->groupBox_sim_tgt->setGeometry(1450,520,ui->groupBox_sim_tgt->width(),ui->groupBox_sim_tgt->height());
         rda_main.processing->setTargetOutputPort(CConfig::getInt("TargetOutputPort2"));
         setDistanceUnit(0);
 
@@ -1364,7 +1365,7 @@ void MainWindowBasic::InitSetting()
         ui->tabWidget_menu->setCurrentIndex(0);
         ui->groupBox_target_simulation->setHidden(true);
         ui->groupBox_sim_tgt->show();
-        ui->groupBox_sim_tgt->setGeometry(1450,52,ui->groupBox_sim_tgt->width(),ui->groupBox_sim_tgt->height());
+        ui->groupBox_sim_tgt->setGeometry(1450,520,ui->groupBox_sim_tgt->width(),ui->groupBox_sim_tgt->height());
         rda_main.processing->setTargetOutputPort(CConfig::getInt("TargetOutputPort3"));
         setDistanceUnit(1);
     }
@@ -1372,6 +1373,7 @@ void MainWindowBasic::InitSetting()
     {
         ui->tabWidget_menu->setCurrentIndex(0);
         ui->groupBox_target_simulation->setHidden(true);
+        ui->groupBox_sim_tgt->hide();
         rda_main.processing->setTargetOutputPort(CConfig::getInt("TargetOutputPort4"));
         setDistanceUnit(1);
     }
@@ -2089,7 +2091,7 @@ void MainWindowBasic::ShutDown()
 //}
 void MainWindowBasic::sync1p()//period 1 min
 {
-    rda_main.processing->requestAISData();
+    if(CConfig::getInt("WorkMode")==4)rda_main.processing->requestAISData();
     //QString str = ui->textBrowser_message->toPlainText();
     //QDateTime now = QDateTime::currentDateTime();
     /*QString dir = "D:\\HR2D\\logs\\"+now.toString("\\dd.MM\\");

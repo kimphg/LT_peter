@@ -165,11 +165,15 @@ void C_arpa_area::drawAisTarget(QPainter *p)
         if(!isInsideViewRect(s.x,s.y))continue;
         DrawPlaneMark(s,p,plane.mhead,plane.registrationName,target_size);
     }
+
     for(sim_target_t plane:processing->simulator->targetList)
     {
-        PointDouble s = ConvWGSToScrPoint(plane.mlon,plane.mlat);
-        if(!isInsideViewRect(s.x,s.y))continue;
-        DrawPlaneMark(s,p,degrees(plane.mHeading),"",target_size);
+        if(plane.getEnabled()&&(plane.malt>0))
+        {
+            PointDouble s = ConvWGSToScrPoint(plane.mlon,plane.mlat);
+            if(!isInsideViewRect(s.x,s.y))continue;
+            DrawPlaneMark(s,p,degrees(plane.mHeading),"",target_size);
+        }
     }
 }
 C_arpa_area::C_arpa_area()
@@ -321,7 +325,7 @@ void C_arpa_area::DrawRadarTargets(QPainter* p)//draw radar target from pRadar->
     for (uint i = 0;i<mRadarData->mTrackList.size();i++)
     {
         C_SEA_TRACK* track = &(mRadarData->mTrackList[i]);
-        if(track->mState==TrackState::newDetection&&track->isUserInitialised)
+        if(track->mState==TrackState::newDetection)//&&track->isUserInitialised)
         {
             PointDouble sTrack = ConvWGSToScrPoint(track->objectList.back().lon,track->objectList.back().lat);
             //p->drawPoint(sTrack.x,sTrack.y);

@@ -95,6 +95,7 @@ double dataProcessingThread::getSelsynAzi() const
 }
 dataProcessingThread::dataProcessingThread()
 {
+    mRadarData = new C_radar_data();
     //init simulator
     simulator = new c_radar_simulation(mRadarData);
     connect(this,SIGNAL(destroyed()),simulator,SLOT(deleteLater()));
@@ -135,7 +136,7 @@ dataProcessingThread::dataProcessingThread()
     playRate = 10;
     //    arpaData = new C_ARPA_data();
     isRecording = false;
-    mRadarData = new C_radar_data();
+
     isPlaying = false;
     radarSocket = new QUdpSocket(this);
     navSocket = new QUdpSocket(this);
