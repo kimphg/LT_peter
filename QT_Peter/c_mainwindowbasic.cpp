@@ -981,7 +981,7 @@ void MainWindowBasic::paintEvent(QPaintEvent *event)
     DrawDetectZones(&p);
     if(isShowAIS)rda_main.drawAisTarget(&p);
     //DrawViewFrame(&p);
-        DrawViewFrameSquared(&p);
+    DrawViewFrameSquared(&p);
     //DrawIADArea(&p);
 
     clkEnd = clock();

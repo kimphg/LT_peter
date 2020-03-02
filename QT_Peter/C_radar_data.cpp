@@ -884,6 +884,12 @@ void C_SEA_TRACK::update()
 }
 void C_SEA_TRACK::generateTTM()
 {
+    if(uniqId<0)
+    {
+        mTTM.clear();
+        mTIF.clear();
+        return;
+    }
     //generate TTM
     mTTM = "$RATTM,"+QString::number(uniqId)+","+
             QString::number(nm(rgKm),'f',2)+","+

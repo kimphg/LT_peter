@@ -526,6 +526,12 @@ void dataProcessingThread::sendRATTM()
 
     }
 
+
+
+
+}
+void dataProcessingThread::sendRadarPlots()
+{
     while(mRadarData->object_output_queue.size())// send radar signal plots
     {
         object_t *obj = &(mRadarData->object_output_queue.front());
@@ -547,19 +553,41 @@ void dataProcessingThread::sendRATTM()
         mRadarData->object_output_queue.pop();
     }
 
-        for(int i=0;i<simulator->targetList.size();i++)//
+}
+void dataProcessingThread::SendSimulationTargets()
+{
+    for(int i=0;i<simulator->targetList.size();i++)//send simulator data
+    {
+        sim_target_t *tgt = &(simulator->targetList[i]);
+        if(tgt->getEnabled())
         {
-            sim_target_t *tgt = &(simulator->targetList[i]);
-            if(tgt->getEnabled())
+            if(tgt->malt>0)
             {
-                QString mTIF = "$RATIF_PLANE,"+
+            QString mTIF = "$RATIF_PLANE,"+
+                    QString::number(i)+",,"+//ID + name
+                    QString::number(tgt->mlat,'f',5)        +","+//lat
+                    QString::number(tgt->mlon,'f',5)        +","+//lon
+                    QString::number(tgt->malt,'f',1)        +","+//altitude
+                    QString::number((tgt->speedKmh),'f',1)  +","+
+                    QString::number(tgt->mHeading,'f',1)    +","+
+                    +"plane"                                +","+//type
+                    +"sim_radar,"
+                    +QString::number(CConfig::time_now_ms/1000)
+                    +",*"+"\r\n";
+            radarSocket->writeDatagram(mTIF.toUtf8(),
+                                       mOutputIP,
+                                       mTargetOutputPort
+                                       );
+            }else
+            {
+                QString mTIF = "$RATIF_SHIP,"+
                         QString::number(i)+",,"+//ID + name
                         QString::number(tgt->mlat,'f',5)        +","+//lat
                         QString::number(tgt->mlon,'f',5)        +","+//lon
                         QString::number(tgt->malt,'f',1)        +","+//altitude
                         QString::number((tgt->speedKmh),'f',1)  +","+
                         QString::number(tgt->mHeading,'f',1)    +","+
-                        +"plane"                                +","+//type
+                        +"ship"                                +","+//type
                         +"sim_radar,"
                         +QString::number(CConfig::time_now_ms/1000)
                         +",*"+"\r\n";
@@ -569,8 +597,7 @@ void dataProcessingThread::sendRATTM()
                                            );
             }
         }
-
-
+    }
 }
 void dataProcessingThread::setTargetOutputPort(int targetOutputPort)
 {
@@ -902,9 +929,20 @@ void dataProcessingThread::requestAISData()
 void dataProcessingThread::outputReport()
 {
     if(CConfig::getInt("WorkMode")==4)requestADSBData();
-    else
+    else if(CConfig::getInt("WorkMode")==1)
     {
-        sendRATTM();
+        SendSimulationTargets();
+        sendRadarPlots();
+    }
+    else if(CConfig::getInt("WorkMode")==2)
+    {
+        SendSimulationTargets();
+        //sendRadarPlots();
+    }
+    else if(CConfig::getInt("WorkMode")==3)
+    {
+        SendSimulationTargets();
+        sendRadarPlots();
     }
 }
 void dataProcessingThread::requestADSBData()

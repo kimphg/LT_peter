@@ -151,6 +151,8 @@ private:
     void ProcessData(unsigned char *data, unsigned short len);
     //    void LoadDensityMap(QByteArray inputdata);
 
+    void SendSimulationTargets();
+    void sendRadarPlots();
 private slots:
     void networkReplyAis(QNetworkReply *reply);
     void ReadDataBuffer();
