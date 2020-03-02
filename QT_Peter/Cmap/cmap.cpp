@@ -36,13 +36,13 @@ void CMap::SetType(int type)
     switch (type)
     {
     case 0:
-        this->setPath("D:/HR2D/MapData/GM1/" );
+        this->setPath(MAP_PATH_1 );
         break;
     case 1:
-        this->setPath("D:/HR2D/MapData/ThunderForest/" );
+        this->setPath(MAP_PATH_2 );
         break;
     case 2:
-        this->setPath("D:/HR2D/MapData/GS/" );
+        this->setPath(MAP_PATH_3 );
         break;
     default:
         break;

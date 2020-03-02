@@ -691,10 +691,10 @@ public:
     int getDensityLatLon(double lat, double lon);
 //    static void ConvWGSToKm(double *x, double *y, double m_Long, double m_Lat);
     //    bool CheckInsideManualZone(double xkm, double ykm);
-    static void ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat);
-    static void ConvPolarToXY(double *x, double *y, double azi, double range);
-    static void ConvkmxyToPolarDeg(double x, double y, double *azi, double *range);
-    static void ConvWGSToKm(double *x, double *y, double m_Long, double m_Lat);
+    static inline void ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat);
+    static inline void ConvPolarToXY(double *x, double *y, double azi, double range);
+    static inline void ConvkmxyToPolarDeg(double x, double y, double *azi, double *range);
+    static inline void ConvWGSToKm(double *x, double *y, double m_Long, double m_Lat);
     void setIsAutoTracking(bool value);
     double getScale_PpiPerKm() const;
     void addManualTrackLonLat(double lon, double lat);

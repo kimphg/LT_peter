@@ -907,7 +907,7 @@ void C_SEA_TRACK::generateTTM()
             +"0"+ //altitude
             QString::number((mSpeedkmhFit),'f',1)+","+
             QString::number(courseDeg,'f',1)+","+
-            +"SUR_RADAR,"
+            +"ship,radar,"
             +QString::number(lastUpdateTimeMs/1000);
     a = getCheckSum(mTIF);
     bin2hex(a,&chs[0]);

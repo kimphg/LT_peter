@@ -4,6 +4,20 @@
 
 #define SCALE_MAX 80
 #define SCALE_MIN 5
+#define ARTEMIS
+#ifdef ARTEMIS
+#define MAP_PATH_1       "D:/ARTEMIS/MapData/GM1/"
+#define MAP_PATH_2       "D:/ARTEMIS/MapData/GM2/"
+#define MAP_PATH_3       "D:/ARTEMIS/MapData/GS/"
+#define HR_APP_PATH       "D:/ARTEMIS/"
+#define HR_DATA_REC_PATH  "D:/ARTEMIS/RecordData/"
+#define HR_CONFIG_FILE    "D:/ARTEMIS/radar_config.xml"
+#define HR_CONFIG_FILE_BACKUP_1 "D:/ARTEMIS/radar_config_backup_1.xml"
+#define HR_CONFIG_FILE_BACKUP_2 "D:/ARTEMIS/radar_config_backup_2.xml"
+#define HR_CONFIG_FILE_BACKUP_C "D:/ARTEMIS/radar_config_backup_c.xml"
+#define HR_CONFIG_FILE_DF "D:/ARTEMIS/radar_config_default.xml"
+#define HR_ERROR_FILE "D:\\ARTEMIS\\errorLog.txt"
+#else
 #define HR_APP_PATH       "D:/HR2D/"
 #define HR_DATA_REC_PATH  "D:/HR2D/RecordData/"
 #define HR_CONFIG_FILE    "D:/HR2D/radar_config.xml"
@@ -12,7 +26,9 @@
 #define HR_CONFIG_FILE_BACKUP_C "D:/HR2D/radar_config_backup_c.xml"
 #define HR_CONFIG_FILE_DF "D:/HR2D/radar_config_default.xml"
 #define HR_ERROR_FILE "D:\\HR2D\\errorLog.txt"
+#endif
 #define XML_ELEM_NAME     "radar_config"
+
 #define DEFAULT_LAT		20.707
 #define DEFAULT_LONG	106.78
 #include <QFile>

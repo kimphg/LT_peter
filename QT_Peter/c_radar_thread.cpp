@@ -502,7 +502,7 @@ void dataProcessingThread::sendAziData()
 void dataProcessingThread::sendRATTM()
 {
 
-    for(int i=0;i<mRadarData->mTrackList.size();i++)
+    for(int i=0;i<mRadarData->mTrackList.size();i++)//send radar TTM and TIF
     {
         C_SEA_TRACK *track = &(mRadarData->mTrackList.at(i));
         if(track->isRemoved())continue;
@@ -525,7 +525,7 @@ void dataProcessingThread::sendRATTM()
 
     }
 
-    while(mRadarData->object_output_queue.size())
+    while(mRadarData->object_output_queue.size())// send radar signal plots
     {
         object_t *obj = &(mRadarData->object_output_queue.front());
         QString sentence = "$RATIF_PLOT,"+
@@ -545,6 +545,30 @@ void dataProcessingThread::sendRATTM()
                                    );
         mRadarData->object_output_queue.pop();
     }
+
+        for(int i=0;i<simulator->targetList.size();i++)//
+        {
+            sim_target_t *tgt = &(simulator->targetList[i]);
+            if(tgt->getEnabled())
+            {
+                QString mTIF = "$RATIF_PLANE,"+
+                        QString::number(i)+",,"+//ID + name
+                        QString::number(tgt->mlat,'f',5)        +","+//lat
+                        QString::number(tgt->mlon,'f',5)        +","+//lon
+                        QString::number(tgt->malt,'f',1)        +","+//altitude
+                        QString::number((tgt->speedKmh),'f',1)  +","+
+                        QString::number(tgt->mHeading,'f',1)    +","+
+                        +"plane"                                +","+//type
+                        +"sim_radar,"
+                        +QString::number(CConfig::time_now_ms/1000)
+                        +",*"+"\r\n";
+                radarSocket->writeDatagram(mTIF.toUtf8(),
+                                           mOutputIP,
+                                           mTargetOutputPort
+                                           );
+            }
+        }
+
 
 }
 void dataProcessingThread::setTargetOutputPort(int targetOutputPort)
@@ -876,8 +900,11 @@ void dataProcessingThread::requestAISData()
 }
 void dataProcessingThread::outputReport()
 {
-    requestADSBData();
-    sendRATTM();
+    if(CConfig::getInt("WorkMode")==4)requestADSBData();
+    else
+    {
+        sendRATTM();
+    }
 }
 void dataProcessingThread::requestADSBData()
 {

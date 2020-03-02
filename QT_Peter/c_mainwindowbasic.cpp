@@ -1348,27 +1348,32 @@ void MainWindowBasic::InitSetting()
         ui->groupBox_target_simulation->setHidden(false);
         ui->groupBox_sim_tgt->hide();
         rda_main.processing->setTargetOutputPort(CConfig::getInt("TargetOutputPort1"));
+        setDistanceUnit(0);
     }
     if(mode==2)//HF radar mode
     {
         ui->tabWidget_menu->setCurrentIndex(0);
-        ui->groupBox_target_simulation->setHidden(true);
+        ui->groupBox_target_simulation->setHidden(false);
         ui->groupBox_sim_tgt->hide();
         rda_main.processing->setTargetOutputPort(CConfig::getInt("TargetOutputPort2"));
+        setDistanceUnit(0);
 
     }
     if(mode==3)//air radar mode
     {
         ui->tabWidget_menu->setCurrentIndex(0);
         ui->groupBox_target_simulation->setHidden(true);
+        ui->groupBox_sim_tgt->show();
         ui->groupBox_sim_tgt->setGeometry(1450,52,ui->groupBox_sim_tgt->width(),ui->groupBox_sim_tgt->height());
         rda_main.processing->setTargetOutputPort(CConfig::getInt("TargetOutputPort3"));
+        setDistanceUnit(1);
     }
     if(mode==4)//AIS mode
     {
         ui->tabWidget_menu->setCurrentIndex(0);
         ui->groupBox_target_simulation->setHidden(true);
         rda_main.processing->setTargetOutputPort(CConfig::getInt("TargetOutputPort4"));
+        setDistanceUnit(1);
     }
     rda_main.showAisName = false;
     rda_main.rect = this->rect();
@@ -2343,10 +2348,13 @@ int count_adsb = 0;
 void MainWindowBasic::sync1S()//period 1 second
 {
     //checkCuda();
-    if(count_adsb<20)count_adsb++;
-    if(count_adsb>=20){
-        count_adsb=0;
-        rda_main.processing->outputReport();}
+
+        if(count_adsb<20)count_adsb++;
+        if(count_adsb>=20){
+            count_adsb=0;
+            rda_main.processing->outputReport();
+        }
+
     if(CConfig::getWarningList()->size())
     {
         std::queue<WarningMessage> * listMsg = (CConfig::getWarningList());
@@ -4996,6 +5004,8 @@ void MainWindowBasic::on_toolButton_adsb_request_clicked()
 int currSimId = 0;
 void MainWindowBasic::on_toolButton_sim_create_clicked()
 {
+    currSimId++;
+
     sim_target_t target;
     double x,y;
     C_radar_data::ConvWGSToKm(&x,&y,ui->textEdit_sim_input_long->text().toDouble(),ui->textEdit_sim_input_lat->text().toDouble());
@@ -5003,6 +5013,7 @@ void MainWindowBasic::on_toolButton_sim_create_clicked()
     rda_main.processing->simulator->setAirTarget(currSimId,
                                                  ui->textEdit_sim_input_lat->text().toDouble(),
                                                  ui->textEdit_sim_input_long->text().toDouble(),
+                                                 ui->textEdit_sim_input_alt->text().toDouble(),
                                                  ui->textEdit_sim_input_speed->text().toDouble(),
                                                  ui->textEdit_sim_input_course->text().toDouble());
 }
@@ -5015,4 +5026,9 @@ void MainWindowBasic::on_toolButton_sim_create_2_clicked(bool checked)
     }
     else
         rda_main.processing->simulator->pause();
+}
+
+void MainWindowBasic::on_toolButton_sim_delete_clicked()
+{
+    rda_main.processing->simulator->RemoveAllTargets();
 }

@@ -27,7 +27,7 @@ public:
 
     sim_target_t();
     void init();
-    void init(double tx, double ty, double tspeedKmh, double tbearing, int dople =5);
+    void init(double tx, double ty, double tspeedKmh, double tbearing, int dople =5,double talt = 0);
     void generateSignal();
     void eraseSIgnal();
     void update();
@@ -38,12 +38,14 @@ public:
 
     bool getEnabled() const;
     void setEnabled(bool value);
-    double  x, y,mlat,mlon;
+    double  x, y,mlat,mlon, malt;
+    double mHeading;
+    double speedKmh;
 private:
 
     bool enabled;
-    double speedKmh, azi, range;
-    double bearing,rot;
+    double  azi, range;
+    double rot;
     int dopler;
     int targetSize;
     unsigned char nUpdates;
@@ -68,7 +70,8 @@ public:
     void setLostRate(int rate);
     void setAllTarget();
 
-    void setAirTarget(int id, double lat, double lon, double tspeedKm, double tbearingDeg);
+    void setAirTarget(int id, double lat, double lon, double alt, double tspeedKm, double tbearingDeg);
+    void RemoveAllTargets();
 private:
     int azi;
 

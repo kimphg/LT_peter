@@ -1,6 +1,6 @@
 #ifndef CMAP_H
 #define CMAP_H
-
+#include "c_config.h"
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtGui>
 #include <QPixmap>

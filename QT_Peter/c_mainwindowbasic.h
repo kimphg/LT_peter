@@ -737,6 +737,8 @@ private slots:
 
     void on_toolButton_sim_create_2_clicked(bool checked);
 
+    void on_toolButton_sim_delete_clicked();
+
 private:
     bool isRadarShow;
     C_SEA_TRACK *selectedTrack;

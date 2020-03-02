@@ -57,7 +57,7 @@ void sim_target_t::init()
     x = (rand()%80)*((rand()%2)*2-1);
     y = (rand()%80)*((rand()%2)*2-1);
     C_radar_data::ConvKmToWGS(x,y,&mlat,&mlon);
-    bearing = radians(rand()%360);
+    mHeading = radians(rand()%360);
     azi = ConvXYToAziRad(x, y) / 3.141592653589*1024.0;
     range = ConvXYToR(x, y);
     dopler = 0;
@@ -65,17 +65,19 @@ void sim_target_t::init()
     nUpdates = 0;
     timeLast = time(nullptr);
     rot = 0;
+    malt=0;
 }
 
-void sim_target_t::init(double tx, double ty, double tspeedKmh, double tbearing, int dople)
+void sim_target_t::init(double tx, double ty, double tspeedKmh, double tbearing, int dople, double talt)
 {
 //    lostRate = tlostRate;
     enabled = true;
     speedKmh = tspeedKmh;
     x = tx;
     y = ty;
+    malt = talt;
     C_radar_data::ConvKmToWGS(tx,ty,&mlon,&mlat);
-    bearing = radians(tbearing);
+    mHeading = radians(tbearing);
     azi = ConvXYToAziRad(x, y) / 3.141592653589*1024.0;
     range = ConvXYToR(x, y);
     dopler = dople;
@@ -144,11 +146,12 @@ void sim_target_t::update()
             if(isManeuver)rot = distribRot(generator) / DEG_RAD - PI;
 
         }
-        bearing += rot*elapsed_secs;
+        mHeading += rot*elapsed_secs;
     }
     double distance = elapsed_secs / 3600.0*speedKmh;
-    x += distance*sin(bearing);
-    y += distance*cos(bearing);
+    x += distance*sin(mHeading);
+    y += distance*cos(mHeading);
+    C_radar_data::ConvKmToWGS(x,y,&mlon,&mlat);
     //
     azi = (ConvXYToAziRad(x, y) + distribAzi(generator))/ 3.141592653589*1024.0;
     range	= ConvXYToR(x, y) / rResolution;
@@ -264,13 +267,20 @@ void c_radar_simulation::setTarget(int id,double aziDeg, double rangeKm,  double
     lostRate = tlostRate%100;
     targetList[id].init(tx,ty,tspeedKn*CONST_NM,tbearingDeg,dople);//(double tx, double ty, double tspeedKmh, double tbearing, int dople)
 }
-void c_radar_simulation::setAirTarget(int id,double lat,double lon, double tspeedKm,double tbearingDeg)
+void c_radar_simulation::RemoveAllTargets()
+{
+    for(sim_target_t plane:targetList)
+    {
+        plane.setEnabled(false);
+    }
+}
+void c_radar_simulation::setAirTarget(int id,double lat,double lon,double alt, double tspeedKm,double tbearingDeg)
 {
     //target_t newTarget(tx,ty,tspeed,tbearing,dople);
     if(id>=targetList.size())id=id%targetList.size();
     double tx,ty;
     C_radar_data::ConvWGSToKm(&tx,&ty,lon,lat);
-    targetList[id].init(tx,ty,tspeedKm,tbearingDeg);//(double tx, double ty, double tspeedKmh, double tbearing, int dople)
+    targetList[id].init(tx,ty,tspeedKm,tbearingDeg,alt);//(double tx, double ty, double tspeedKmh, double tbearing, int dople)
 }
 void c_radar_simulation::setAllTarget()
 {

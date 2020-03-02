@@ -47531,6 +47531,19 @@ background-color: rgba(255, 255, 255, 0);</string>
      <property name="verticalSpacing">
       <number>2</number>
      </property>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="textEdit_sim_input_lat">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>22</string>
+       </property>
+      </widget>
+     </item>
      <item row="1" column="0" colspan="2">
       <widget class="QLabel" name="label_40">
        <property name="font">
@@ -47540,6 +47553,43 @@ background-color: rgba(255, 255, 255, 0);</string>
        </property>
        <property name="text">
         <string>Ctrl+Click chuột trái để lấy kinh vĩ độ</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_23">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Vĩ độ:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="textEdit_sim_input_speed">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>926 </string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_21">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Kinh độ:</string>
        </property>
       </widget>
      </item>
@@ -47563,34 +47613,10 @@ background-color: rgba(255, 255, 255, 0);</string>
         <string>Menu điều khiển và cài đặt nâng cao</string>
        </property>
        <property name="text">
-        <string>Xóa tất cả</string>
+        <string>Xóa tất cả MT</string>
        </property>
        <property name="checkable">
         <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_21">
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Kinh độ:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_23">
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Vĩ độ:</string>
        </property>
       </widget>
      </item>
@@ -47602,25 +47628,8 @@ background-color: rgba(255, 255, 255, 0);</string>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLineEdit" name="textEdit_sim_input_speed">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="textEdit_sim_input_long">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
+       <property name="text">
+        <string>0</string>
        </property>
       </widget>
      </item>
@@ -47636,16 +47645,6 @@ background-color: rgba(255, 255, 255, 0);</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="1">
-      <widget class="QLineEdit" name="textEdit_sim_input_alt">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
-     </item>
      <item row="5" column="0">
       <widget class="QLabel" name="label_38">
        <property name="font">
@@ -47655,6 +47654,32 @@ background-color: rgba(255, 255, 255, 0);</string>
        </property>
        <property name="text">
         <string>Hướng chuyển động:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="textEdit_sim_input_long">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>106</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLineEdit" name="textEdit_sim_input_alt">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>10600</string>
        </property>
       </widget>
      </item>
@@ -47690,24 +47715,14 @@ background-color: rgba(255, 255, 255, 0);</string>
         <string>Menu điều khiển và cài đặt nâng cao</string>
        </property>
        <property name="text">
-        <string>Khởi tạo</string>
+        <string>Thêm MT</string>
        </property>
        <property name="checkable">
         <bool>false</bool>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="textEdit_sim_input_lat">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0" colspan="2">
+     <item row="8" column="0">
       <widget class="QCustomButton" name="toolButton_sim_create_2">
        <property name="enabled">
         <bool>true</bool>
@@ -47727,7 +47742,34 @@ background-color: rgba(255, 255, 255, 0);</string>
         <string>Menu điều khiển và cài đặt nâng cao</string>
        </property>
        <property name="text">
-        <string>Bắt đầu</string>
+        <string>Bắt đầu mô phỏng</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <widget class="QCustomButton" name="toolButton_sim_create_3">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="toolTip">
+        <string>Menu điều khiển và cài đặt nâng cao</string>
+       </property>
+       <property name="text">
+        <string>Dừng</string>
        </property>
        <property name="checkable">
         <bool>true</bool>

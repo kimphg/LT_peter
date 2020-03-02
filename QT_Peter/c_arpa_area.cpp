@@ -169,7 +169,7 @@ void C_arpa_area::drawAisTarget(QPainter *p)
     {
         PointDouble s = ConvWGSToScrPoint(plane.mlon,plane.mlat);
         if(!isInsideViewRect(s.x,s.y))continue;
-        DrawPlaneMark(s,p,0,"",target_size);
+        DrawPlaneMark(s,p,degrees(plane.mHeading),"",target_size);
     }
 }
 C_arpa_area::C_arpa_area()
