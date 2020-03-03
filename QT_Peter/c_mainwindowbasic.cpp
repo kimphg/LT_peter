@@ -1131,6 +1131,15 @@ void MainWindowBasic::setDistanceUnit(int unit)//0:NM, 1:KM
         rangeRatio = 1.852;
         strDistanceUnit = "NM";
         ui->toolButton_setRangeUnit->setText(QString::fromUtf8("Đơn vị đo:NM"));
+        ui->bt_rg_1->setText("2 NM");
+        ui->bt_rg_2->setText("4 NM");
+        ui->bt_rg_3->setText("8 NM");
+        ui->bt_rg_4->setText("16 NM");
+        ui->bt_rg_5->setText("32 NM");
+        ui->bt_rg_6->setText("54 NM");
+        ui->bt_rg_7->setText("128 NM");
+        ui->bt_rg_8->setText("256 NM");
+        ui->bt_rg_8->setText("512 NM");
         UpdateScale();
     }
     else if(mDistanceUnit==1)
@@ -1138,6 +1147,15 @@ void MainWindowBasic::setDistanceUnit(int unit)//0:NM, 1:KM
         rangeRatio = 1.0;
         strDistanceUnit = "KM";
         ui->toolButton_setRangeUnit->setText(QString::fromUtf8("Đơn vị đo:KM"));
+        ui->bt_rg_1->setText("2.5 KM");
+        ui->bt_rg_2->setText("5 KM");
+        ui->bt_rg_3->setText("10 KM");
+        ui->bt_rg_4->setText("20 KM");
+        ui->bt_rg_5->setText("40 KM");
+        ui->bt_rg_6->setText("80 KM");
+        ui->bt_rg_7->setText("160 KM");
+        ui->bt_rg_8->setText("320 KM");
+        ui->bt_rg_8->setText("640 KM");
         UpdateScale();
     }
     isMapOutdated = true;
@@ -1292,7 +1310,7 @@ void MainWindowBasic::SetUpTheonGUILayout()
     ui->tabWidget_iad->show();
     ui->tabWidget_iad->setTabEnabled(5,false);
     ui->tabWidget_iad->mMoveable = false;
-    ui->tabWidget_menu_2->setGeometry(1084,305,340,695);
+    ui->tabWidget_menu_2->setGeometry(1084,305,340,700);
 //    ui->tableWidgetTarget->setGeometry(0,0,308,450);
 //    ui->groupBox_3->setGeometry(10,460,280,100);
     ui->tabWidget_iad->setCurrentIndex(4);
@@ -1378,6 +1396,8 @@ void MainWindowBasic::InitSetting()
         ui->groupBox_sim_tgt->hide();
         rda_main.processing->setTargetOutputPort(CConfig::getInt("TargetOutputPort4"));
         setDistanceUnit(1);
+        rda_main.processing->requestADSBData();
+        rda_main.processing->requestAISData();
     }
     rda_main.showAisName = false;
     rda_main.rect = this->rect();
@@ -1407,7 +1427,7 @@ void MainWindowBasic::InitSetting()
     ui->toolButton_xl_nguong_4->setChecked(CConfig::getInt("cut_noise"));
     ui->toolButton_sled->setChecked(CConfig::getInt("isShowSled"));
     updateSimTargetStatus();
-    ui->tabWidget_menu_2->setCurrentIndex(0);
+    ui->tabWidget_menu_2->setCurrentIndex(1);
     //penTargetEnemySelected.setWidth(3);
     //penTarget.setWidth(2);
     //penTargetEnemy.setWidth(3);
@@ -2093,7 +2113,7 @@ void MainWindowBasic::ShutDown()
 //}
 void MainWindowBasic::sync1p()//period 1 min
 {
-    if(CConfig::getInt("WorkMode")==4)rda_main.processing->requestAISData();
+    if(mWorkMode==4)rda_main.processing->requestAISData();
     //QString str = ui->textBrowser_message->toPlainText();
     //QDateTime now = QDateTime::currentDateTime();
     /*QString dir = "D:\\HR2D\\logs\\"+now.toString("\\dd.MM\\");

@@ -153,6 +153,7 @@ private:
 
     void SendSimulationTargets();
     void sendRadarPlots();
+    void sendAisAdsbData();
 private slots:
     void networkReplyAis(QNetworkReply *reply);
     void ReadDataBuffer();

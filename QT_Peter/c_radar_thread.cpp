@@ -946,7 +946,7 @@ void dataProcessingThread::outputReport()
         sendRadarPlots();
     }
 }
-void dataProcessingThread::requestADSBData()
+void dataProcessingThread::sendAisAdsbData()
 {
     for(std::map<int,AIS_object_t>::iterator iter = mAisVesselsList.begin();iter!=mAisVesselsList.end();iter++)
     {
@@ -992,6 +992,10 @@ void dataProcessingThread::requestADSBData()
                                    mTargetOutputPort
                                    );
     }
+}
+void dataProcessingThread::requestADSBData()
+{
+    sendAisAdsbData();
     networkRequest.setUrl(QUrl("https://data-live.flightradar24.com/zones/fcgi/feed.js?bounds=26.19,04.98,100.87,119.33&faa=1&mlat=1&flarm=1&adsb=1&gnd=1&air=1&vehicles=1&estimated=1&maxage=14400&gliders=1&stats=1"));
     networkManagerAdsb->get(networkRequest);
 }
