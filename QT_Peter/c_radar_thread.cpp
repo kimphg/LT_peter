@@ -937,6 +937,7 @@ void dataProcessingThread::outputReport()
     else if(CConfig::getInt("WorkMode")==2)
     {
         SendSimulationTargets();
+        sendRATTM();
         //sendRadarPlots();
     }
     else if(CConfig::getInt("WorkMode")==3)

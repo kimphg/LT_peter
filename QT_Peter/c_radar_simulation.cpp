@@ -280,7 +280,7 @@ void c_radar_simulation::setAirTarget(int id,double lat,double lon,double alt, d
     if(id>=targetList.size())id=id%targetList.size();
     double tx,ty;
     C_radar_data::ConvWGSToKm(&tx,&ty,lon,lat);
-    targetList[id].init(tx,ty,tspeedKm,tbearingDeg,alt);//(double tx, double ty, double tspeedKmh, double tbearing, int dople)
+    targetList[id].init(tx,ty,tspeedKm,tbearingDeg,5,alt);//(double tx, double ty, double tspeedKmh, double tbearing, int dople)
 }
 void c_radar_simulation::setAllTarget()
 {

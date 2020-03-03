@@ -62,15 +62,19 @@ void C_arpa_area::DrawAISMark(PointDouble s ,double head,QPainter *p,QString nam
     point.setX(s.x+size*sin(head));
     point.setY(s.y-size*cos(head));
     poly<<point;
-    point.setX(s.x+vectorLen*sin(head));
-    point.setY(s.y-vectorLen*cos(head));
+
 //    poly<<point;
 
     p->drawPolygon(poly);
 
     if(size>10)
     {
-        p->drawLine(s.x,s.y,point.x(),point.y());
+        if(vectorLen>size)
+        {
+            point.setX(s.x+vectorLen*sin(head));
+            point.setY(s.y-vectorLen*cos(head));
+            p->drawLine(s.x,s.y,point.x(),point.y());
+        }
         p->setFont(QFont("Times", 12));
         p->drawText(s.x+size,s.y+size,250,30,0,name);
     }
@@ -168,11 +172,18 @@ void C_arpa_area::drawAisTarget(QPainter *p)
 
     for(sim_target_t plane:processing->simulator->targetList)
     {
-        if(plane.getEnabled()&&(plane.malt>0))
+        if(plane.getEnabled())
         {
             PointDouble s = ConvWGSToScrPoint(plane.mlon,plane.mlat);
             if(!isInsideViewRect(s.x,s.y))continue;
-            DrawPlaneMark(s,p,degrees(plane.mHeading),"",target_size);
+            if(plane.malt>0)
+            {
+                DrawPlaneMark(s,p,degrees(plane.mHeading),"",target_size);
+            }
+            else
+            {
+                DrawAISMark(s,degrees(plane.mHeading),p,"",target_size,0);
+            }
         }
     }
 }

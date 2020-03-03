@@ -980,8 +980,8 @@ void MainWindowBasic::paintEvent(QPaintEvent *event)
     //ve luoi cu ly phuong vi
     DrawDetectZones(&p);
     if(isShowAIS)rda_main.drawAisTarget(&p);
-    //DrawViewFrame(&p);
-    DrawViewFrameSquared(&p);
+    if(mWorkMode==1||mWorkMode==3)DrawViewFrame(&p);
+    else DrawViewFrameSquared(&p);
     //DrawIADArea(&p);
 
     clkEnd = clock();
@@ -1340,17 +1340,18 @@ void MainWindowBasic::checkCuda()
 }
 void MainWindowBasic::InitSetting()
 {
-    int mode =CConfig::getInt("WorkMode");
-    printf("InitSetting mode:%d",mode);
-    if(mode==1)//marine radar mode
+    mWorkMode =CConfig::getInt("WorkMode");
+    printf("InitSetting mode:%d",mWorkMode);
+    if(mWorkMode==1)//marine radar mode
     {
         ui->tabWidget_menu->setCurrentIndex(0);
         ui->groupBox_target_simulation->setHidden(false);
         ui->groupBox_sim_tgt->hide();
         rda_main.processing->setTargetOutputPort(CConfig::getInt("TargetOutputPort1"));
         setDistanceUnit(0);
+        rda_main.mRadarData->setAutorgs(false);
     }
-    if(mode==2)//HF radar mode
+    if(mWorkMode==2)//HF radar mode
     {
         ui->tabWidget_menu->setCurrentIndex(0);
         ui->groupBox_target_simulation->setHidden(false);
@@ -1358,9 +1359,9 @@ void MainWindowBasic::InitSetting()
         ui->groupBox_sim_tgt->setGeometry(1450,520,ui->groupBox_sim_tgt->width(),ui->groupBox_sim_tgt->height());
         rda_main.processing->setTargetOutputPort(CConfig::getInt("TargetOutputPort2"));
         setDistanceUnit(0);
-
+        rda_main.mRadarData->setAutorgs(true);
     }
-    if(mode==3)//air radar mode
+    if(mWorkMode==3)//air radar mode
     {
         ui->tabWidget_menu->setCurrentIndex(0);
         ui->groupBox_target_simulation->setHidden(true);
@@ -1368,8 +1369,9 @@ void MainWindowBasic::InitSetting()
         ui->groupBox_sim_tgt->setGeometry(1450,520,ui->groupBox_sim_tgt->width(),ui->groupBox_sim_tgt->height());
         rda_main.processing->setTargetOutputPort(CConfig::getInt("TargetOutputPort3"));
         setDistanceUnit(1);
+        rda_main.mRadarData->setAutorgs(true);
     }
-    if(mode==4)//AIS mode
+    if(mWorkMode==4)//AIS mode
     {
         ui->tabWidget_menu->setCurrentIndex(0);
         ui->groupBox_target_simulation->setHidden(true);
@@ -1667,7 +1669,18 @@ void MainWindowBasic::DrawViewFrame(QPainter* p)
             else p->drawPoint(mBorderPoint1);
         }
     }
+    //antenna angle
+    double antennaAngle = (CConfig::mStat.antennaAziDeg)+rda_main.trueShiftDeg;
+    if(CalcAziContour(antennaAngle,SCR_H-SCR_BORDER_SIZE-20))
+    {
+        p->setPen(QPen(Qt::red,4,Qt::SolidLine,Qt::RoundCap));
+        p->drawLine(mBorderPoint2,mBorderPoint1);
+        QPoint p1(rda_main.radCtX+20*sin(radians(antennaAngle)),
+                  rda_main.radCtY-20*cos(radians(antennaAngle)));
+        p->drawLine(p1.x(),p1.y(),rda_main.radCtX,rda_main.radCtY);
+        //draw text
 
+    }
 #ifndef THEON
     //ve vanh goc trong
     p->setPen(penCyan);
@@ -1712,18 +1725,7 @@ void MainWindowBasic::DrawViewFrame(QPainter* p)
         p->drawLine(p5,p1);
 
     }
-    //antenna angle
-    double antennaAngle = (CConfig::mStat.antennaAziDeg)+rda_main.trueShiftDeg;
-    if(CalcAziContour(antennaAngle,SCR_H-SCR_BORDER_SIZE-20))
-    {
-        p->setPen(QPen(Qt::red,4,Qt::SolidLine,Qt::RoundCap));
-        p->drawLine(mBorderPoint2,mBorderPoint1);
-        QPoint p1(rda_main.radCtX+20*sin(radians(antennaAngle)),
-                  rda_main.radCtY-20*cos(radians(antennaAngle)));
-        p->drawLine(p1.x(),p1.y(),rda_main.radCtX,rda_main.radCtY);
-        //draw text
 
-    }
 
 
 
@@ -5006,13 +5008,12 @@ void MainWindowBasic::on_toolButton_adsb_request_clicked()
 int currSimId = 0;
 void MainWindowBasic::on_toolButton_sim_create_clicked()
 {
-    currSimId++;
 
     sim_target_t target;
     double x,y;
     C_radar_data::ConvWGSToKm(&x,&y,ui->textEdit_sim_input_long->text().toDouble(),ui->textEdit_sim_input_lat->text().toDouble());
     target.init();
-    rda_main.processing->simulator->setAirTarget(currSimId,
+    rda_main.processing->simulator->setAirTarget(currSimId++,
                                                  ui->textEdit_sim_input_lat->text().toDouble(),
                                                  ui->textEdit_sim_input_long->text().toDouble(),
                                                  ui->textEdit_sim_input_alt->text().toDouble(),
@@ -5024,7 +5025,14 @@ void MainWindowBasic::on_toolButton_sim_create_2_clicked(bool checked)
 {
     if(checked)
     {
-        rda_main.processing->simulator->play(false);
+        if(mWorkMode==1|mWorkMode==3)
+        {
+            rda_main.processing->simulator->play(true);
+        }
+        else
+        {
+            rda_main.processing->simulator->play(false);
+        }
     }
     else
         rda_main.processing->simulator->pause();

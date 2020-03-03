@@ -740,6 +740,7 @@ private slots:
     void on_toolButton_sim_delete_clicked();
 
 private:
+    int mWorkMode;
     bool isRadarShow;
     C_SEA_TRACK *selectedTrack;
 //    int target_size;
