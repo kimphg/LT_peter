@@ -139,7 +139,7 @@ void C_arpa_area::drawARPATargets(QPainter *p)
 {
     if(isShowAIS)
     {
-        p->setBrush(QBrush(penTargetEnemy.color()));
+        //p->setBrush(QBrush(penTargetEnemy.color()));
         p->setPen(penTargetEnemy);
         for(std::map<int,AIS_object_t>::iterator iter = processing->mAisVesselsList.begin();iter!=processing->mAisVesselsList.end();iter++)
         {
