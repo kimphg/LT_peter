@@ -570,7 +570,7 @@ void dataProcessingThread::SendSimulationTargets()
                     QString::number(tgt->mlon,'f',5)        +","+//lon
                     QString::number(tgt->malt,'f',1)        +","+//altitude
                     QString::number((tgt->speedKmh),'f',1)  +","+
-                    QString::number(tgt->mHeading,'f',1)    +","+
+                    QString::number(degrees(tgt->mHeading),'f',1)    +","+
                     +"plane"                                +","+//type
                     +"sim_radar,"
                     +QString::number(CConfig::time_now_ms/1000)

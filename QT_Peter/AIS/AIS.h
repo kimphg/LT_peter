@@ -33,7 +33,7 @@ public:
     }
     QString             printData();
     bool                isMatchToRadarTrack;
-    QString              mName,mDst;
+    QString              mName,mDst,outputString;
     int                  mMMSI;
     int                  mImo;
     int                  mNavStat;

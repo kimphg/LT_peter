@@ -38,6 +38,7 @@ AIS_object_t::AIS_object_t()
 
 void AIS_object_t::merge(AIS_object_t oldObj)
 {
+    outputString.clear();
 //    isSelected = oldObj.isSelected;
     if(mName.length()==0)
         mName = oldObj.mName;
@@ -82,71 +83,71 @@ void AIS_object_t::merge(AIS_object_t oldObj)
 
 QString AIS_object_t::printData()
 {
-    QString output;
-    if(mMMSI)output.append(QString::fromUtf8("MMSI:")+QString::number(mMMSI)+"\n");
-    if(mImo)output.append(QString::fromUtf8("IMO:")+QString::number(mImo)+"\n");
-    if(mName.size())output.append(QString::fromUtf8("Tên:")+mName+"\n");
+    if(outputString.size()>0)return outputString;
+    if(mMMSI)outputString.append(QString::fromUtf8("MMSI:")+QString::number(mMMSI)+"\n");
+    if(mImo)outputString.append(QString::fromUtf8("IMO:")+QString::number(mImo)+"\n");
+    if(mName.size())outputString.append(QString::fromUtf8("Tên:")+mName+"\n");
     if(mType)
     {
-        output.append(QString::fromUtf8("Loại:"));
+        outputString.append(QString::fromUtf8("Loại:"));
         switch(mType/10)
         {
         case 2:
-            output.append(QString::fromUtf8("Thủy phi cơ"));
+            outputString.append(QString::fromUtf8("Thủy phi cơ"));
             break;
         case 3:
-            if(mType==30)output.append(QString::fromUtf8("Tàu cá"));
-            else if(mType==31||mType==32)output.append(QString::fromUtf8("Tàu kéo"));
-            else output.append(QString::fromUtf8("Thuyền"));
+            if(mType==30)outputString.append(QString::fromUtf8("Tàu cá"));
+            else if(mType==31||mType==32)outputString.append(QString::fromUtf8("Tàu kéo"));
+            else outputString.append(QString::fromUtf8("Thuyền"));
             break;
         case 4:
-            output.append(QString::fromUtf8("Tàu cao tốc"));
+            outputString.append(QString::fromUtf8("Tàu cao tốc"));
             break;
         case 5:
-            output.append(QString::fromUtf8("Tàu chuyên dụng"));
+            outputString.append(QString::fromUtf8("Tàu chuyên dụng"));
             break;
         case 6:
-            output.append(QString::fromUtf8("Tàu chở khách"));
+            outputString.append(QString::fromUtf8("Tàu chở khách"));
             break;
         case 7:
-            output.append(QString::fromUtf8("Tàu hàng"));
+            outputString.append(QString::fromUtf8("Tàu hàng"));
             break;
         case 8:
-            output.append(QString::fromUtf8("Tàu chở dầu"));
+            outputString.append(QString::fromUtf8("Tàu chở dầu"));
             break;
         default:
-            output.append(QString::fromUtf8("Không xác định"));
+            outputString.append(QString::fromUtf8("Không xác định"));
             break;
         }
 
-        output.append("("+ QString::number(mType)+")");output.append("\n");
+        outputString.append("("+ QString::number(mType)+")");outputString.append("\n");
     }
-    output.append(QString::fromUtf8("Kinh độ:")
+    outputString.append(QString::fromUtf8("Kinh độ:")
                   +QString::number(mLong)
                   +"\n");
-    output.append(QString::fromUtf8("Vĩ độ:")
+    outputString.append(QString::fromUtf8("Vĩ độ:")
                   +QString::number(mLat)
                   +"\n");
-    output.append(QString::fromUtf8("Hướng di chuyển:")
+    outputString.append(QString::fromUtf8("Hướng di chuyển:")
                   + QString::number(mCog)
                   + "\n");
-    output.append(QString::fromUtf8("Tốc độ:")
+    outputString.append(QString::fromUtf8("Tốc độ:")
                   + QString::number(mSog)
                   +"Kn\n");
-    output.append(QString::fromUtf8("Chiều dài:")
-                  + QString::number(mBow+mStern)
-                  + "m\n");
-    output.append(QString::fromUtf8("Chiều rộng:")
-                  + QString::number(mPort+mStarboard)
-                  +"m\n");
-    output.append(QString::fromUtf8("Điểm đến:")
+//    output.append(QString::fromUtf8("Chiều dài:")
+//                  + QString::number(mBow+mStern)
+//                  + "m\n");
+//    output.append(QString::fromUtf8("Chiều rộng:")
+//                  + QString::number(mPort+mStarboard)
+//                  +"m\n");
+    if(mDst.size())outputString.append(QString::fromUtf8("Điểm đến:")
                   + mDst
                   +"\n");
-    output.append(QString::fromUtf8("Cập nhật gần nhất:")
+    outputString.append(QString::fromUtf8("Cập nhật gần nhất:")
                   + QString::number((clock()-mUpdateTime)/1000)
                   +"s"
                   +"\n");
-    return output;
+    return outputString;
 }
 
 const uint16_t AIS::AisParamLength[] = {

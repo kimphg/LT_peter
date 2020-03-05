@@ -1136,10 +1136,10 @@ void MainWindowBasic::setDistanceUnit(int unit)//0:NM, 1:KM
         ui->bt_rg_3->setText("8 NM");
         ui->bt_rg_4->setText("16 NM");
         ui->bt_rg_5->setText("32 NM");
-        ui->bt_rg_6->setText("54 NM");
+        ui->bt_rg_6->setText("64 NM");
         ui->bt_rg_7->setText("128 NM");
         ui->bt_rg_8->setText("256 NM");
-        ui->bt_rg_8->setText("512 NM");
+        ui->bt_rg_9->setText("512 NM");
         UpdateScale();
     }
     else if(mDistanceUnit==1)
@@ -1155,7 +1155,7 @@ void MainWindowBasic::setDistanceUnit(int unit)//0:NM, 1:KM
         ui->bt_rg_6->setText("80 KM");
         ui->bt_rg_7->setText("160 KM");
         ui->bt_rg_8->setText("320 KM");
-        ui->bt_rg_8->setText("640 KM");
+        ui->bt_rg_9->setText("640 KM");
         UpdateScale();
     }
     isMapOutdated = true;
@@ -1368,6 +1368,7 @@ void MainWindowBasic::InitSetting()
         rda_main.processing->setTargetOutputPort(CConfig::getInt("TargetOutputPort1"));
         setDistanceUnit(0);
         rda_main.mRadarData->setAutorgs(false);
+        ui->groupBox_display_data->setEnabled(false);
     }
     if(mWorkMode==2)//HF radar mode
     {
@@ -1396,7 +1397,7 @@ void MainWindowBasic::InitSetting()
         ui->groupBox_sim_tgt->hide();
         rda_main.processing->setTargetOutputPort(CConfig::getInt("TargetOutputPort4"));
         setDistanceUnit(1);
-
+        ui->customGroupBox_outputTarget->setEnabled(true);
     }
     rda_main.showAisName = false;
     rda_main.rect = this->rect();
@@ -1427,6 +1428,7 @@ void MainWindowBasic::InitSetting()
     ui->toolButton_sled->setChecked(CConfig::getInt("isShowSled"));
     updateSimTargetStatus();
     ui->tabWidget_menu_2->setCurrentIndex(1);
+    ui->tabWidget_menu_2->setFont(QFont("Times",12));
     //penTargetEnemySelected.setWidth(3);
     //penTarget.setWidth(2);
     //penTargetEnemy.setWidth(3);
@@ -1904,7 +1906,7 @@ void MainWindowBasic::Update100ms()
 
 
     //update info labels
-    ui->label_cur_freq->setText(QString::number((rda_main.mRadarData->mFreq)+1));
+//    ui->label_cur_freq->setText(QString::number((rda_main.mRadarData->mFreq)+1));
     //smooth the heading
     ui->label_head_ship->setText(QString::number(CConfig::mStat.shipHeadingDeg,'f',1));
     ui->label_course_ship->setText(QString::number(CConfig::mStat.shipCourseDeg,'f',1));
@@ -2179,7 +2181,7 @@ void MainWindowBasic::CheckRadarStatus()
     //        }
     //    }
 #endif
-    clock_t ageMay22 = CConfig::mStat.getAge22();
+    /*clock_t ageMay22 = CConfig::mStat.getAge22();
     if(ageMay22<5000)
     {
         if(CConfig::mStat.mMayPhatOK)
@@ -2234,7 +2236,7 @@ void MainWindowBasic::CheckRadarStatus()
     {
         ui->label_status_may_22->setStyleSheet("color: rgb(255, 10, 10);");
         ui->label_status_may_22->setText(QString::fromUtf8("Mất kết nối máy phát ")+QString::number(ageMay22/1000));
-    }
+    }*/
 }
 void MainWindowBasic::ViewTrackInfo()
 {
@@ -2823,21 +2825,21 @@ void MainWindowBasic::setCodeType(short index)// chuyen ma
 
 void MainWindowBasic::on_horizontalSlider_gain_valueChanged(int value)
 {
-    rda_main.mRadarData->kgain = 8-float(value)/(ui->horizontalSlider_gain->maximum())*8;
-    ui->label_gain->setText("Gain:"+QString::number(-rda_main.mRadarData->kgain,'f',2));
+//    rda_main.mRadarData->kgain = 8-float(value)/(ui->horizontalSlider_gain->maximum())*8;
+//    ui->label_gain->setText("Gain:"+QString::number(-rda_main.mRadarData->kgain,'f',2));
     //printf("pRadar->kgain %f \n",pRadar->kgain);
 }
 
 void MainWindowBasic::on_horizontalSlider_rain_valueChanged(int value)
 {
-    rda_main.mRadarData->krain = (float)value/(ui->horizontalSlider_rain->maximum());
-    ui->label_rain->setText("Rain:" + QString::number(rda_main.mRadarData->krain,'f',2));
+//    rda_main.mRadarData->krain = (float)value/(ui->horizontalSlider_rain->maximum());
+//    ui->label_rain->setText("Rain:" + QString::number(rda_main.mRadarData->krain,'f',2));
 }
 
 void MainWindowBasic::on_horizontalSlider_sea_valueChanged(int value)
 {
-    rda_main.mRadarData->ksea = (float)value/(ui->horizontalSlider_sea->maximum());
-    ui->label_sea->setText("Sea:" + QString::number(rda_main.mRadarData->ksea,'f',2));
+//    rda_main.mRadarData->ksea = (float)value/(ui->horizontalSlider_sea->maximum());
+//    ui->label_sea->setText("Sea:" + QString::number(rda_main.mRadarData->ksea,'f',2));
 }
 
 
@@ -4579,25 +4581,25 @@ void MainWindowBasic::on_checkBox_clicked()
 void MainWindowBasic::on_toolButton_chong_nhieu_1_clicked(bool checked)
 {
     //rda_main.processing->setVaru(checked);
-    if(checked)
-    {
-        int depth = ui->horizontalSlider_varu_depth->value();
-        depth = 16384/pow(10,depth/20.0);
-        int width = ui->horizontalSlider_varu_width->value();
-        width =  (16384 - depth)/10/width;
-        uchar comand[8];
-        comand[0] = 0x29;
-        comand[1] = 0xab;
-        comand[2] = 0x01;
-        comand[3] = width;
-        comand[4] = depth;
-        comand[5] = depth>>8;
-        rda_main.processing->sendCommand(&comand[0]);
-    }
-    else
-    {
-        sendToRadarHS("29ab00");
-    }
+//    if(checked)
+//    {
+//        int depth = ui->horizontalSlider_varu_depth->value();
+//        depth = 16384/pow(10,depth/20.0);
+//        int width = ui->horizontalSlider_varu_width->value();
+//        width =  (16384 - depth)/10/width;
+//        uchar comand[8];
+//        comand[0] = 0x29;
+//        comand[1] = 0xab;
+//        comand[2] = 0x01;
+//        comand[3] = width;
+//        comand[4] = depth;
+//        comand[5] = depth>>8;
+//        rda_main.processing->sendCommand(&comand[0]);
+//    }
+//    else
+//    {
+//        sendToRadarHS("29ab00");
+//    }
 }
 
 //void MainWindowBasic::on_toolButton_chong_nhieu_2_clicked(bool checked)
@@ -4630,17 +4632,17 @@ void MainWindowBasic::on_toolButton_auto_freq_clicked(bool checked)
 
 void MainWindowBasic::on_toolButton_chong_nhieu_ppy_clicked(bool checked)
 {
-    if(checked)
-    {
-        uchar value = ui->horizontalSlider_ppy_gain->value();
-        uchar comand[8];
-        comand[0] = 0x2a;
-        comand[1] = 0xab;
-        comand[2] = 0x01;
-        comand[3] = value;
-        rda_main.processing->sendCommand(&comand[0]);
-    }
-    else sendToRadarHS("2aab00");
+//    if(checked)
+//    {
+//        uchar value = ui->horizontalSlider_ppy_gain->value();
+//        uchar comand[8];
+//        comand[0] = 0x2a;
+//        comand[1] = 0xab;
+//        comand[2] = 0x01;
+//        comand[3] = value;
+//        rda_main.processing->sendCommand(&comand[0]);
+//    }
+//    else sendToRadarHS("2aab00");
 }
 
 void MainWindowBasic::on_toolButton_record_clicked(bool checked)
@@ -4770,25 +4772,25 @@ void MainWindowBasic::on_toolButton_tx_clicked(bool checked)
 
 void MainWindowBasic::on_horizontalSlider_varu_width_valueChanged(int value)
 {
-    if(ui->toolButton_chong_nhieu_1->isChecked())
-    {
-        int depth = ui->horizontalSlider_varu_depth->value();
-        depth = 16384/pow(10,depth/20.0);
-        int width = ui->horizontalSlider_varu_width->value();
-        width =  (16384 - depth)/10/width;
-        uchar comand[8];
-        comand[0] = 0x29;
-        comand[1] = 0xab;
-        comand[2] = 0x01;
-        comand[3] = width;
-        comand[4] = depth;
-        comand[5] = depth>>8;
-        rda_main.processing->sendCommand(&comand[0]);
-    }
+//    if(ui->toolButton_chong_nhieu_1->isChecked())
+//    {
+//        int depth = ui->horizontalSlider_varu_depth->value();
+//        depth = 16384/pow(10,depth/20.0);
+//        int width = ui->horizontalSlider_varu_width->value();
+//        width =  (16384 - depth)/10/width;
+//        uchar comand[8];
+//        comand[0] = 0x29;
+//        comand[1] = 0xab;
+//        comand[2] = 0x01;
+//        comand[3] = width;
+//        comand[4] = depth;
+//        comand[5] = depth>>8;
+//        rda_main.processing->sendCommand(&comand[0]);
+//    }
 }
 
 void MainWindowBasic::on_horizontalSlider_varu_depth_valueChanged(int value)
-{
+{/*
     if(ui->toolButton_chong_nhieu_1->isChecked())
     {
         int depth = ui->horizontalSlider_varu_depth->value();
@@ -4803,11 +4805,11 @@ void MainWindowBasic::on_horizontalSlider_varu_depth_valueChanged(int value)
         comand[4] = depth;
         comand[5] = depth>>8;
         rda_main.processing->sendCommand(&comand[0]);
-    }
+    }*/
 }
 
 void MainWindowBasic::on_horizontalSlider_ppy_gain_valueChanged(int value)
-{
+{/*
     if(ui->toolButton_chong_nhieu_ppy->isChecked())
     {
         uchar comand[8];
@@ -4816,7 +4818,7 @@ void MainWindowBasic::on_horizontalSlider_ppy_gain_valueChanged(int value)
         comand[2] = 0x01;
         comand[3] = value;
         rda_main.processing->sendCommand(&comand[0]);
-    }
+    }*/
 }
 
 //void MainWindowBasic::on_toolButton_tx_3_clicked(bool checked)
@@ -4872,18 +4874,18 @@ void MainWindowBasic::on_comboBox_currentIndexChanged(int index)
 
 void MainWindowBasic::on_toolButton_cao_ap_1_clicked()
 {
-    unsigned char is_checked_1 = ui->toolButton_cao_ap_1->isChecked();
-    unsigned char is_checked_2 = ui->toolButton_cao_ap_2->isChecked();
-    commandMay22[8]=is_checked_1+is_checked_2*2;
-    rda_main.processing->sendCommand(commandMay22,12,false);
+//    unsigned char is_checked_1 = ui->toolButton_cao_ap_1->isChecked();
+//    unsigned char is_checked_2 = ui->toolButton_cao_ap_2->isChecked();
+//    commandMay22[8]=is_checked_1+is_checked_2*2;
+//    rda_main.processing->sendCommand(commandMay22,12,false);
 }
 
 void MainWindowBasic::on_toolButton_cao_ap_2_clicked()
 {
-    unsigned char is_checked_1 = ui->toolButton_cao_ap_1->isChecked();
-    unsigned char is_checked_2 = ui->toolButton_cao_ap_2->isChecked();
-    commandMay22[8]=is_checked_1+is_checked_2*2;
-    rda_main.processing->sendCommand(commandMay22,12,false);
+//    unsigned char is_checked_1 = ui->toolButton_cao_ap_1->isChecked();
+//    unsigned char is_checked_2 = ui->toolButton_cao_ap_2->isChecked();
+//    commandMay22[8]=is_checked_1+is_checked_2*2;
+//    rda_main.processing->sendCommand(commandMay22,12,false);
 }
 
 void MainWindowBasic::on_toolButton_antennaConfigUpdate_clicked()
@@ -4908,17 +4910,17 @@ void MainWindowBasic::on_toolButton_exit_4_clicked(bool checked)
 
 void MainWindowBasic::on_horizontalSlider_ppy_gain_2_valueChanged(int value)
 {
-    ui->label_speed_comp_value->setText(QString::number(ui->horizontalSlider_ppy_gain_2->value()));
-    if(ui->toolButton_chong_nhieu_ppy_2->isChecked())
-    {
-        int value = ui->horizontalSlider_ppy_gain_2->value();
-        uchar comand[8];
-        comand[0] = 0x2b;
-        comand[1] = 0xab;
-        comand[2] = value;
-        comand[3] = value>>8;
-        rda_main.processing->sendCommand(&comand[0]);
-    }
+//    ui->label_speed_comp_value->setText(QString::number(ui->horizontalSlider_ppy_gain_2->value()));
+//    if(ui->toolButton_chong_nhieu_ppy_2->isChecked())
+//    {
+//        int value = ui->horizontalSlider_ppy_gain_2->value();
+//        uchar comand[8];
+//        comand[0] = 0x2b;
+//        comand[1] = 0xab;
+//        comand[2] = value;
+//        comand[3] = value>>8;
+//        rda_main.processing->sendCommand(&comand[0]);
+//    }
 }
 
 void MainWindowBasic::on_toolButton_chong_nhieu_ppy_2_clicked()
@@ -4928,17 +4930,17 @@ void MainWindowBasic::on_toolButton_chong_nhieu_ppy_2_clicked()
 
 void MainWindowBasic::on_toolButton_chong_nhieu_ppy_2_clicked(bool checked)
 {
-    if(checked)
-    {
-        int value = ui->horizontalSlider_ppy_gain_2->value();
-        uchar comand[8];
-        comand[0] = 0x2b;
-        comand[1] = 0xab;
-        comand[2] = value;
-        comand[3] = value>>8;
-        rda_main.processing->sendCommand(&comand[0]);
-    }
-    else sendToRadarHS("2bab00");
+//    if(checked)
+//    {
+//        int value = ui->horizontalSlider_ppy_gain_2->value();
+//        uchar comand[8];
+//        comand[0] = 0x2b;
+//        comand[1] = 0xab;
+//        comand[2] = value;
+//        comand[3] = value>>8;
+//        rda_main.processing->sendCommand(&comand[0]);
+//    }
+//    else sendToRadarHS("2bab00");
 }
 
 //void MainWindowBasic::on_toolButton_ais_hide_fishing_clicked(bool checked)
