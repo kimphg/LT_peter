@@ -1,7 +1,7 @@
 #ifndef C_RADAR_SIMULATION_H
 #define C_RADAR_SIMULATION_H
 
-#include "C_radar_data.h"
+#include "c_radar_data.h"
 
 #include <QThread>
 #include <QTimer>

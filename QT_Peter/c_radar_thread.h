@@ -8,7 +8,7 @@
 #include <QNetworkRequest>
 //#include <QGeoPositionInfo>
 #include "c_config.h"
-#include "C_radar_data.h"
+#include "c_radar_data.h"
 #include "c_radar_simulation.h"
 //#include "c_arpa_data.h"
 
@@ -19,8 +19,8 @@
 #include <QFile>
 #include <QUdpSocket>
 #include <QStringList>
-#include <QtSerialPort/QSerialPort>
-#include <QSerialPortInfo>
+//#include <QtSerialPort/QSerialPort>
+//#include <QSerialPortInfo>
 #define MAX_COMMAND_QUEUE_SIZE 100
 //#define HAVE_REMOTE// for pcap
 //#include "pcap.h"
@@ -123,7 +123,7 @@ private:
 
     QString messageStringbuffer;
     void CalculateRFR();
-    QSerialPort     mEncoderPort;
+//    QSerialPort     mEncoderPort;
     double          mHeading ;
 
     unsigned char   failureCount;
@@ -135,7 +135,7 @@ private:
     QFile signRepFile;
     QFile signRecFile;
 //    QFile signTTMFile;
-    std::vector<QSerialPort*>     serialPorts;
+//    std::vector<QSerialPort*>     serialPorts;
     QUdpSocket      *radarSocket;
     QUdpSocket      *navSocket;
     QUdpSocket      *ARPADataSocket;
@@ -165,7 +165,7 @@ private slots:
 //    void processRadarData();
     void inputAISData(QByteArray inputdata);
     void playbackRadarData();
-    void SerialDataRead();
+//    void SerialDataRead();
 //    void gpsupdate(QGeoPositionInfo geo);
 
     void ReadNavData();

@@ -3,7 +3,7 @@
 #include "AIS.h"
 //#include "c_radar_data.h"
 #include <QStringList>
-
+#include <math.h>
 /* Copied from util.h */
 void ConvkmxyToPolarDeg(double x, double y, double *azi, double *range)
 {

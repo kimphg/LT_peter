@@ -1,6 +1,6 @@
 #ifndef C_TARGET_MANAGER_H
 #define C_TARGET_MANAGER_H
-#include "C_radar_data.h"
+#include "c_radar_data.h"
 #include "c_config.h"
 #include <QUdpSocket>
 #define TRACK_TABLE_SIZE 50

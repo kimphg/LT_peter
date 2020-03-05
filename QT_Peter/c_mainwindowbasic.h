@@ -12,7 +12,7 @@
 #include <c_config.h>
 #include "dialogdetaildisplay.h"
 #include "dialogdocumentation.h"
-#include "C_radar_data.h"
+#include "c_radar_data.h"
 #include "c_radar_simulation.h"
 #include <QtNetwork>
 #include <QMainWindow>

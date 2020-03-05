@@ -411,19 +411,19 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
 }*/
 
 
-void dataProcessingThread::SerialDataRead()
-{
-    for(std::vector<QSerialPort*>::iterator it = serialPorts.begin() ; it != serialPorts.end(); ++it)
-    {
-        QByteArray responseData = (*it)->readAll();
+//void dataProcessingThread::SerialDataRead()
+//{
+//    for(std::vector<QSerialPort*>::iterator it = serialPorts.begin() ; it != serialPorts.end(); ++it)
+//    {
+//        QByteArray responseData = (*it)->readAll();
 
-        if(responseData.size())
-        {
-            processSerialData(responseData);
-        }
+//        if(responseData.size())
+//        {
+//            processSerialData(responseData);
+//        }
 
-    }
-}
+//    }
+//}
 void dataProcessingThread::processSerialData(QByteArray inputData)
 {
 
@@ -629,7 +629,7 @@ void dataProcessingThread::Timer200ms()
     mCudaAge200ms++;
     CalculateRFR();
     sendAziData();
-    SerialDataRead();
+    //SerialDataRead();
 
     if(radarComQ.size())
     {
@@ -929,12 +929,7 @@ void dataProcessingThread::networkReplyAdsb(QNetworkReply *reply)
 
 
         }
-        else
-        {
-            printf("adsb reject, len:%d",datafields.count());
-            qDebug() << str;
-            flushall();
-        }
+
     }
     sendAdsbData();
 //std::map<QString,C_AIR_TRACK>  mPlaneList;

@@ -27,7 +27,7 @@ DensityMap* pDensMap;
 //static QPen penBackground(QBrush(QColor(24 ,48 ,64,255)),150+SCR_BORDER_SIZE);
 //QRect circleRect = ppiRect.adjusted(-135,-135,135,135);
 //#endif
-static bool isInsideProtected = false;
+//static bool isInsideProtected = false;
 static QPen penYellow(QBrush(QColor(255,255,50 ,255)),2);
 static QPen mGridViewPen1(QBrush(QColor(150,150,150,255)),1);
 static clock_t clkBegin = clock();
@@ -153,7 +153,7 @@ void MainWindowBasic::mouseDoubleClickEvent( QMouseEvent * e )
 #ifndef THEON
         if(!isInsideViewZone(mMousex,mMousey))return;
         double azid,rg;
-        C_radar_data::ConvkmxyToPolarDeg((mMousex - rda_main.radCtX)/rda_main.mScale,-(mMousey - rda_main.radCtY)/rda_main.mScale,&azid,&rg);
+        ConvkmxyToPolarDeg((mMousex - rda_main.radCtX)/rda_main.mScale,-(mMousey - rda_main.radCtY)/rda_main.mScale,&azid,&rg);
         int aziBinary = int(azid/360.0*4096);
         unsigned char command[]={0xaa,0x55,0x6a,0x09,
                                  static_cast<unsigned char>(aziBinary>>8),
@@ -285,7 +285,7 @@ void MainWindowBasic::keyPressEvent(QKeyEvent *event)
 #ifndef THEON
         if(!isInsideViewZone(mMousex,mMousey))return;
         double azid,rg;
-        C_radar_data::ConvkmxyToPolarDeg((mMousex - rda_main.radCtX)/rda_main.mScale,-(mMousey - rda_main.radCtY)/rda_main.mScale,&azid,&rg);
+        ConvkmxyToPolarDeg((mMousex - rda_main.radCtX)/rda_main.mScale,-(mMousey - rda_main.radCtY)/rda_main.mScale,&azid,&rg);
         int aziBinary = int(azid/360.0*4096);
         unsigned char command[]={0xaa,0x55,0x6a,0x09,
                                  static_cast<unsigned char>(aziBinary>>8),
@@ -363,7 +363,7 @@ void MainWindowBasic::keyPressEvent(QKeyEvent *event)
         /*int keyNum = key-Qt::Key_1;
         if(keyNum>=TARGET_TABLE_SIZE)return;
         if(!mTargetMan.selectedTrackID)return;
-        /*if(keyNum>0){
+        if(keyNum>0){
             for(int i=0;i<pRadar->mTrackList.size();i++)
             {
                 track_t* track=&( pRadar->mTrackList[i]);
@@ -534,7 +534,7 @@ void MainWindowBasic::checkClickAIS(int xclick, int yclick)
 //        if(aisObj->isSelected)continue;
         if(aisObj->isMatchToRadarTrack)continue;
         double fx,fy;
-        C_radar_data::ConvWGSToKm(&fx,&fy,aisObj->mLong,aisObj->mLat);
+        CConfig::ConvWGSToKm(&fx,&fy,aisObj->mLong,aisObj->mLat);
         int x = (fx*rda_main.mScale)+rda_main.radCtX;
         int y = rda_main.radCtY-(fy*rda_main.mScale);
         if(abs(x-xclick)<5&&abs(y-yclick)<5)
@@ -679,7 +679,7 @@ void DrawMap()
     }
     //calculate center coordinate
     double newLat, newLong;
-    C_radar_data::ConvKmToWGS((double(dx))/rda_main.mScale,
+    CConfig::ConvKmToWGS((double(dx))/rda_main.mScale,
                 (double(-dy))/rda_main.mScale,&newLong,&newLat);
     osmap->setCenterPos(newLat,newLong);
     trueShiftDegOldMap = rda_main.trueShiftDeg;
@@ -701,11 +701,11 @@ void DrawMap()
 
         double minLat ,minLon, maxLat, maxLon;
         double rangeKm = pMap->width()/1.5/rda_main.mScale;
-        C_radar_data::ConvKmToWGS(-rangeKm,
+        CConfig::ConvKmToWGS(-rangeKm,
                     -rangeKm,
                     &minLon,
                     &minLat);
-        C_radar_data::ConvKmToWGS(rangeKm,
+        CConfig::ConvKmToWGS(rangeKm,
                     rangeKm,
                     &maxLon,
                     &maxLat);
@@ -2000,12 +2000,12 @@ void MainWindowBasic::Update100ms()
         double azi,rg;
         if(ui->toolButton_measuring->isChecked())
         {
-            C_radar_data::ConvkmxyToPolarDeg((mMousex - mMouseLastX)/rda_main.mScale,-(mMousey - mMouseLastY)/rda_main.mScale,&azi,&rg);
+            ConvkmxyToPolarDeg((mMousex - mMouseLastX)/rda_main.mScale,-(mMousey - mMouseLastY)/rda_main.mScale,&azi,&rg);
 
         }
         else
         {
-            C_radar_data::ConvkmxyToPolarDeg((mMousex - rda_main.radCtX)/rda_main.mScale,-(mMousey - rda_main.radCtY)/rda_main.mScale,&azi,&rg);
+            ConvkmxyToPolarDeg((mMousex - rda_main.radCtX)/rda_main.mScale,-(mMousey - rda_main.radCtY)/rda_main.mScale,&azi,&rg);
         }
         rg/=rangeRatio;
         double headAzi ;
@@ -5032,7 +5032,7 @@ void MainWindowBasic::on_toolButton_sim_create_clicked()
 
     sim_target_t target;
     double x,y;
-    C_radar_data::ConvWGSToKm(&x,&y,ui->textEdit_sim_input_long->text().toDouble(),ui->textEdit_sim_input_lat->text().toDouble());
+    CConfig::ConvWGSToKm(&x,&y,ui->textEdit_sim_input_long->text().toDouble(),ui->textEdit_sim_input_lat->text().toDouble());
     target.init();
     rda_main.processing->simulator->setAirTarget(currSimId++,
                                                  ui->textEdit_sim_input_lat->text().toDouble(),
