@@ -132,8 +132,9 @@ private:
     RadarCommandQueue radarComQ;
     bool isRecording;
     bool isPlaying;
-    QFile signRepFile;
+    QFile signRepFile,dataRepFile;
     QFile signRecFile;
+    QFile dataRecFile;
 //    QFile signTTMFile;
 //    std::vector<QSerialPort*>     serialPorts;
     QUdpSocket      *radarSocket;
@@ -158,6 +159,8 @@ private:
 
     void SendSimulationTargets();
     void sendRadarPlots();
+    void addToRecord(unsigned char *data, unsigned int len);
+    void addToRecord(QString data, QString type);
 private slots:
     void networkReplyAis(QNetworkReply *reply);
     void ReadDataBuffer();

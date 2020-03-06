@@ -4656,7 +4656,7 @@ void MainWindowBasic::on_toolButton_record_clicked(bool checked)
                 "_"+ui->label_sn_type->text()+
                 "_"+ui->label_sn_param->text();
         ui->label_record_file_name->setText(filename);
-        rda_main.processing->startRecord("D:/HR2D/rec_"+filename+HR_FILE_EXTENSION);
+        rda_main.processing->startRecord("rec_"+filename);
     }
     else
     {

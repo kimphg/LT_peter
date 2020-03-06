@@ -687,31 +687,45 @@ void dataProcessingThread::playbackRadarData()
 {
     if(isPlaying) {
         //isDrawn = false;
-        unsigned short len;
-        if(!signRepFile.isOpen())return;
-        for(unsigned short i=0;i<playRate;i++)
+
+        if(signRepFile.isOpen())
         {
-            //QMutexLocker locker(&mutex);
-
-            if(!signRepFile.read((char*)&len,2))
+            if(isOldFileType)
             {
-                signRepFile.seek(0);
-                mRadarData->SelfRotationReset();
-                CConfig::AddMessage("Reset file replay");
-                //togglePlayPause(false);
-                return;
+
             }
-            if(!len)
-                continue;
-            if(len>5000)
-                continue;
-            QByteArray buff;
-            buff.resize(len);
+            else
+            {
+                unsigned int len;
+                qint64 time;
+                for(unsigned short i=0;i<playRate;i++)
+                {
+                    //QMutexLocker locker(&mutex);
 
-            signRepFile.read(buff.data(),len);
-            ProcessData((unsigned char*)buff.data(),len);
+                    if(!signRepFile.read((char*)&time,sizeof(time)))
+                    {
+                        signRepFile.seek(0);
+                        mRadarData->SelfRotationReset();
+                        CConfig::AddMessage("Reset file replay");
+                        //togglePlayPause(false);
+                        return;
+                    }
+                    signRepFile.read((char*)&len,sizeof(len));
+                    if(!len)
+                        continue;
+                    if(len>500000)
+                        continue;
+                    QByteArray buff;
+                    buff.resize(len);
+                    signRepFile.read(buff.data(),len);
+                    ProcessData((unsigned char*)buff.data(),len);
+                    if(playRate<10){togglePlayPause(false);return;}
+                }
+            }
+        }
+        if(dataRepFile.isOpen())
+        {
 
-            if(playRate<10){togglePlayPause(false);return;}
         }
         return;
     }
@@ -805,13 +819,30 @@ bool dataProcessingThread::getIsPlaying() const
 {
     return isPlaying;
 }
+void dataProcessingThread::addToRecord(QString data,QString type)
+{
+    QTextStream txt;
+    txt.setCodec("UTF-16");
+    txt.setDevice(&dataRecFile);
+    txt<<QString::number(CConfig::time_now_ms);
+    txt<<(","+type+",");
+    txt<<data;
+    txt<<"\r\n";
+}
+void dataProcessingThread::addToRecord(unsigned char* data,unsigned int len)
+{
+    qint64 time = CConfig::time_now_ms;
+    signRecFile.write((char*)&time,sizeof(time));
+    signRecFile.write((char*)&len,sizeof(len));
+    signRecFile.write((char*)data,len);
+}
+
 void dataProcessingThread::ProcessData(unsigned char* data,unsigned short len)
 {
     if(isRecording)
     {
+        addToRecord(data,len);
 
-        signRecFile.write((char*)&len,2);
-        signRecFile.write((char*)data,len);
     }
     if(len==4)
     {
@@ -858,6 +889,10 @@ void dataProcessingThread::networkReplyAis(QNetworkReply *reply)
         }
 
     QString answer = reply->readAll();
+    if(isRecording)
+    {
+        addToRecord(answer,"online_ais");
+    }
     QJsonDocument temp = QJsonDocument::fromJson(answer.toUtf8());
     if (temp.isArray()){
         //printf(answer.toUtf8().data());
@@ -1037,7 +1072,10 @@ void dataProcessingThread::run()
                 continue;
             }
             else
-                if(!isPlaying)ProcessData(mReceiveBuff,len);
+                if(!isPlaying)
+                {
+                    ProcessData(mReceiveBuff,len);
+                }
 
 
         }
@@ -1304,13 +1342,16 @@ void dataProcessingThread::startRecord(QString fileName)
 {
     //QByteArray array("aa");
     //radarSocket->writeDatagram()
-    signRecFile.setFileName(fileName);
+    signRecFile.setFileName(fileName+".sgn");
     signRecFile.open(QIODevice::WriteOnly);
+    dataRecFile.setFileName(fileName+".dat");
+    dataRecFile.open(QIODevice::WriteOnly);
     isRecording = true;
 }
 void dataProcessingThread::stopRecord()
 {
     signRecFile.close();
+    dataRecFile.close();
     isRecording = false;
 }
 
