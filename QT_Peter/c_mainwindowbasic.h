@@ -749,6 +749,8 @@ private slots:
 
     void on_toolButton_view_tracks_clicked(bool checked);
 
+    void on_checkBox_9_toggled(bool checked);
+
 private:
     int mWorkMode;
     bool isRadarShow;

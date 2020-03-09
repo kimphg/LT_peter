@@ -1398,6 +1398,7 @@ void MainWindowBasic::InitSetting()
         rda_main.processing->setTargetOutputPort(CConfig::getInt("TargetOutputPort4"));
         setDistanceUnit(1);
         ui->customGroupBox_outputTarget->setEnabled(true);
+        ui->customGroupBox_outputTarget->setEnabled(true);
     }
     rda_main.showAisName = false;
     rda_main.rect = this->rect();
@@ -2436,7 +2437,7 @@ void MainWindowBasic::sync1S()//period 1 second
 
 void MainWindowBasic::on_actionOpen_rec_file_triggered()
 {
-    QString filename = QFileDialog::getOpenFileName(this,    tr("Open signal file"), NULL, tr("HR signal record files (*.r2d)"));
+    QString filename = QFileDialog::getOpenFileName(this,    tr("Open signal file"), NULL, tr("HR signal record files (*.r2d;*.sgn)"));
     if(!filename.size())return;
     rda_main.processing->loadRecordDataFile(filename);
     ui->label_record_file_name->setText(filename);
@@ -5090,4 +5091,9 @@ void MainWindowBasic::on_toolButton_view_adsb_clicked(bool checked)
 void MainWindowBasic::on_toolButton_view_tracks_clicked(bool checked)
 {
     rda_main.isShowTracks = checked;
+}
+
+void MainWindowBasic::on_checkBox_9_toggled(bool checked)
+{
+    rda_main.processing->isRealTimeScale = checked;
 }

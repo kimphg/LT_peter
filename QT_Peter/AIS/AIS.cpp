@@ -5,7 +5,7 @@
 #include <QStringList>
 #include <math.h>
 /* Copied from util.h */
-void ConvkmxyToPolarDeg(double x, double y, double *azi, double *range)
+void KmxyToPolarDeg(double x, double y, double *azi, double *range)
 {
     if(!y)
     {
@@ -71,7 +71,7 @@ void AIS_object_t::merge(AIS_object_t oldObj)
         if(dLat*dLon!=0)
         {
             double heading, speed;
-            ConvkmxyToPolarDeg(dLat,dLon,&heading,&speed);
+            KmxyToPolarDeg(dLat,dLon,&heading,&speed);
             mCog       =    heading;
         }
         else

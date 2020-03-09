@@ -54,7 +54,7 @@ class dataProcessingThread:public QThread
     Q_OBJECT
 public:
     c_radar_simulation          *simulator;// thread tao gia tin hieu
-    bool isSimulationMode;
+    bool isSimulationMode,isRealTimeScale;
     int mCudaAge200ms;
     QFile logFile;
 //    std::queue<GPSData> mGpsData;
@@ -131,7 +131,7 @@ private:
     bool isXuLyThuCap;
     RadarCommandQueue radarComQ;
     bool isRecording;
-    bool isPlaying;
+    bool isPlaying,isOldFileTpe;
     QFile signRepFile,dataRepFile;
     QFile signRecFile;
     QFile dataRecFile;
@@ -161,6 +161,8 @@ private:
     void sendRadarPlots();
     void addToRecord(unsigned char *data, unsigned int len);
     void addToRecord(QString data, QString type);
+    void processJsonAis(QString answer);
+    void processADSB(QString answer);
 private slots:
     void networkReplyAis(QNetworkReply *reply);
     void ReadDataBuffer();

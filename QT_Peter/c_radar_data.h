@@ -347,6 +347,7 @@ public:
     double mhead ;
     double malt  ;
     double mspd  ;
+    qint64 updateTime;
     QString mvesselType ;
     QString registrationName ;
 };
