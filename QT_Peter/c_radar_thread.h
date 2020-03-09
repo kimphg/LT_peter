@@ -120,7 +120,8 @@ public:
 signals:
     void HeadingDataReceived(double heading);
 private:
-
+    qint64 replayTimeDiff ;
+    qint64 dataSkipTime ;
     QString messageStringbuffer;
     void CalculateRFR();
 //    QSerialPort     mEncoderPort;

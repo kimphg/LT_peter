@@ -675,25 +675,27 @@ void dataProcessingThread::Timer200ms()
 
     }*/
 }
-qint64 replayTimeDiff = 0;
+
 void dataProcessingThread::playbackRadarData()
 {
-    if(isPlaying) {
+    if(isPlaying)
+    {
         //isDrawn = false;
 
-        if(signRepFile.isOpen())
+
+        if(!isOldFileTpe)
         {
-            if(!isOldFileTpe)
-            {
-                unsigned int len;
-                qint64 time;
-                if(signRepFile.isOpen())for(unsigned short i=0;i<playRate;i++)//read signal file
+
+            unsigned int len;
+            qint64 time;
+            if(signRepFile.isOpen())
+                for(unsigned short i=0;i<playRate;i++)//read signal file
                 {
+
                     //QMutexLocker locker(&mutex);
                     if(!signRepFile.read((char*)&time,sizeof(time)))
                     {
                         signRepFile.close();
-                        mRadarData->SelfRotationReset();
                         CConfig::AddMessage("Reach end of signal file");
                         return;
                     }
@@ -713,80 +715,77 @@ void dataProcessingThread::playbackRadarData()
                     ProcessData((unsigned char*)buff.data(),len);
                     if(playRate<10){togglePlayPause(false);return;}
 
-                    if(isRealTimeScale)
-                    {
-                        if(time<(CConfig::time_now_ms - replayTimeDiff))
-                        {
-                            break;
-                        }
-                    }
-                }
-                if(dataRepFile.isOpen())for(unsigned short i=0;i<playRate;i++)//read data file
-                {
-                    //QMutexLocker locker(&mutex);
-                    QString line(dataRepFile.readLine());
-                    if(line.size()==0)
-                    {
-                        dataRepFile.close();
-                        mRadarData->SelfRotationReset();
-                        CConfig::AddMessage("Reach end of data file");
-                        return;
-                    }
 
-                    QStringList strs = line.split("**");
-                    if(strs.size()<3)break;
-                    qint64 time = strs.at(0).toLongLong();
-                    QString datatype = strs.at(1);
-                    if(datatype=="online_ais")processJsonAis(strs.at(2));
-                    else processADSB(strs.at(2));
-                    if(playRate<10){togglePlayPause(false);return;}
-                    if(replayTimeDiff==0)
-                    {
-                        replayTimeDiff=CConfig::time_now_ms-time;
-                    }
-                    if(isRealTimeScale)
-                    {
-                        if(time<(CConfig::time_now_ms - replayTimeDiff))
-                        {
-                            break;
-                        }
-                    }
                 }
-            }
-            else
+            if(dataRepFile.isOpen())for(unsigned short i=0;i<playRate;i++)//read data file
             {
-                unsigned short len;
-                for(unsigned short i=0;i<playRate;i++)
+                if(dataSkipTime>CConfig::time_now_ms)
+                    break;
+                //QMutexLocker locker(&mutex);
+                QString line(dataRepFile.readLine());
+                if(line.size()==0)
                 {
-                    //QMutexLocker locker(&mutex);
+                    dataRepFile.close();
+                    mRadarData->SelfRotationReset();
+                    CConfig::AddMessage("Reach end of data file");
+                    return;
+                }
 
-                    if(!signRepFile.read((char*)&len,sizeof(len)))
+                QStringList strs = line.split("**");
+                if(strs.size()<3)break;
+                qint64 time = strs.at(0).toLongLong();
+                QString datatype = strs.at(1);
+                if(datatype=="online_ais")
+                    processJsonAis(strs.at(2));
+                else processADSB(strs.at(2));
+                if(playRate<10){togglePlayPause(false);return;}
+                if(replayTimeDiff==0)
+                {
+                    replayTimeDiff=CConfig::time_now_ms-time;
+                }
+                if(isRealTimeScale)
+                {
+                    if(CConfig::time_now_ms-time<( replayTimeDiff))
                     {
-
-                        signRepFile.seek(0);
-                        mRadarData->SelfRotationReset();
-                        CConfig::AddMessage("Reset file replay");
-                        //togglePlayPause(false);
-                        return;
+                        dataSkipTime = time+replayTimeDiff;
+                        qDebug()<<"skip time:"<<(dataSkipTime-CConfig::time_now_ms)<<endl;;
+                        flushall();
+                        break;
                     }
-                    if(!len)
-                        continue;
-                    if(len>500000)
-                        continue;
-                    QByteArray buff;
-                    buff.resize(len);
-                    signRepFile.read(buff.data(),len);
-                    ProcessData((unsigned char*)buff.data(),len);
-                    if(playRate<10){togglePlayPause(false);return;}
                 }
             }
         }
-        if(dataRepFile.isOpen())
+        else
         {
+            unsigned short len;
+            if(signRepFile.isOpen())for(unsigned short i=0;i<playRate;i++)
+            {
+                //QMutexLocker locker(&mutex);
 
+                if(!signRepFile.read((char*)&len,sizeof(len)))
+                {
+
+                    signRepFile.seek(0);
+                    mRadarData->SelfRotationReset();
+                    CConfig::AddMessage("Reset file replay");
+                    //togglePlayPause(false);
+                    return;
+                }
+                if(!len)
+                    continue;
+                if(len>500000)
+                    continue;
+                QByteArray buff;
+                buff.resize(len);
+                signRepFile.read(buff.data(),len);
+                ProcessData((unsigned char*)buff.data(),len);
+                if(playRate<10){togglePlayPause(false);return;}
+            }
         }
-        return;
     }
+
+    return;
+
 }
 
 void dataProcessingThread::StopProcessing()
@@ -830,10 +829,12 @@ void dataProcessingThread::loadRecordDataFile(QString fileName)//
 
 void dataProcessingThread::togglePlayPause(bool play)
 {
+    replayTimeDiff = 0;
+    dataSkipTime = 0;
+
     isPlaying = play;
     dataRepFile.open(QIODevice::ReadOnly);
     signRepFile.open(QIODevice::ReadOnly);
-    replayTimeDiff=0;
 }
 void dataProcessingThread::addAisObj(AIS_object_t obj)
 {
