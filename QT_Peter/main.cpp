@@ -1,5 +1,5 @@
-#define ARTEMIS
 
+#include "common.h"
 #ifdef ARTEMIS
 
 #include "c_mainwindowbasic.h"

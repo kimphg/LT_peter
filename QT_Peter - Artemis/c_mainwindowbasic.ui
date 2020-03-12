@@ -17965,7 +17965,7 @@ color: rgb(255, 0, 0);</string>
         <rect>
          <x>220</x>
          <y>20</y>
-         <width>283</width>
+         <width>308</width>
          <height>171</height>
         </rect>
        </property>
@@ -22767,7 +22767,7 @@ color: rgb(255, 0, 0);</string>
        <rect>
         <x>10</x>
         <y>20</y>
-        <width>261</width>
+        <width>288</width>
         <height>181</height>
        </rect>
       </property>
@@ -30423,9 +30423,9 @@ background-color: rgba(255, 255, 255, 0);</string>
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>20</y>
+      <y>10</y>
       <width>481</width>
-      <height>41</height>
+      <height>51</height>
      </rect>
     </property>
     <property name="title">
@@ -33822,7 +33822,7 @@ background-color: rgba(255, 255, 255, 0);</string>
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>291</width>
+        <width>295</width>
         <height>181</height>
        </rect>
       </property>
@@ -34259,7 +34259,26 @@ background-color: rgba(255, 255, 255, 0);</string>
        <string>Ghi lưu - phát lại</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_4">
-       <item row="4" column="0" colspan="2">
+       <item row="2" column="1">
+        <widget class="QCustomButton" name="toolButton_record">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string/>
+         </property>
+         <property name="text">
+          <string>Ghi lưu</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0" colspan="2">
         <widget class="QLabel" name="label_record_file_name">
          <property name="palette">
           <palette>
@@ -34692,71 +34711,7 @@ background-color: rgba(255, 255, 255, 0);</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QCustomButton" name="toolButton_record">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="toolTip">
-          <string/>
-         </property>
-         <property name="text">
-          <string>Ghi lưu</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QCustomButton" name="toolButton_replay">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string/>
-         </property>
-         <property name="text">
-          <string>Phát lại</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QCustomButton" name="toolButton_open_record">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string/>
-         </property>
-         <property name="text">
-          <string>Mở ghi lưu</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
+       <item row="5" column="1">
         <widget class="QCustomButton" name="toolButton_menu_2">
          <property name="enabled">
           <bool>true</bool>
@@ -34783,7 +34738,28 @@ background-color: rgba(255, 255, 255, 0);</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item row="2" column="0">
+        <widget class="QCustomButton" name="toolButton_open_record">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string/>
+         </property>
+         <property name="text">
+          <string>Mở ghi lưu</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
         <widget class="QCustomButton" name="toolButton_menu">
          <property name="enabled">
           <bool>true</bool>
@@ -34810,7 +34786,7 @@ background-color: rgba(255, 255, 255, 0);</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="3" column="1">
         <widget class="QSlider" name="horizontalSlider">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -34829,6 +34805,40 @@ background-color: rgba(255, 255, 255, 0);</string>
          </property>
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QCheckBox" name="checkBox_9">
+         <property name="text">
+          <string>Thời gian thực</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" rowspan="2">
+        <widget class="QCustomButton" name="toolButton_replay">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string/>
+         </property>
+         <property name="text">
+          <string>Phát lại</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -34911,7 +34921,7 @@ background-color: rgba(255, 255, 255, 0);</string>
      </widget>
      <widget class="QCustomGroupBox" name="customGroupBox_outputTarget">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
@@ -34928,7 +34938,7 @@ background-color: rgba(255, 255, 255, 0);</string>
        <item row="0" column="0">
         <widget class="QCustomButton" name="toolButton_ais_request">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -34955,7 +34965,7 @@ background-color: rgba(255, 255, 255, 0);</string>
        <item row="0" column="1">
         <widget class="QCustomButton" name="toolButton_adsb_request">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">

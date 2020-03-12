@@ -95,6 +95,7 @@ double dataProcessingThread::getSelsynAzi() const
 }
 dataProcessingThread::dataProcessingThread()
 {
+    isRealTimeScale = true;
     mRadarData = new C_radar_data();
     //init simulator
     simulator = new c_radar_simulation(mRadarData);
@@ -164,7 +165,7 @@ dataProcessingThread::dataProcessingThread()
     connect(&timer10s, &QTimer::timeout, this, &dataProcessingThread::Timer10s);
     timer10s.start(10000);
     connect(&timer1p, &QTimer::timeout, this, &dataProcessingThread::Timer1p);
-    timer10s.start(60000);
+    timer1p.start(60000);
     connect(&commandSendTimer, &QTimer::timeout, this, &dataProcessingThread::Timer200ms);
     commandSendTimer.start(200);
     connect(&readUdpBuffTimer, &QTimer::timeout, this, &dataProcessingThread::ReadDataBuffer);
@@ -411,19 +412,19 @@ void dataProcessingThread::ProcessNavData(unsigned char *mReceiveBuff,int len)
 }*/
 
 
-void dataProcessingThread::SerialDataRead()
-{
-    for(std::vector<QSerialPort*>::iterator it = serialPorts.begin() ; it != serialPorts.end(); ++it)
-    {
-        QByteArray responseData = (*it)->readAll();
+//void dataProcessingThread::SerialDataRead()
+//{
+//    for(std::vector<QSerialPort*>::iterator it = serialPorts.begin() ; it != serialPorts.end(); ++it)
+//    {
+//        QByteArray responseData = (*it)->readAll();
 
-        if(responseData.size())
-        {
-            processSerialData(responseData);
-        }
+//        if(responseData.size())
+//        {
+//            processSerialData(responseData);
+//        }
 
-    }
-}
+//    }
+//}
 void dataProcessingThread::processSerialData(QByteArray inputData)
 {
 
@@ -606,22 +607,13 @@ void dataProcessingThread::setTargetOutputPort(int targetOutputPort)
 }
 void dataProcessingThread::Timer10s()
 {
-    if(isEnableADSBOutput)
-    {
-        requestADSBData();
-
-    }
+    if(!isPlaying)requestADSBData();
     outputReport();
 
 }
 void dataProcessingThread::Timer1p()
 {
-    if(isEnableAISOutput)
-    {
-        requestAISData();
-
-    }
-
+    if(!isPlaying)requestAISData();
 }
 void dataProcessingThread::Timer200ms()
 {
@@ -629,7 +621,7 @@ void dataProcessingThread::Timer200ms()
     mCudaAge200ms++;
     CalculateRFR();
     sendAziData();
-    SerialDataRead();
+    //SerialDataRead();
 
     if(radarComQ.size())
     {
@@ -683,38 +675,117 @@ void dataProcessingThread::Timer200ms()
 
     }*/
 }
+
 void dataProcessingThread::playbackRadarData()
 {
-    if(isPlaying) {
+    if(isPlaying)
+    {
         //isDrawn = false;
-        unsigned short len;
-        if(!signRepFile.isOpen())return;
-        for(unsigned short i=0;i<playRate;i++)
+
+
+        if(!isOldFileTpe)
         {
-            //QMutexLocker locker(&mutex);
 
-            if(!signRepFile.read((char*)&len,2))
+            unsigned int len;
+            qint64 time;
+            if(signRepFile.isOpen())
+                for(unsigned short i=0;i<playRate;i++)//read signal file
+                {
+
+                    //QMutexLocker locker(&mutex);
+                    if(!signRepFile.read((char*)&time,sizeof(time)))
+                    {
+                        signRepFile.close();
+                        CConfig::AddMessage("Reach end of signal file");
+                        return;
+                    }
+                    if(replayTimeDiff==0)
+                    {
+                        replayTimeDiff=CConfig::time_now_ms-time;
+                    }
+                    signRepFile.read((char*)&len,sizeof(len));
+
+                    if(!len)
+                        continue;
+                    if(len>500000)
+                        continue;
+                    QByteArray buff;
+                    buff.resize(len);
+                    signRepFile.read(buff.data(),len);
+                    ProcessData((unsigned char*)buff.data(),len);
+                    if(playRate<10){togglePlayPause(false);return;}
+
+
+                }
+            if(dataRepFile.isOpen())for(unsigned short i=0;i<playRate;i++)//read data file
             {
-                signRepFile.seek(0);
-                mRadarData->SelfRotationReset();
-                CConfig::AddMessage("Reset file replay");
-                //togglePlayPause(false);
-                return;
+                if(dataSkipTime>CConfig::time_now_ms)
+                    break;
+                //QMutexLocker locker(&mutex);
+                QString line(dataRepFile.readLine());
+                if(line.size()==0)
+                {
+                    dataRepFile.close();
+                    mRadarData->SelfRotationReset();
+                    CConfig::AddMessage("Reach end of data file");
+                    return;
+                }
+
+                QStringList strs = line.split("**");
+                if(strs.size()<3)break;
+                qint64 time = strs.at(0).toLongLong();
+                QString datatype = strs.at(1);
+                if(datatype=="online_ais")
+                    processJsonAis(strs.at(2));
+                else processADSB(strs.at(2));
+                if(playRate<10){togglePlayPause(false);return;}
+                if(replayTimeDiff==0)
+                {
+                    replayTimeDiff=CConfig::time_now_ms-time;
+                }
+                if(isRealTimeScale)
+                {
+                    if(CConfig::time_now_ms-time<( replayTimeDiff))
+                    {
+                        dataSkipTime = time+replayTimeDiff;
+                        qDebug()<<"skip time:"<<(dataSkipTime-CConfig::time_now_ms)<<endl;;
+                        flushall();
+                        break;
+                    }
+                }
             }
-            if(!len)
-                continue;
-            if(len>5000)
-                continue;
-            QByteArray buff;
-            buff.resize(len);
-
-            signRepFile.read(buff.data(),len);
-            ProcessData((unsigned char*)buff.data(),len);
-
-            if(playRate<10){togglePlayPause(false);return;}
         }
-        return;
+        else
+        {
+            unsigned short len;
+            if(signRepFile.isOpen())for(unsigned short i=0;i<playRate;i++)
+            {
+                //QMutexLocker locker(&mutex);
+
+                if(!signRepFile.read((char*)&len,sizeof(len)))
+                {
+
+                    signRepFile.seek(0);
+                    mRadarData->SelfRotationReset();
+                    CConfig::AddMessage("Reset file replay");
+                    //togglePlayPause(false);
+                    return;
+                }
+                if(!len)
+                    continue;
+                if(len>500000)
+                    continue;
+                QByteArray buff;
+                buff.resize(len);
+                signRepFile.read(buff.data(),len);
+                ProcessData((unsigned char*)buff.data(),len);
+                if(playRate<10){togglePlayPause(false);return;}
+            }
+        }
     }
+
+    return;
+
 }
 
 void dataProcessingThread::StopProcessing()
@@ -739,16 +810,31 @@ void dataProcessingThread::SetARPAPort( unsigned short portNumber)
 void dataProcessingThread::loadRecordDataFile(QString fileName)//
 {
     if(signRepFile.isOpen()) signRepFile.close();
-    signRepFile.setFileName(fileName);
-    signRepFile.open(QIODevice::ReadOnly);
+    if(fileName.contains("r2d"))
+    {
+        isOldFileTpe = true;
+        signRepFile.setFileName(fileName);
+        isPlaying = false;
+    }
+    else
+    {
+        isOldFileTpe = false;
+        signRepFile.setFileName(fileName);
+        QString dataFileName = fileName.replace(".sgn",".dat");
+        dataRepFile.setFileName(dataFileName);
 
-    isPlaying = false;
+        isPlaying = false;
+    }
 }
 
 void dataProcessingThread::togglePlayPause(bool play)
 {
-    isPlaying = play;
+    replayTimeDiff = 0;
+    dataSkipTime = 0;
 
+    isPlaying = play;
+    dataRepFile.open(QIODevice::ReadOnly);
+    signRepFile.open(QIODevice::ReadOnly);
 }
 void dataProcessingThread::addAisObj(AIS_object_t obj)
 {
@@ -805,13 +891,30 @@ bool dataProcessingThread::getIsPlaying() const
 {
     return isPlaying;
 }
+void dataProcessingThread::addToRecord(QString data,QString type)
+{
+    QTextStream txt;
+    txt.setCodec("UTF-16");
+    txt.setDevice(&dataRecFile);
+    txt<<QString::number(CConfig::time_now_ms);
+    txt<<("**"+type+"**");
+    txt<<data;
+    txt<<"\r\n";
+}
+void dataProcessingThread::addToRecord(unsigned char* data,unsigned int len)
+{
+    qint64 time = CConfig::time_now_ms;
+    signRecFile.write((char*)&time,sizeof(time));
+    signRecFile.write((char*)&len,sizeof(len));
+    signRecFile.write((char*)data,len);
+}
+
 void dataProcessingThread::ProcessData(unsigned char* data,unsigned short len)
 {
     if(isRecording)
     {
+        addToRecord(data,len);
 
-        signRecFile.write((char*)&len,2);
-        signRecFile.write((char*)data,len);
     }
     if(len==4)
     {
@@ -850,14 +953,12 @@ void dataProcessingThread::ProcessData(unsigned char* data,unsigned short len)
     }
 }
 //bool isWaitingForAis = false;
-void dataProcessingThread::networkReplyAis(QNetworkReply *reply)
+void dataProcessingThread::processJsonAis(QString answer)
 {
-    if (reply->error()) {
-            CConfig::AddMessage("AIS data request error");
-            return;
-        }
-
-    QString answer = reply->readAll();
+    if(isRecording)
+    {
+        addToRecord(answer,"online_ais");
+    }
     QJsonDocument temp = QJsonDocument::fromJson(answer.toUtf8());
     if (temp.isArray()){
         //printf(answer.toUtf8().data());
@@ -895,18 +996,23 @@ void dataProcessingThread::networkReplyAis(QNetworkReply *reply)
     }
     if(this->isEnableAISOutput)sendAisData();
 }
-void dataProcessingThread::networkReplyAdsb(QNetworkReply *reply)
+void dataProcessingThread::networkReplyAis(QNetworkReply *reply)
 {
     if (reply->error()) {
-
-            CConfig::AddMessage("Adsb/icao data request error");
-            networkManagerAdsb = new QNetworkAccessManager();
-                QObject::connect(networkManagerAdsb, SIGNAL(finished(QNetworkReply*)),
-                    this, SLOT(networkReplyAdsb(QNetworkReply*)));
+            CConfig::AddMessage("AIS data request error");
+            return;
         }
 
-    QString answer = reply->readAll();
+    processJsonAis(reply->readAll());
 
+}
+void dataProcessingThread::processADSB(QString answer)
+{
+    if(isRecording)
+    {
+
+        addToRecord(answer.remove("\n"),"online_adsb");
+    }
     QStringList sl = answer.split("[");
     foreach (QString str, sl) {
         QStringList datafields = str.split(",");
@@ -925,18 +1031,29 @@ void dataProcessingThread::networkReplyAdsb(QNetworkReply *reply)
             new_track.mspd  = datafields.at(5).toDouble()*1.852;
             new_track.mvesselType = datafields.at(8);
             new_track.registrationName = datafields.at(9);
+            new_track.registrationName.remove("\"");
+            new_track.updateTime = CConfig::time_now_ms;
             mPlaneList[new_track.registrationName] = new_track;
 
 
         }
-        else
-        {
-            printf("adsb reject, len:%d",datafields.count());
-            qDebug() << str;
-            flushall();
-        }
+
     }
-    sendAdsbData();
+    if(this->isEnableADSBOutput)sendAdsbData();
+}
+void dataProcessingThread::networkReplyAdsb(QNetworkReply *reply)
+{
+    if (reply->error()) {
+
+            CConfig::AddMessage("Adsb/icao data request error");
+            networkManagerAdsb = new QNetworkAccessManager();
+                QObject::connect(networkManagerAdsb, SIGNAL(finished(QNetworkReply*)),
+                    this, SLOT(networkReplyAdsb(QNetworkReply*)));
+        }
+
+    processADSB(reply->readAll());
+
+
 //std::map<QString,C_AIR_TRACK>  mPlaneList;
 
 
@@ -999,6 +1116,11 @@ void dataProcessingThread::sendAdsbData()
     for(const auto&kv:mPlaneList)
     {
         C_AIR_TRACK track = kv.second;
+        if((CConfig::time_now_ms -  track.updateTime)>60000)// release old tracks
+        {
+            mPlaneList.erase(kv.first);
+            continue;
+        }
         QString outputString;
         outputString.append("$RATIF_PLANE,");
         outputString.append(track.mAddr+",");
@@ -1021,6 +1143,7 @@ void dataProcessingThread::sendAdsbData()
 void dataProcessingThread::requestADSBData()
 {
 
+    //networkRequest.setUrl(QUrl("https://data-live.flightradar24.com/zones/fcgi/feed.js?bounds=21.269,21.157,105.704,105.890&faa=1&mlat=1&flarm=1&adsb=1&gnd=1&air=1&vehicles=1&estimated=1&maxage=14400&gliders=1&stats=1"));
     networkRequest.setUrl(QUrl("https://data-live.flightradar24.com/zones/fcgi/feed.js?bounds=26.19,04.98,100.87,119.33&faa=1&mlat=1&flarm=1&adsb=1&gnd=1&air=1&vehicles=1&estimated=1&maxage=14400&gliders=1&stats=1"));
     networkManagerAdsb->get(networkRequest);
 }
@@ -1042,7 +1165,10 @@ void dataProcessingThread::run()
                 continue;
             }
             else
-                if(!isPlaying)ProcessData(mReceiveBuff,len);
+                if(!isPlaying)
+                {
+                    ProcessData(mReceiveBuff,len);
+                }
 
 
         }
@@ -1309,13 +1435,16 @@ void dataProcessingThread::startRecord(QString fileName)
 {
     //QByteArray array("aa");
     //radarSocket->writeDatagram()
-    signRecFile.setFileName(fileName);
+    signRecFile.setFileName(fileName+".sgn");
     signRecFile.open(QIODevice::WriteOnly);
+    dataRecFile.setFileName(fileName+".dat");
+    dataRecFile.open(QIODevice::WriteOnly);
     isRecording = true;
 }
 void dataProcessingThread::stopRecord()
 {
     signRecFile.close();
+    dataRecFile.close();
     isRecording = false;
 }
 

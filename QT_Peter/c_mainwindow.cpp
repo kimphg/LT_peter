@@ -522,7 +522,7 @@ void Mainwindow::checkClickAIS(int xclick, int yclick)
 //        if(aisObj->isSelected)continue;
         if(aisObj->isMatchToRadarTrack)continue;
         double fx,fy;
-        C_radar_data::ConvWGSToKm(&fx,&fy,aisObj->mLong,aisObj->mLat);
+        CConfig::ConvWGSToKm(&fx,&fy,aisObj->mLong,aisObj->mLat);
         int x = (fx*rda_main.mScale)+rda_main.radCtX;
         int y = rda_main.radCtY-(fy*rda_main.mScale);
         if(abs(x-xclick)<5&&abs(y-yclick)<5)
@@ -665,7 +665,7 @@ void DrawMap()
     }
     //calculate center coordinate
     double newLat, newLong;
-    C_radar_data::ConvKmToWGS((double(dx))/rda_main.mScale,
+    CConfig::ConvKmToWGS((double(dx))/rda_main.mScale,
                 (double(-dy))/rda_main.mScale,&newLong,&newLat);
     osmap->setCenterPos(newLat,newLong);
     trueShiftDegOldMap = rda_main.trueShiftDeg;
@@ -687,11 +687,11 @@ void DrawMap()
 
         double minLat ,minLon, maxLat, maxLon;
         double rangeKm = pMap->width()/1.5/rda_main.mScale;
-        C_radar_data::ConvKmToWGS(-rangeKm,
+        CConfig::ConvKmToWGS(-rangeKm,
                     -rangeKm,
                     &minLon,
                     &minLat);
-        C_radar_data::ConvKmToWGS(rangeKm,
+        CConfig::ConvKmToWGS(rangeKm,
                     rangeKm,
                     &maxLon,
                     &maxLat);
@@ -1908,12 +1908,12 @@ void Mainwindow::Update100ms()
         double azi,rg;
         if(ui->toolButton_measuring->isChecked())
         {
-            C_radar_data::ConvkmxyToPolarDeg((mMousex - mMouseLastX)/rda_main.mScale,-(mMousey - mMouseLastY)/rda_main.mScale,&azi,&rg);
+            ConvkmxyToPolarDeg((mMousex - mMouseLastX)/rda_main.mScale,-(mMousey - mMouseLastY)/rda_main.mScale,&azi,&rg);
 
         }
         else
         {
-            C_radar_data::ConvkmxyToPolarDeg((mMousex - rda_main.radCtX)/rda_main.mScale,-(mMousey - rda_main.radCtY)/rda_main.mScale,&azi,&rg);
+            ConvkmxyToPolarDeg((mMousex - rda_main.radCtX)/rda_main.mScale,-(mMousey - rda_main.radCtY)/rda_main.mScale,&azi,&rg);
         }
         rg/=rangeRatio;
         double headAzi ;

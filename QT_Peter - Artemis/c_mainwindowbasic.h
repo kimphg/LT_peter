@@ -12,7 +12,7 @@
 #include <c_config.h>
 #include "dialogdetaildisplay.h"
 #include "dialogdocumentation.h"
-#include "C_radar_data.h"
+#include "c_radar_data.h"
 #include "c_radar_simulation.h"
 #include <QtNetwork>
 #include <QMainWindow>
@@ -748,6 +748,8 @@ private slots:
     void on_toolButton_view_adsb_clicked(bool checked);
 
     void on_toolButton_view_tracks_clicked(bool checked);
+
+    void on_checkBox_9_toggled(bool checked);
 
 private:
     int mWorkMode;

@@ -1031,6 +1031,7 @@ void dataProcessingThread::processADSB(QString answer)
             new_track.mspd  = datafields.at(5).toDouble()*1.852;
             new_track.mvesselType = datafields.at(8);
             new_track.registrationName = datafields.at(9);
+            new_track.registrationName.remove("\"");
             new_track.updateTime = CConfig::time_now_ms;
             mPlaneList[new_track.registrationName] = new_track;
 

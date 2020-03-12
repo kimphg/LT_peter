@@ -8,7 +8,7 @@
 #include <QNetworkRequest>
 //#include <QGeoPositionInfo>
 #include "c_config.h"
-#include "C_radar_data.h"
+#include "c_radar_data.h"
 #include "c_radar_simulation.h"
 //#include "c_arpa_data.h"
 
@@ -19,8 +19,8 @@
 #include <QFile>
 #include <QUdpSocket>
 #include <QStringList>
-#include <QtSerialPort/QSerialPort>
-#include <QSerialPortInfo>
+//#include <QtSerialPort/QSerialPort>
+//#include <QSerialPortInfo>
 #define MAX_COMMAND_QUEUE_SIZE 100
 //#define HAVE_REMOTE// for pcap
 //#include "pcap.h"
@@ -54,7 +54,7 @@ class dataProcessingThread:public QThread
     Q_OBJECT
 public:
     c_radar_simulation          *simulator;// thread tao gia tin hieu
-    bool isSimulationMode;
+    bool isSimulationMode,isRealTimeScale;
     int mCudaAge200ms;
     QFile logFile;
 //    std::queue<GPSData> mGpsData;
@@ -120,10 +120,11 @@ public:
 signals:
     void HeadingDataReceived(double heading);
 private:
-
+    qint64 replayTimeDiff ;
+    qint64 dataSkipTime ;
     QString messageStringbuffer;
     void CalculateRFR();
-    QSerialPort     mEncoderPort;
+//    QSerialPort     mEncoderPort;
     double          mHeading ;
 
     unsigned char   failureCount;
@@ -131,11 +132,12 @@ private:
     bool isXuLyThuCap;
     RadarCommandQueue radarComQ;
     bool isRecording;
-    bool isPlaying;
-    QFile signRepFile;
+    bool isPlaying,isOldFileTpe;
+    QFile signRepFile,dataRepFile;
     QFile signRecFile;
+    QFile dataRecFile;
 //    QFile signTTMFile;
-    std::vector<QSerialPort*>     serialPorts;
+//    std::vector<QSerialPort*>     serialPorts;
     QUdpSocket      *radarSocket;
     QUdpSocket      *navSocket;
     QUdpSocket      *ARPADataSocket;
@@ -158,6 +160,10 @@ private:
 
     void SendSimulationTargets();
     void sendRadarPlots();
+    void addToRecord(unsigned char *data, unsigned int len);
+    void addToRecord(QString data, QString type);
+    void processJsonAis(QString answer);
+    void processADSB(QString answer);
 private slots:
     void networkReplyAis(QNetworkReply *reply);
     void ReadDataBuffer();
@@ -165,7 +171,7 @@ private slots:
 //    void processRadarData();
     void inputAISData(QByteArray inputdata);
     void playbackRadarData();
-    void SerialDataRead();
+//    void SerialDataRead();
 //    void gpsupdate(QGeoPositionInfo geo);
 
     void ReadNavData();

@@ -59,7 +59,7 @@ class c_radar_simulation:public QThread
 public:
     std::vector<sim_target_t> targetList;
     c_radar_simulation(C_radar_data* radarData);
-    void play(bool isSig);
+    void play(bool isSig = true);
     void pause();
     void run();
     void setTarget(int id, double aziDeg, double rangeKm, double tbearingDeg, double tspeed, int dople =0, int tlostRate=0);

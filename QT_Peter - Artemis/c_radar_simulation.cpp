@@ -56,7 +56,7 @@ void sim_target_t::init()
     speedKmh = rand()%50+5;
     x = (rand()%80)*((rand()%2)*2-1);
     y = (rand()%80)*((rand()%2)*2-1);
-    C_radar_data::ConvKmToWGS(x,y,&mlat,&mlon);
+    CConfig::ConvKmToWGS(x,y,&mlat,&mlon);
     mHeading = radians(rand()%360);
     azi = ConvXYToAziRad(x, y) / 3.141592653589*1024.0;
     range = ConvXYToR(x, y);
@@ -76,7 +76,7 @@ void sim_target_t::init(double tx, double ty, double tspeedKmh, double tbearing,
     x = tx;
     y = ty;
     malt = talt;
-    C_radar_data::ConvKmToWGS(tx,ty,&mlon,&mlat);
+    CConfig::ConvKmToWGS(tx,ty,&mlon,&mlat);
     mHeading = radians(tbearing);
     azi = ConvXYToAziRad(x, y) / 3.141592653589*1024.0;
     range = ConvXYToR(x, y);
@@ -151,7 +151,7 @@ void sim_target_t::update()
     double distance = elapsed_secs / 3600.0*speedKmh;
     x += distance*sin(mHeading);
     y += distance*cos(mHeading);
-    C_radar_data::ConvKmToWGS(x,y,&mlon,&mlat);
+    CConfig::ConvKmToWGS(x,y,&mlon,&mlat);
     //
     azi = (ConvXYToAziRad(x, y) + distribAzi(generator))/ 3.141592653589*1024.0;
     range	= ConvXYToR(x, y) / rResolution;
@@ -279,7 +279,7 @@ void c_radar_simulation::setAirTarget(int id,double lat,double lon,double alt, d
     //target_t newTarget(tx,ty,tspeed,tbearing,dople);
     if(id>=targetList.size())id=id%targetList.size();
     double tx,ty;
-    C_radar_data::ConvWGSToKm(&tx,&ty,lon,lat);
+    CConfig::ConvWGSToKm(&tx,&ty,lon,lat);
     targetList[id].init(tx,ty,tspeedKm,tbearingDeg,5,alt);//(double tx, double ty, double tspeedKmh, double tbearing, int dople)
 }
 void c_radar_simulation::setAllTarget()

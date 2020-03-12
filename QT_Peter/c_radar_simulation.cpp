@@ -247,7 +247,7 @@ c_radar_simulation::c_radar_simulation(C_radar_data *radarData)//QObject *parent
     azi = 200;
 }
 
-void c_radar_simulation::play(bool isSig = true)
+void c_radar_simulation::play(bool isSig)
 {
     isPlaying = true;
     isWithSignal = isSig;

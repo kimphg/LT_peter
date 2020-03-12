@@ -36,7 +36,7 @@ double brightness =1;
 static int nNoiseFrameCount = 0;
 static short indexLastProcessAzi = 0;
 static short indexCurrProcessAzi = 0;
-static short    curIdCount = 1;
+//static short    curIdCount = 1;
 static int rangeOffset;
 static qint64   cur_rot_timeMSecs ;//= QDateTime::currentMSecsSinceEpoch();
 //static int      antennaHeadOffset;
@@ -47,7 +47,7 @@ static   bool                        isInverseRotation;
 static int aziToProcess[AZI_QUEUE_SIZE];
 static int indexCurrRecAzi = 0;
 //qint64   CConfig::time_now_ms ;
-static int                     zoom_ar_w,zoom_ar_h,zoom_ar_a0,zoom_ar_r0,zoom_ar_a1,zoom_ar_r1;
+static int                     zoom_ar_a0,zoom_ar_r0,zoom_ar_a1,zoom_ar_r1;
 static int                     zoom_ar_size_a,zoom_ar_size_r;
 //#define TARGET_DENSITY_MAP_SIZE 3000
 
@@ -97,7 +97,7 @@ uint getColor(unsigned char pvalue,unsigned char dopler,unsigned char sled)
     unsigned char green = 0;
     unsigned char blue  = 0;
     unsigned char gradation = value<<2;
-    uint color;
+    uint color=0;
     if((dopler&0xF0))
     {
         color = 0xffffff|(150<<24);
@@ -185,7 +185,7 @@ void drawSgnZoom(short azi_draw, short r_pos)
 
     short px = data_mem.xzoom[azi_draw][r_pos];
     short py = data_mem.yzoom[azi_draw][r_pos];
-    if(!(px*py))return;
+    if((px*py)==0)return;
     unsigned char value    = data_mem.display_ray_zoom[r_pos][0];
     unsigned char dopler    = data_mem.display_ray_zoom[r_pos][1];
     unsigned char sled     = data_mem.display_ray_zoom[r_pos][2];
@@ -362,7 +362,7 @@ void C_SEA_TRACK::addManualPossible(double xkm, double ykm)
     newobject.rgKm =  ConvXYToRg(xkm,ykm);
     newobject.xkm = xkm;
     newobject.ykm = ykm;
-    C_radar_data::ConvKmToWGS(newobject.xkm,newobject.ykm,&(newobject.lon),&(newobject.lat));
+    CConfig::ConvKmToWGS(newobject.xkm,newobject.ykm,&(newobject.lon),&(newobject.lat));
     addPossible(&newobject,0.9);
     update();
 }
@@ -636,7 +636,7 @@ void C_SEA_TRACK::init(double txkm, double tykm)
     newobject.rgKm =  ConvXYToRg(txkm,tykm);
     newobject.xkm = txkm;
     newobject.ykm = tykm;
-    C_radar_data::ConvKmToWGS(newobject.xkm,newobject.ykm,&(newobject.lon),&(newobject.lat));
+    CConfig::ConvKmToWGS(newobject.xkm,newobject.ykm,&(newobject.lon),&(newobject.lat));
     //
     mDopler = newobject.dopler;
     rgSpeedkmh = 0;
@@ -1148,7 +1148,7 @@ void C_radar_data::addManualTrackLonLat(double lon, double lat)
 {
     double xkm,ykm;
 
-    ConvWGSToKm(&xkm,&ykm,lon,lat);
+    CConfig::ConvWGSToKm(&xkm,&ykm,lon,lat);
     addManualTrack(xkm,ykm);
 }
 void C_radar_data::addManualTrack(double xkm, double ykm)
@@ -1202,7 +1202,7 @@ bool C_radar_data::integrateAisPoint(AIS_object_t *obj)
         //        double dlon = (track.lon-lon);
         if(track->mState!=TrackState::confirmed)continue;
         double aisx,aisy;
-        ConvWGSToKm(&aisx,&aisy,obj->mLong,obj->mLat);
+        CConfig::ConvWGSToKm(&aisx,&aisy,obj->mLong,obj->mLat);
         double dx = aisx-track->xkm;
         double dy = aisy-track->ykm;
         if(dx*dx+dy*dy>1.0)continue; //distance more than 0.5km
@@ -2678,7 +2678,7 @@ void C_radar_data::procPLot(plot_t* mPlot)
     //    newobject.p   = -1;
     newobject.xkm = newobject.rgKm*sin( newobject.azRad);
     newobject.ykm = newobject.rgKm*cos( newobject.azRad);
-    ConvKmToWGS(newobject.xkm,newobject.ykm,&(newobject.lon),&(newobject.lat));
+    CConfig::ConvKmToWGS(newobject.xkm,newobject.ykm,&(newobject.lon),&(newobject.lat));
     ProcessObject(&newobject);
     if(object_output_queue.size()<2000)
     {
@@ -3511,42 +3511,19 @@ bool C_radar_data::checkBelongToObj(object_t* obj1)
 
 }
 
-void C_radar_data::ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat)
-{
-    *m_Lat  = CConfig::mLat +  (y)/(111.132954);
-    double refLat = (CConfig::mLat +(*m_Lat))*0.00872664625997;//3.14159265358979324/180.0/2;
-    *m_Long = (x)/(111.31949079327357*cos(refLat))+ CConfig::mLon;
-    //tinh toa do lat-lon khi biet xy km (truong hop coi trai dat hinh cau)
-}
-void C_radar_data::ConvPolarToXY(double *x, double *y, double azi, double range)
-{
+//void CConfig::ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat)
+//{
+//    *m_Lat  = CConfig::mLat +  (y)/(111.132954);
+//    double refLat = (CConfig::mLat +(*m_Lat))*0.00872664625997;//3.14159265358979324/180.0/2;
+//    *m_Long = (x)/(111.31949079327357*cos(refLat))+ CConfig::mLon;
+//    //tinh toa do lat-lon khi biet xy km (truong hop coi trai dat hinh cau)
+//}
 
-    *x = ((sin(azi)))*range;
-    *y = ((cos(azi)))*range;
-}
-void C_radar_data::ConvkmxyToPolarDeg(double x, double y, double *azi, double *range)
-{
-    if(!y)
-    {
-        *azi = x>0? PI_CHIA2:(PI_NHAN2-PI_CHIA2);
-        *azi = *azi*DEG_RAD;
-        *range = abs(x);
-    }
-    else
-    {
-        *azi = atanf(x/y);
-        if(y<0)*azi+=PI;
-        if(*azi<0)*azi += PI_NHAN2;
-        *range = sqrt(x*x+y*y);
-        *azi = *azi*DEG_RAD;
-    }
 
-}
-
-void C_radar_data::ConvWGSToKm(double* x, double *y, double m_Long,double m_Lat)
-{
-    double refLat = (CConfig::mLat + (m_Lat))*0.00872664625997;//pi/360
-    *x	= (((m_Long) - CConfig::mLon) * 111.31949079327357)*cos(refLat);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
-    *y	= ((m_Lat- CConfig::mLat ) * 111.132954);
-    //tinh toa do xy KM so voi diem center khi biet lat-lon
-}
+//void C_radar_data::ConvWGSToKm(double* x, double *y, double m_Long,double m_Lat)
+//{
+//    double refLat = (CConfig::mLat + (m_Lat))*0.00872664625997;//pi/360
+//    *x	= (((m_Long) - CConfig::mLon) * 111.31949079327357)*cos(refLat);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
+//    *y	= ((m_Lat- CConfig::mLat ) * 111.132954);
+//    //tinh toa do xy KM so voi diem center khi biet lat-lon
+//}

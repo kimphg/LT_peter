@@ -11,10 +11,10 @@
 #define MAP_PATH_3       "D:/ARTEMIS/MapData/GS/"
 #define HR_APP_PATH       "D:/ARTEMIS/"
 #define HR_DATA_REC_PATH  "D:/ARTEMIS/RecordData/"
-#define HR_CONFIG_FILE    "D:/ARTEMIS/radar_config.xml"
-#define HR_CONFIG_FILE_BACKUP_1 "D:/ARTEMIS/radar_config_backup_1.xml"
-#define HR_CONFIG_FILE_BACKUP_2 "D:/ARTEMIS/radar_config_backup_2.xml"
-#define HR_CONFIG_FILE_BACKUP_C "D:/ARTEMIS/radar_config_backup_c.xml"
+#define HR_CONFIG_FILE    "radar_config.xml"
+#define HR_CONFIG_FILE_BACKUP_1 "radar_config_backup_1.xml"
+#define HR_CONFIG_FILE_BACKUP_2 "radar_config_backup_2.xml"
+#define HR_CONFIG_FILE_BACKUP_C "radar_config_backup_c.xml"
 #define HR_CONFIG_FILE_DF "D:/ARTEMIS/radar_config_default.xml"
 #define HR_ERROR_FILE "D:\\ARTEMIS\\errorLog.txt"
 #else
@@ -28,7 +28,7 @@
 #define HR_ERROR_FILE "D:\\HR2D\\errorLog.txt"
 #endif
 #define XML_ELEM_NAME     "radar_config"
-
+#include <math.h>
 #define DEFAULT_LAT		20.707
 #define DEFAULT_LONG	106.78
 #include <QFile>
@@ -36,9 +36,32 @@
 #include <QXmlStreamReader>
 #include <time.h>
 #include <QDateTime>
-
-
 #include <queue>
+#include <common.h>
+inline void ConvPolarToXY(double *x, double *y, double azi, double range)
+{
+
+    *x = ((sin(azi)))*range;
+    *y = ((cos(azi)))*range;
+}
+inline void ConvkmxyToPolarDeg(double x, double y, double *azi, double *range)
+{
+    if(!y)
+    {
+        *azi = x>0? PI_CHIA2:(PI_NHAN2-PI_CHIA2);
+        *azi = *azi*DEG_RAD;
+        *range = abs(x);
+    }
+    else
+    {
+        *azi = atanf(x/y);
+        if(y<0)*azi+=PI;
+        if(*azi<0)*azi += PI_NHAN2;
+        *range = sqrt(x*x+y*y);
+        *azi = *azi*DEG_RAD;
+    }
+
+}
 inline QString demicalDegToDegMin(double demicalDeg)
 {
     return QString::number( (short)demicalDeg) +
@@ -187,6 +210,20 @@ class CConfig
 public:
     CConfig(void);
     ~CConfig(void);
+    static inline void ConvWGSToKm(double* x, double *y, double m_Long,double m_Lat)
+    {
+        double refLat = (mLat + (m_Lat))*0.00872664625997;//pi/360
+        *x	= (((m_Long) - mLon) * 111.31949079327357)*cos(refLat);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
+        *y	= ((m_Lat- mLat ) * 111.132954);
+        //tinh toa do xy KM so voi diem center khi biet lat-lon
+    }
+    static inline void ConvKmToWGS(double x, double y, double *m_Long, double *m_Lat)
+    {
+        *m_Lat  = CConfig::mLat +  (y)/(111.132954);
+        double refLat = (CConfig::mLat +(*m_Lat))*0.00872664625997;//3.14159265358979324/180.0/2;
+        *m_Long = (x)/(111.31949079327357*cos(refLat))+ CConfig::mLon;
+        //tinh toa do lat-lon khi biet xy km (truong hop coi trai dat hinh cau)
+    }
     static void setGPSLocation(double lat,double lon);
     static radarStatus_3C mStat;
     static double  mLat,mLon;
