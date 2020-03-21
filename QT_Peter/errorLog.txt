@@ -1,0 +1,174 @@
+21-03-2020 15:18:39    Empty config, load default
+QIODevice::read (QFile, "radar_config_default.xml"): device not open
+21-03-2020 15:18:39    Empty default config, fatal error!!!
+QMetaObject::connectSlotsByName: No matching signal for on_actionPlayPause_toggled(bool)
+QMetaObject::connectSlotsByName: No matching signal for on_toolButton_tx_2_clicked(bool)
+QMetaObject::connectSlotsByName: No matching signal for on_toolButton_dk_15_toggled(bool)
+QMetaObject::connectSlotsByName: No matching signal for on_toolButton_open_record_2_clicked()
+QMetaObject::connectSlotsByName: No matching signal for on_toolButton_dk_18_clicked()
+QMetaObject::connectSlotsByName: No matching signal for on_toolButton_tx_3_clicked(bool)
+QMetaObject::connectSlotsByName: No matching signal for on_customButton_load_density_clicked()
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+21-03-2020 15:20:05    Empty config, load default
+QIODevice::read (QFile, "radar_config_default.xml"): device not open
+21-03-2020 15:20:05    Empty default config, fatal error!!!
+QMetaObject::connectSlotsByName: No matching signal for on_actionPlayPause_toggled(bool)
+QMetaObject::connectSlotsByName: No matching signal for on_toolButton_tx_2_clicked(bool)
+QMetaObject::connectSlotsByName: No matching signal for on_toolButton_dk_15_toggled(bool)
+QMetaObject::connectSlotsByName: No matching signal for on_toolButton_open_record_2_clicked()
+QMetaObject::connectSlotsByName: No matching signal for on_toolButton_dk_18_clicked()
+QMetaObject::connectSlotsByName: No matching signal for on_toolButton_tx_3_clicked(bool)
+QMetaObject::connectSlotsByName: No matching signal for on_customButton_load_density_clicked()
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+QIODevice::read (QFile, "radar_config.xml"): device not open
+QIODevice::read (QFile, "radar_config_backup_1.xml"): device not open
+QIODevice::read (QFile, "radar_config_backup_2.xml"): device not open
+21-03-2020 15:20:24    Empty config, load default
+QIODevice::read (QFile, "radar_config_default.xml"): device not open
+21-03-2020 15:20:24    Empty default config, fatal error!!!
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found

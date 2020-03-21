@@ -749,7 +749,7 @@ void dataProcessingThread::playbackRadarData()
                     {
                         dataSkipTime = time+replayTimeDiff;
                         qDebug()<<"skip time:"<<(dataSkipTime-CConfig::time_now_ms)<<endl;;
-                        flushall();
+                        //flushall();
                         break;
                     }
                 }
@@ -1151,7 +1151,7 @@ void dataProcessingThread::run()
 {
 //    loadTargetDensityMap();
     int frameCount=0;
-    while(true)
+    while(0)
     {
         frameCount=0;
         while(radarSocket->hasPendingDatagrams())
@@ -1173,7 +1173,7 @@ void dataProcessingThread::run()
 
         }
         if(!frameCount)
-            usleep(1);
+            usleep(100);
 
     }
 

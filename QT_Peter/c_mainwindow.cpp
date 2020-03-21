@@ -31,9 +31,9 @@ DensityMap* pDensMap;
 static bool isInsideProtected = false;
 static QPen penYellow(QBrush(QColor(255,255,50 ,255)),2);
 static QPen mGridViewPen1(QBrush(QColor(150,150,150,255)),1);
-static clock_t clkBegin = clock();
-static clock_t clkEnd = clock();
-static clock_t paintTime = 20;
+//static clock_t clkBegin = clock();
+//static clock_t clkEnd = clock();
+//static clock_t paintTime = 20;
 static QStringList                 commandLogList;
 static QTransform                  mTrans;
 
@@ -928,7 +928,7 @@ void Mainwindow::UpdateMouseStat(QPainter *p)
 void Mainwindow::paintEvent(QPaintEvent *event)
 {
     //CConfig::time_now_ms  = QDateTime::currentMSecsSinceEpoch();
-    clkBegin = clock();
+//    clkBegin = clock();
 
     //printf("paint:%ld\n",clkBegin);
     QPainter p(this);
@@ -971,9 +971,9 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     //    DrawViewFrameSquared(&p);
     //DrawIADArea(&p);
 
-    clkEnd = clock();
-    paintTime = (clkEnd-clkBegin);
-    //printf("\npaint:%ldms",paintTime);
+//    clkEnd = clock();
+//    paintTime = (clkEnd-clkBegin);
+//    printf("\npaint:%ldms",paintTime);
 }
 bool Mainwindow::isInsideViewZone(int x,int y)
 {
@@ -1725,6 +1725,7 @@ void Mainwindow::DisplayClkAdc(int clk)
 
     }
 }
+
 void Mainwindow::UpdateVideo()
 {
 
@@ -1740,7 +1741,7 @@ void Mainwindow::UpdateVideo()
             //            printf("\nsetScale:%d",rda_main.mRadarData->clk_adc);
             rda_main.mRadarData->isClkAdcChanged = false;
         }
-        repaint();
+
     }
 
     /*QStandardItemModel* model = new QStandardItemModel(trackListPt->size(), 5);
@@ -1776,7 +1777,7 @@ void Mainwindow::InitTimer()
     //syncTimer1s.moveToThread(t);
 
     connect(&timerVideoUpdate, SIGNAL(timeout()), this, SLOT(UpdateVideo()));
-    timerVideoUpdate.start(60);//ENVDEP
+    timerVideoUpdate.start(30);//ENVDEP
     //scrUpdateTimer.moveToThread(t2);
     //connect(t2,SIGNAL(finished()),t2,SLOT(deleteLater()));
     //    dataPlaybackTimer = new QTimer(this);
@@ -1943,7 +1944,7 @@ void Mainwindow::Update100ms()
     {
         QApplication::setOverrideCursor(Qt::ArrowCursor);
     }
-    repaint();
+    update();
 }
 void Mainwindow::InitNetwork()
 {
@@ -2297,12 +2298,13 @@ void Mainwindow::sync1S()//period 1 second
     UpdateGpsData();
     ViewTrackInfo();
     // update rate
-    int sampleTime = 10*paintTime/7;
-    if(sampleTime<30)sampleTime=30;
-    ui->label_frame_rate->setText("SFR:"+QString::number(1000/sampleTime));
-
-    timerVideoUpdate.start(sampleTime);
-    timerMetaUpdate.start(sampleTime*4);
+//    int sampleTime = 10*paintTime/7;
+//    if(sampleTime<30)sampleTime=30;
+//    if(sampleTime>100)sampleTime=100;
+//    ui->label_frame_rate->setText("SFR:"+QString::number(1000/sampleTime));
+//    printf("video sample timer :%d\n",sampleTime);
+//    timerVideoUpdate.start(sampleTime);
+//    timerMetaUpdate.start(sampleTime*4);
 
     ui->label_radar_fps->setText("RFR:"+QString::number(int(rda_main.processing->mFramesPerSec)));
     //target manager

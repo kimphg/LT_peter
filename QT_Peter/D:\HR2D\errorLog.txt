@@ -1,0 +1,49 @@
+21-03-2020 15:13:59    Empty config, load default
+QIODevice::read (QFile, "D:/HR2D/radar_config_default.xml"): device not open
+21-03-2020 15:13:59    Empty default config, fatal error!!!
+QMetaObject::connectSlotsByName: No matching signal for on_actionPlayPause_toggled(bool)
+QMetaObject::connectSlotsByName: No matching signal for on_toolButton_tx_2_clicked(bool)
+QMetaObject::connectSlotsByName: No matching signal for on_toolButton_dk_15_toggled(bool)
+QMetaObject::connectSlotsByName: No matching signal for on_toolButton_open_record_2_clicked()
+QMetaObject::connectSlotsByName: No matching signal for on_toolButton_dk_18_clicked()
+QMetaObject::connectSlotsByName: No matching signal for on_toolButton_tx_3_clicked(bool)
+QMetaObject::connectSlotsByName: No matching signal for on_customButton_load_density_clicked()
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+sh: 1: taskkill: not found
+QIODevice::write (QFile, "D:/HR2D/radar_config.xml"): device not open

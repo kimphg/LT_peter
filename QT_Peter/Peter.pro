@@ -106,8 +106,8 @@ FORMS    += \
 #else:unix: LIBS += -L$$PWD\shapelib\ -lshapelib
 #INCLUDEPATH += $$PWD/shapelib
 #DEPENDPATH += $$PWD/shapelib
-
-
+#unix: LIBS += -L/usr/lib  -ld
+#unix: INCLUDEPATH += /usr/lib
 INCLUDEPATH += $$PWD/tinyxml/
 DEPENDPATH += $$PWD/tinyxml/
 INCLUDEPATH += $$PWD/
@@ -125,7 +125,7 @@ DEPENDPATH += $$PWD/
 
 #unix: LIBS += -larmadillo
 
-LIBS += -lQt5Concurrent
+#LIBS += -lQt5Concurrent
 #win32:LIBS += -L$$PWD/mitab/ -lmitab
 #LIBS += -ltinyxml
 #INCLUDEPATH += $$PWD/../opencv/build/include
