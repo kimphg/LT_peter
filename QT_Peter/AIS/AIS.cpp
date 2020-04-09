@@ -33,7 +33,7 @@ QString firstHalfMsg[10];
 AIS_object_t::AIS_object_t()
 {
     isMatchToRadarTrack =false;
-    mUpdateTime = clock();
+    mUpdateTime = QDateTime::currentMSecsSinceEpoch();
 }
 
 void AIS_object_t::merge(AIS_object_t oldObj)
@@ -42,7 +42,7 @@ void AIS_object_t::merge(AIS_object_t oldObj)
 //    isSelected = oldObj.isSelected;
     if(mName.length()==0)
         mName = oldObj.mName;
-    mUpdateTime = clock();
+    mUpdateTime = QDateTime::currentMSecsSinceEpoch();
     if(abs(mLat)<0.5)mLat = oldObj.mLat;
     if(abs(mLong)<0.5)mLong = oldObj.mLong;
     if(mDst.isEmpty())
@@ -144,7 +144,7 @@ QString AIS_object_t::printData()
                   + mDst
                   +"\n");
     outputString.append(QString::fromUtf8("Cập nhật gần nhất:")
-                  + QString::number((clock()-mUpdateTime)/1000)
+                  + QString::number((QDateTime::currentMSecsSinceEpoch()-mUpdateTime)/1000)
                   +"s"
                   +"\n");
     return outputString;

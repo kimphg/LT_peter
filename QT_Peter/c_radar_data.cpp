@@ -1055,7 +1055,7 @@ C_radar_data::C_radar_data()
 
     mInverseRotAziCorrection = CConfig::getDouble("mInverseRotAziCorrection",0)/360.0*MAX_AZIR;
     mRealAziRate = 0;
-    mUpdateTime = clock();
+    mUpdateTime = CConfig::time_now_ms;
     cur_rot_timeMSecs = QDateTime::currentMSecsSinceEpoch();
     C_SEA_TRACK track;
     mTrackList = std::vector<C_SEA_TRACK>(MAX_TRACKS_COUNT,track);
@@ -1946,7 +1946,7 @@ int C_radar_data::approximateAzi(int newAzi)
 int heading16bitold;
 void C_radar_data::processSocketData(unsigned char* data,short len)
 {
-    CConfig::mStat.c21UpdateTime = clock();
+    CConfig::mStat.c21UpdateTime = CConfig::time_now_ms;
     CConfig::mStat.mFrameCount++;
 #ifndef THEON
     //bool isGo = (data[0]==4);// du lieu may hoi
@@ -2358,7 +2358,7 @@ void C_radar_data::getDensity(double azi,double range)
 }
 void C_radar_data::loadDensityMap()
 {
-    QFile densityFile("D:/HR2D/target_density.txt");
+    QFile densityFile("target_density.txt");
     if(!densityFile.exists())return;
     densityFile.open(QIODevice::ReadOnly);
     for(;;)
@@ -2515,18 +2515,18 @@ bool C_radar_data::UpdateData()
         if(dazi==1||dazi==-2047)isInverseRotation = false;
         else if(dazi==-1||dazi==2047)isInverseRotation = true;
         else continue;
-        //        clock_t clkBegin = clock();
+        //        clock_t clkBegin = CConfig::time_now_ms;
         ProcessData(azi,lastAzi);
         clearAzi(azi);
         drawAzi(azi);
         //        QFuture<void> future = QtConcurrent::run(drawAzi,azi);
-        //        clock_t clkEnd = clock();
+        //        clock_t clkEnd = CConfig::time_now_ms;
         //        int ProcessingTime = (clkEnd-clkBegin);
         //        if(ProcessingTime>1)
         //        {
         //            printf("\nProcessingTime:%d azi:%d",ProcessingTime,azi);
         //        }
-        mUpdateTime = clock();
+        mUpdateTime = CConfig::time_now_ms;
         processing_azi_count++;
         if(!(processing_azi_count%32))//xu ly moi 32 chu ky
         {

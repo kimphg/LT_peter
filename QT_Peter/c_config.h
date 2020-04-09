@@ -6,22 +6,22 @@
 #define SCALE_MIN 5
 #include "common.h"
 #ifdef ARTEMIS
-#define MAP_PATH_1       "D:/ARTEMIS/MapData/GM1/"
-#define MAP_PATH_2       "D:/ARTEMIS/MapData/GM2/"
-#define MAP_PATH_3       "D:/ARTEMIS/MapData/GS/"
-#define HR_APP_PATH       "D:/ARTEMIS/"
-#define HR_DATA_REC_PATH  "D:/ARTEMIS/RecordData/"
+#define MAP_PATH_1       "./MapData/GM1"
+#define MAP_PATH_2       "./MapData/GM2"
+#define MAP_PATH_3       "./MapData/GS"
+#define HR_APP_PATH       ""
+#define HR_DATA_REC_PATH  "RecordData/"
 #define HR_CONFIG_FILE    "radar_config.xml"
 #define HR_CONFIG_FILE_BACKUP_1 "radar_config_backup_1.xml"
 #define HR_CONFIG_FILE_BACKUP_2 "radar_config_backup_2.xml"
 #define HR_CONFIG_FILE_BACKUP_C "radar_config_backup_c.xml"
-#define HR_CONFIG_FILE_DF "D:/ARTEMIS/radar_config_default.xml"
-#define HR_ERROR_FILE "D:\\ARTEMIS\\errorLog.txt"
+#define HR_CONFIG_FILE_DF "radar_config_default.xml"
+#define HR_ERROR_FILE "errorLog.txt"
 #else
 #define HR_APP_PATH       ""
-#define MAP_PATH_1       "MapData/GM1/"
-#define MAP_PATH_2       "MapData/GM2/"
-#define MAP_PATH_3       "MapData/GS/"
+#define MAP_PATH_1       "./MapData/GM1/"
+#define MAP_PATH_2       "./MapData/GM2/"
+#define MAP_PATH_3       "./MapData/GS/"
 #define HR_DATA_REC_PATH  "RecordData/"
 #define HR_CONFIG_FILE    "radar_config.xml"
 #define HR_CONFIG_FILE_BACKUP_1 "radar_config_backup_1.xml"
@@ -41,6 +41,7 @@
 #include <QDateTime>
 #include <queue>
 #include <common.h>
+
 inline void ConvPolarToXY(double *x, double *y, double azi, double range)
 {
 
@@ -74,7 +75,7 @@ inline QString demicalDegToDegMin(double demicalDeg)
 struct WarningMessage
 {
     QString message;
-    clock_t time;
+    qint64 time;
 };
 class radarStatus_3C
 {
@@ -89,11 +90,11 @@ public:
         mMayPhatOK =    mes[2];
         mCaoApReady =   mes[3];
         mCaoApKetNoi =  mes[4];
-        c22UpdateTime = clock();
+        c22UpdateTime = QDateTime::currentMSecsSinceEpoch();
     }
     void ReadStatusGlobal(uchar* mes)
     {
-        cBHUpdateTime = clock();
+        cBHUpdateTime = QDateTime::currentMSecsSinceEpoch();
         memcpy(&(msgGlobal[0]),(char*)(mes),32);
         if(msgGlobal[0]==1
                 &&msgGlobal[1]==1
@@ -107,7 +108,7 @@ public:
             isTxSwModeOk = false;
         }
         if(msgGlobal[17]==0
-                &&msgGlobal[18]==0)cTempOkTime = clock();
+                &&msgGlobal[18]==0)cTempOkTime = QDateTime::currentMSecsSinceEpoch();
 
     }
 //    void setGPSLocation(double lat, double lon);
@@ -116,24 +117,24 @@ public:
         // auto learning algorithm
         shipHeadingRate_dps = headingRateDps;
         shipHeadingDeg = heading;
-        cGyroUpdateTime = clock();
+        cGyroUpdateTime = QDateTime::currentMSecsSinceEpoch();
     }
     void inputGyroDeg21(double heading,double headingRateDps)
     {
         // auto learning algorithm
         shipHeadingRate_dps = headingRateDps;
         shipHeadingDeg = heading;
-        cGyroUpdateTime21 = clock();
+        cGyroUpdateTime21 = QDateTime::currentMSecsSinceEpoch();
     }
-    void setcGyroUpdateTime(){cGyroUpdateTime = clock();}
+    void setcGyroUpdateTime(){cGyroUpdateTime = QDateTime::currentMSecsSinceEpoch();}
     void inputHDT(double heading)
     {
         if(getAgeGyro()<3000){isGyro = true; return;}
         isGyro = false;
         double headingDiff = heading-shipHeadingDeg;
         shipHeadingDeg = heading;
-        clock_t timeNow = clock();
-        clock_t age = timeNow-cHDTUpdateTime;
+        qint64 timeNow = QDateTime::currentMSecsSinceEpoch();
+        qint64 age = timeNow-cHDTUpdateTime;
         if(age<2000)
         {
 
@@ -170,17 +171,17 @@ public:
     //global Status
     char msgGlobal[32];
     // connection age
-    //clock_t cGpsAge;
-    clock_t cAisUpdateTime;
-    clock_t cGpsUpdateTime;
-    clock_t c22UpdateTime;
-    clock_t c21UpdateTime;
-    clock_t cBHUpdateTime;
-    clock_t cGyroUpdateTime,cGyroUpdateTime21;
-    clock_t cVeloUpdateTime;
-    clock_t cHDTUpdateTime;
-    clock_t cCourseUpdateTime;
-    clock_t cTempOkTime;
+    //qint64 cGpsAge;
+    qint64 cAisUpdateTime;
+    qint64 cGpsUpdateTime;
+    qint64 c22UpdateTime;
+    qint64 c21UpdateTime;
+    qint64 cBHUpdateTime;
+    qint64 cGyroUpdateTime,cGyroUpdateTime21;
+    qint64 cVeloUpdateTime;
+    qint64 cHDTUpdateTime;
+    qint64 cCourseUpdateTime;
+    qint64 cTempOkTime;
 //    bool isStatChanged()
 //    {
 //        if(isStatChange)
@@ -191,22 +192,22 @@ public:
 //        else return false;
 //    }
 
-    clock_t getAgeAis(){return clock()-cAisUpdateTime;}
-    clock_t getAgeGps(){return clock()-cGpsUpdateTime;}
-    clock_t getAge22(){return clock()- c22UpdateTime;}
-    clock_t getAge21(){return clock()- c21UpdateTime;}
-    clock_t getAgeBH(){return clock()- cBHUpdateTime;}
-    clock_t getAgeGyro(){return clock()-cGyroUpdateTime;}
-    clock_t getAgeGyro21(){return clock()-cGyroUpdateTime21;}
-    clock_t getAgeVelo(){return clock()-cVeloUpdateTime;}
-    clock_t getAgeHDT(){return clock()-cHDTUpdateTime;}
-    clock_t getAgeTempOk(){return clock()-cTempOkTime;}
+    qint64 getAgeAis(){return QDateTime::currentMSecsSinceEpoch()-cAisUpdateTime;}
+    qint64 getAgeGps(){return QDateTime::currentMSecsSinceEpoch()-cGpsUpdateTime;}
+    qint64 getAge22(){return QDateTime::currentMSecsSinceEpoch()- c22UpdateTime;}
+    qint64 getAge21(){return QDateTime::currentMSecsSinceEpoch()- c21UpdateTime;}
+    qint64 getAgeBH(){return QDateTime::currentMSecsSinceEpoch()- cBHUpdateTime;}
+    qint64 getAgeGyro(){return QDateTime::currentMSecsSinceEpoch()-cGyroUpdateTime;}
+    qint64 getAgeGyro21(){return QDateTime::currentMSecsSinceEpoch()-cGyroUpdateTime21;}
+    qint64 getAgeVelo(){return QDateTime::currentMSecsSinceEpoch()-cVeloUpdateTime;}
+    qint64 getAgeHDT(){return QDateTime::currentMSecsSinceEpoch()-cHDTUpdateTime;}
+    qint64 getAgeTempOk(){return QDateTime::currentMSecsSinceEpoch()-cTempOkTime;}
     double getShipHeadingDeg();
     void setShipSpeed(double value);
     void setShipCourse(double value);
     double getshipHeadingRate_dps();
     void setShipSpeed2(double value);
-    void setCGyroUpdateTime(const clock_t &value);
+    void setCGyroUpdateTime(const qint64 &value);
 };
 class CConfig
 {

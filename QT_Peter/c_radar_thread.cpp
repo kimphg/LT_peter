@@ -113,7 +113,7 @@ dataProcessingThread::dataProcessingThread()
     isEnableAISOutput = false;
     //set initial time
     QDateTime now = QDateTime::currentDateTime();
-    QString logDirName = "D:\\HR2D\\logs\\"+now.toString("\\yy.MM\\");
+    QString logDirName = "./logs/"+now.toString("/yy.MM/");
     if(!QDir(logDirName).exists())
     {
         QDir().mkdir(logDirName);
@@ -299,7 +299,7 @@ bool dataProcessingThread::readNmea(unsigned char *mReceiveBuff,int len)
                     if(endValid)
                     {
 
-                        //mStat.cGpsUpdateTime = clock();
+                        //mStat.cGpsUpdateTime = CConfig::time_now_ms;
                         double mLat,mLon;
                         mGPS.get_position(&mLat,&mLon);
                         if(mLat>-90&&mLat<90&&mLon>-180&&mLon<180)
@@ -323,6 +323,16 @@ bool dataProcessingThread::readNmea(unsigned char *mReceiveBuff,int len)
     }
     return false;
 
+}
+void dataProcessingThread::writeLog(QString text)
+{
+    if(logFile.isOpen())
+    logFile.write(text.toUtf8());
+}
+void dataProcessingThread::writeLog(QByteArray data)
+{
+    if(logFile.isOpen())
+    logFile.write(data);
 }
 bool dataProcessingThread::readMay22Msg(unsigned char *mReceiveBuff,int len)
 {
@@ -538,7 +548,7 @@ void dataProcessingThread::sendRadarPlots()
     {
         object_t *obj = &(mRadarData->object_output_queue.front());
         QString sentence = "$RATIF_PLOT,"+
-                QString::number(clock()) +","+
+                QString::number(CConfig::time_now_ms) +","+
                  +"_radar_plot,"+
                 QString::number(obj->lat, 'f',5) +","+
                 QString::number(obj->lon, 'f',5) +","+
@@ -609,6 +619,7 @@ void dataProcessingThread::Timer10s()
 {
     if(!isPlaying)requestADSBData();
     outputReport();
+    CalculateRFR();
 
 }
 void dataProcessingThread::Timer1p()
@@ -619,38 +630,21 @@ void dataProcessingThread::Timer200ms()
 {
 //    printf("\nmCudaAge200ms++:%d",mCudaAge200ms);
     mCudaAge200ms++;
-    CalculateRFR();
+
     sendAziData();
     //SerialDataRead();
 
     if(radarComQ.size())
     {
+        writeLog(QByteArray(radarComQ.front().bytes,8));
         if(radarComQ.front().bytes[1]==0xab)
         {
             radarSocket->writeDatagram((char*)&radarComQ.front().bytes[0],
                     8,
                     QHostAddress("192.168.0.44"),2572
                     );
-
         }
-
         radarComQ.pop();
-        /*if(checkFeedback())
-        {
-            radarComQ.pop();
-            failureCount = 0;
-        }
-        else
-        {
-            failureCount++;
-            if(failureCount>3)
-            {
-                radarComQ.pop();
-                failureCount = 0;
-            }
-        }*/
-
-
     }
 
     //    mRadarData->ProcessObjects();
@@ -869,7 +863,7 @@ void dataProcessingThread::inputAISData(QByteArray inputdata)
         if(aisMessageHandler.ProcessNMEA(strlist.at(i)))
         {
 
-            CConfig::mStat.cAisUpdateTime = clock();
+            CConfig::mStat.cAisUpdateTime = CConfig::time_now_ms;
             addAisObj(aisMessageHandler.GetAisObject());
         }
     messageStringbuffer=strlist.at(strlist.size()-1);
@@ -883,7 +877,7 @@ static uchar mReceiveBuff[FRAME_LEN_MAX];
 void dataProcessingThread::CalculateRFR()
 {
     double fDrame = double(CConfig::mStat.mFrameCount-lastFrameCount);
-    mFramesPerSec = fDrame*5;
+    mFramesPerSec = fDrame/10.0;
     lastFrameCount=CConfig::mStat.mFrameCount;
 }
 
@@ -984,7 +978,7 @@ void dataProcessingThread::processJsonAis(QString answer)
                     obj.mSog = jObj ["sog"].toString().toDouble();
                     obj.mType = jObj ["type"].toString().toInt();
                     obj.mLut = QDateTime::currentMSecsSinceEpoch();
-                    obj.mUpdateTime = clock();
+                    obj.mUpdateTime = CConfig::time_now_ms;
 
                     addAisObj(obj);
                 }
@@ -1151,7 +1145,7 @@ void dataProcessingThread::run()
 {
 //    loadTargetDensityMap();
     int frameCount=0;
-    while(0)
+    while(true)
     {
         frameCount=0;
         while(radarSocket->hasPendingDatagrams())
@@ -1181,7 +1175,7 @@ void dataProcessingThread::run()
 
 bool dataProcessingThread::getIsDrawn()
 {
-    if(clock()-mRadarData->mUpdateTime<2000){mRadarData->mUpdateTime = true;return false;}
+    if(CConfig::time_now_ms-mRadarData->mUpdateTime<2000){mRadarData->mUpdateTime = true;return false;}
     else return true;
 
 

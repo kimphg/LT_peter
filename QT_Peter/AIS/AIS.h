@@ -27,9 +27,9 @@ class AIS_object_t {
 public:
     AIS_object_t();
     void merge(AIS_object_t oldObj);
-    clock_t getAge()
+    qint64 getAge()
     {
-        return clock()-mUpdateTime;
+        return QDateTime::currentMSecsSinceEpoch()-mUpdateTime;
     }
     QString             printData();
     bool                isMatchToRadarTrack;

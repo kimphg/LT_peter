@@ -18,6 +18,7 @@ const int tdim = 256;
 
 CMap::CMap(QObject *parent): mScale(10),QObject(parent)
 {
+
     //khoi tao mot vung pixmap co kich thuoc 256 X 256 va boi day no voi mau lightGray
     m_emptyTile = QPixmap(tdim, tdim);
     m_emptyTile.fill(Qt::black);
@@ -76,6 +77,9 @@ void CMap::Repaint()
 
 void CMap::setPath(QString path)
 {
+    printf("\nLoad map path :");
+    printf(path.toStdString().data());
+    //qDebug() << QImageReader::supportedImageFormats ();
     mPath = path + "/%1/%2/%3";
     mPathraw = path + "/gs_%1_%2_%3";
     scaleMin = 20;
@@ -238,7 +242,6 @@ void CMap::invalidate()
     m_tilesRect = QRect(xs, ys, xe - xs + 1, ye - ys + 1);
 
     //neu duong link ko rong thi thuc hien dơnload
-    if (m_url.isEmpty())
         LoadMap();//download();
 
     emit updated(QRect(0, 0, mMapWidth, mMapHeight));
@@ -347,7 +350,15 @@ void CMap::LoadMap()
     QImage img(imageMapPath+".png");
     if (img.isNull())
     {
+        bool fileExist = QFile(imageMapPath+".jpg").exists();
+        if(fileExist)
         img = QImage(imageMapPath+".jpg");
+        else
+        {
+            printf("\nfile not found:");
+            printf((imageMapPath+".jpg").toStdString().data());
+
+        }
     }
     if (img.isNull())
     {

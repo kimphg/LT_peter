@@ -11,7 +11,7 @@
 #define PI                       3.14159265358979323846
 #define DEG_RAD 57.295779513
 #define THEON
-//#define ARTEMIS
+#define ARTEMIS
 #define MIN_TARGET_DENSITY 0
 #define MIN_OBJ_DENSITY 0
 #endif // COMMON_H

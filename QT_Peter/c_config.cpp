@@ -21,16 +21,16 @@ radarStatus_3C::radarStatus_3C()
     shipSpeedWater=0;
     shipSpeedGround=0;
     memset(&(msgGlobal[0]),0,32);
-    cAisUpdateTime      = clock();
-    cGpsUpdateTime      = clock();
-    c22UpdateTime       = clock();
-    c21UpdateTime       = clock();
-    cBHUpdateTime       = clock();
-    cGyroUpdateTime     = clock();
-    cVeloUpdateTime     = clock();
-    cHDTUpdateTime      = clock();
-    cCourseUpdateTime   = clock();
-    cTempOkTime = clock();
+    cAisUpdateTime      = CConfig::time_now_ms;
+    cGpsUpdateTime      = CConfig::time_now_ms;
+    c22UpdateTime       = CConfig::time_now_ms;
+    c21UpdateTime       = CConfig::time_now_ms;
+    cBHUpdateTime       = CConfig::time_now_ms;
+    cGyroUpdateTime     = CConfig::time_now_ms;
+    cVeloUpdateTime     = CConfig::time_now_ms;
+    cHDTUpdateTime      = CConfig::time_now_ms;
+    cCourseUpdateTime   = CConfig::time_now_ms;
+    cTempOkTime = CConfig::time_now_ms;
     shipHeadingDeg = 20;
     shipHeadingRate_dps=0;
     antennaBearingDeg = 0;
@@ -45,7 +45,7 @@ radarStatus_3C::~radarStatus_3C()
 
 }
 
-void radarStatus_3C::setCGyroUpdateTime(const clock_t &value)
+void radarStatus_3C::setCGyroUpdateTime(const qint64 &value)
 {
     cGyroUpdateTime = value;
 }
@@ -53,25 +53,25 @@ void radarStatus_3C::setCGyroUpdateTime(const clock_t &value)
 //void radarStatus_3C::setGPSLocation(double lat, double lon)
 //{
 //    mLat = lat;mLon = lon;
-//    cGpsUpdateTime = clock();
+//    cGpsUpdateTime = CConfig::time_now_ms;
 //}
 
 void radarStatus_3C::setShipCourse(double value)
 {
     shipCourseDeg = value;
-    cCourseUpdateTime = clock();
+    cCourseUpdateTime = CConfig::time_now_ms;
 }
 void radarStatus_3C::setShipSpeed2(double value)
 {
     if(abs(value)<0.01)return;
     shipSpeedGround = value;
-    cVeloUpdateTime = clock();
+    cVeloUpdateTime = CConfig::time_now_ms;
 }
 void radarStatus_3C::setShipSpeed(double value)
 {
     if(abs(value)<0.01)return;
     shipSpeedWater = value;
-    cVeloUpdateTime = clock();
+    cVeloUpdateTime = CConfig::time_now_ms;
 }
 
 double radarStatus_3C::getShipHeadingDeg()
@@ -150,7 +150,7 @@ void CConfig::setGPSLocation(double lat, double lon)
 
     mLat=lat;
     mLon=lon;
-    mStat.cGpsUpdateTime=clock();
+    mStat.cGpsUpdateTime=CConfig::time_now_ms;
     setValue("mLat",mLat);
     setValue("mLon",mLon);
     //save if distance>100m
@@ -226,7 +226,7 @@ void CConfig::AddMessage(QString message)
     QDateTime now = QDateTime::fromMSecsSinceEpoch(time_now_ms);
     WarningMessage warning;
     warning.message = now.toString("hh:mm:ss:")+ message ;
-    warning.time = clock();
+    warning.time = CConfig::time_now_ms;
     mWarningList.push(warning);
 }
 

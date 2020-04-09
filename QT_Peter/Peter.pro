@@ -10,7 +10,7 @@
 # Version 4.0.1
 #-------------------------------------------------
 #data file type defined as .r2d,
-#CONFIG += ARTEMIS
+CONFIG += ARTEMIS
 #define ARTEMIS for C4I view mode
 #define THEON for raytheon radar
 #define
@@ -102,48 +102,15 @@ FORMS    += \
     dialogdetaildisplay.ui \
     c_mainwindowbasic.ui \
     dialogmodeselect.ui
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/shapelib/ -lshapelib
-#else:unix: LIBS += -L$$PWD\shapelib\ -lshapelib
-#INCLUDEPATH += $$PWD/shapelib
-#DEPENDPATH += $$PWD/shapelib
-#unix: LIBS += -L/usr/lib  -ld
-#unix: INCLUDEPATH += /usr/lib
-INCLUDEPATH += $$PWD/tinyxml/
-DEPENDPATH += $$PWD/tinyxml/
 INCLUDEPATH += $$PWD/
 DEPENDPATH += $$PWD/
-#INCLUDEPATH += $$PWD/mitab/mitab/
-#INCLUDEPATH += $$PWD/mitab/cpl/
-#INCLUDEPATH += $$PWD/mitab/ogr/
-#RESOURCES +=
-#INCLUDEPATH += $$PWD/../armadillo/include
-#DEPENDPATH += $$PWD/../armadillo/include
-#win32:LIBS += -L$$PWD/../armadilloWin32/lib_winx86/ -lblas_win32_MT
-#win32:LIBS += -L$$PWD/../armadilloWin32/lib_winx86/ -llapack_win32_MT
-#win32:LIBS += -L$$PWD/../armadillo/lib_winx86/ -lcbia.lib.blas.dyn.rel.x86.12
-#win32:LIBS += -L$$PWD/../armadillo/lib_winx86/ -lcbia.lib.lapack.dyn.rel.x86.12
 
-#unix: LIBS += -larmadillo
 
-#LIBS += -lQt5Concurrent
-#win32:LIBS += -L$$PWD/mitab/ -lmitab
-#LIBS += -ltinyxml
-#INCLUDEPATH += $$PWD/../opencv/build/include
-#win32:LIBS += -L$$PWD/../opencv/build/x86/vc10/lib/ -lopencv_core249
-#win32:LIBS += -L$$PWD/../opencv/build/x86/vc10/lib/ -lopencv_highgui249
-#win32:LIBS += -L$$PWD/../opencv/build/x86/vc10/lib/ -lopencv_imgproc249
-#win32:LIBS += -L$$PWD/../opencv/build/x86/vc10/lib/ -lopencv_videoio249
+unix:QMAKE_CXXFLAGS += -O2
 
-#LIBS +=
-
-#win32:CONFIG(release, debug|release):INCLUDEPATH += $$PWD/armadillo/lib_winx86
-#win32:CONFIG(release, debug|release):DEPENDPATH += $$PWD/armadillo/lib_winx86
-
-#unix:QMAKE_CXXFLAGS += -O2
-#unix:QMAKE_CXXFLAGS += -l -DARMA_DONT_USE_WRAPPER -lblas -llapack
 DISTFILES += \
     appIcon.rc
-win32:RC_FILE += appIcon.rc
+RC_FILE += appIcon.rc
  *msvc* { # visual studio spec filter
       QMAKE_CXXFLAGS += -MP
   }
