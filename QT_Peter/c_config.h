@@ -5,25 +5,31 @@
 #define SCALE_MAX 80
 #define SCALE_MIN 5
 #include "common.h"
-
-#ifdef _WIN32
-#define MAP_PATH_1       "D:/HR2D/MapData/GM1"
-#define MAP_PATH_2       "D:/HR2D/MapData/GM2"
-#define MAP_PATH_3       "D:/HR2D/MapData/GS"
-#define HR_APP_PATH       "D:/HR2D/"
-#else
+#ifdef ARTEMIS
 #define MAP_PATH_1       "./MapData/GM1"
 #define MAP_PATH_2       "./MapData/GM2"
 #define MAP_PATH_3       "./MapData/GS"
-#define HR_APP_PATH       "./"
-#endif
+#define HR_APP_PATH       ""
 #define HR_DATA_REC_PATH  "RecordData/"
 #define HR_CONFIG_FILE    "radar_config.xml"
 #define HR_CONFIG_FILE_BACKUP_1 "radar_config_backup_1.xml"
 #define HR_CONFIG_FILE_BACKUP_2 "radar_config_backup_2.xml"
 #define HR_CONFIG_FILE_BACKUP_C "radar_config_backup_c.xml"
-#define HR_CONFIG_FILE_DF       "radar_config_default.xml"
-#define HR_ERROR_FILE           "errorLog.txt"
+#define HR_CONFIG_FILE_DF "radar_config_default.xml"
+#define HR_ERROR_FILE "errorLog.txt"
+#else
+#define HR_APP_PATH       ""
+#define MAP_PATH_1       "./MapData/GM1/"
+#define MAP_PATH_2       "./MapData/GM2/"
+#define MAP_PATH_3       "./MapData/GS/"
+#define HR_DATA_REC_PATH  "RecordData/"
+#define HR_CONFIG_FILE    "radar_config.xml"
+#define HR_CONFIG_FILE_BACKUP_1 "radar_config_backup_1.xml"
+#define HR_CONFIG_FILE_BACKUP_2 "radar_config_backup_2.xml"
+#define HR_CONFIG_FILE_BACKUP_C "radar_config_backup_c.xml"
+#define HR_CONFIG_FILE_DF "radar_config_default.xml"
+#define HR_ERROR_FILE "errorLog.txt"
+#endif
 #define XML_ELEM_NAME     "radar_config"
 #include <math.h>
 #define DEFAULT_LAT		20.707

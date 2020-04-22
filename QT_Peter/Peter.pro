@@ -10,7 +10,7 @@
 # Version 4.0.1
 #-------------------------------------------------
 #data file type defined as .r2d,
-#CONFIG += ARTEMIS
+CONFIG += ARTEMIS
 #define ARTEMIS for C4I view mode
 #define THEON for raytheon radar
 #define
@@ -59,7 +59,6 @@ SOURCES += main.cpp\
     dialogdetaildisplay.cpp \
     c_arpa_area.cpp \
     dialogmodeselect.cpp
-
 HEADERS  += \
     qcustombutton.h \
     qcustomframe.h \
