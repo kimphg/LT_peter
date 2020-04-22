@@ -3,6 +3,7 @@
 //#include <QtNetwork>
 
 #include "cmap.h"
+//#include "qtdownload.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -27,7 +28,7 @@ CMap::CMap(QObject *parent): mScale(10),QObject(parent)
     mapImage = 0;
     mCenterLat = 0;
     mCenterLon = 0;
-    this->setPath(MAP_PATH_1 );
+    this->setPath( MAP_PATH_1 );
     //LoadText("D:/HR2D/mapText.txt");
 //    mifFile = (MIFFile*)IMapInfoFile::SmartOpen("");
     //SetType(0);
@@ -37,13 +38,13 @@ void CMap::SetType(int type)
     switch (type)
     {
     case 0:
-        this->setPath(MAP_PATH_1 );
+        this->setPath( MAP_PATH_1 );
         break;
     case 1:
-        this->setPath(MAP_PATH_2 );
+        this->setPath( MAP_PATH_2 );
         break;
     case 2:
-        this->setPath(MAP_PATH_3 );
+        this->setPath( MAP_PATH_3 );
         break;
     default:
         break;
@@ -81,7 +82,7 @@ void CMap::setPath(QString path)
     printf(path.toStdString().data());
     //qDebug() << QImageReader::supportedImageFormats ();
     mPath = path + "/%1/%2/%3";
-    mPathraw = path + "/gs_%1_%2_%3";
+    mPathraw = "http://mt1.google.com/vt/lyrs=t,r&hl=x-local&src=app&s=Galileo&x=%2&y=%3&z=%1";
     scaleMin = 20;
     scaleMax = 1;
     for(int i=1;i<20;i++)
@@ -338,6 +339,9 @@ void CMap::LoadMap()
     }
     //QString path = "C:/Users/LamPT/Desktop/mapData/%1/%2_%3_%4.png" ;
     QString imageMapPath = mPath.arg(mScale).arg(grab.x()).arg(grab.y());
+
+    //http://mt1.google.com/vt/lyrs=t,r&hl=x-local&src=app&s=Galileo&x=13029&y=7208&z=14
+
 //    if(QFile::exists(imageMapPath+".png"))imageMapPath =imageMapPath+".png";
 //    else if(QFile::exists(imageMapPath+".jpg"))imageMapPath+=".jpg";
 //    else
@@ -360,13 +364,19 @@ void CMap::LoadMap()
 
         }
     }
-    if (img.isNull())
-    {
-        QString imageMapPathraw = mPathraw.arg(grab.x()).arg(grab.y()).arg(mScale)+".jpg";
-        imageMapPath+=".jpg";
-        if(QFile::exists(imageMapPathraw))
-            QFile::copy(imageMapPathraw,imageMapPath);
-    }
+//    if (img.isNull())
+//    {
+//        img = QImage(256,256,QImage::Format_ARGB32);
+//        img.save(imageMapPath+".jpg",".jpg");
+//        QtDownload dl;
+//        QString url = mPathraw.arg(grab.x()).arg(grab.y()).arg(mScale);
+//        dl.setTarget(url);
+//        dl.download();
+//        QString imageMapPathraw = mPathraw.arg(grab.x()).arg(grab.y()).arg(mScale)+".jpg";
+//        imageMapPath+=".jpg";
+//        if(QFile::exists(imageMapPathraw))
+//            QFile::copy(imageMapPathraw,imageMapPath);
+//    }
 
 
     m_tilePixmaps[grab] = QPixmap::fromImage(img);

@@ -332,7 +332,7 @@ void dataProcessingThread::writeLog(QString text)
 void dataProcessingThread::writeLog(QByteArray data)
 {
     if(logFile.isOpen())
-    logFile.write(data);
+    logFile.write( data);
 }
 bool dataProcessingThread::readMay22Msg(unsigned char *mReceiveBuff,int len)
 {
@@ -636,7 +636,7 @@ void dataProcessingThread::Timer200ms()
 
     if(radarComQ.size())
     {
-        writeLog(QByteArray(radarComQ.front().bytes,8));
+        //writeLog(QByteArray(radarComQ.front().bytes,8));
         if(radarComQ.front().bytes[1]==0xab)
         {
             radarSocket->writeDatagram((char*)&radarComQ.front().bytes[0],

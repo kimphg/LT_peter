@@ -117,6 +117,8 @@ public:
     void sendAdsbData();
     void sendAisData();
     bool isEnableADSBOutput,isEnableAISOutput;
+    void writeLog(QString text);
+    void writeLog(QByteArray data);
 signals:
     void HeadingDataReceived(double heading);
 private:
